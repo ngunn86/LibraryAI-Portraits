@@ -81,3 +81,31 @@ These were settled for the harness project rather than this repo. They are recor
 - It runs locally on the owner's Windows PC, in WSL, using subscription usage rather than API pricing.
 
 → plan/build-plan.md §Working with the harness, Q-17
+
+## From the owner, in planning (continued)
+
+**D-13 · 2026-10-19 · The examples are for evaluating the processing only** · owner · *resolves Q-10*
+- The source of the three example originals in `design/portraits/` is unknown. The owner supplied them so Claude can work out and test the processing steps.
+- They are style targets and test inputs only, and are **never delivered** as portraits.
+- Charles Fillmore, Emilie Cady and Ernest Holmes go through normal sourcing like every other teacher.
+
+→ IN-09, TRI-02
+
+**D-14 · 2026-10-19 · The tool keeps everything needed to credit each portrait** · owner
+"When you build the portraits tool, you will need to track relevant metadata so we can credit appropriately in the library."
+- Every delivered portrait carries the full rights and credit record of its original.
+- A record that can't support a proper credit is never delivered.
+
+→ SRC-08, SRC-11, OUT-02, OUT-04
+
+**D-15 · 2026-10-19 · The harness is designed in a separate chat** · owner · *resolves Q-17*
+- The owner designs the build harness in another chat.
+- This repo's interface to it is the feature-card format in `plan/features.md` and "Working with the harness" in `plan/build-plan.md` §4. Both stay provisional until the harness design fixes its input format.
+
+→ CLAUDE.md, plan/
+
+**D-16 · 2026-10-19 · Prototype the style before the build** · owner · *resolves Q-04*
+The owner supplied the examples "so you can evaluate the steps you need to process the image". Claude prototypes the processing steps against them in Phase 0 (P0-3), before the harness builds anything.
+
+→ STY-07, F-16
+

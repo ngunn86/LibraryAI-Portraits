@@ -13,16 +13,15 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 | Architecture | Proposed (Python 3.12, uv, SQLite, one CLI) |
 | Contracts | Teacher list, requests and status, and the delivery folder are drafted. The manifest schema waits for O-1 |
 | Build plan and features | 29 feature cards across phases 1–6, with checks, dependencies, live/stub, parkable |
-| Decisions | D-01..D-12 |
-| Open questions | Q-01..Q-20. Still open and marked *now*: Q-04, Q-09, Q-10 (sources), Q-16, Q-17. Q-20 is resolved |
-| Examples | The three targets and their originals are in `design/portraits/`. Their sources are unknown (Q-10) |
+| Decisions | D-01..D-16 |
+| Open questions | Q-01..Q-20. Still open and marked *now*: Q-09, Q-16 (both need O-1). Resolved: Q-04, Q-10, Q-17, Q-20 |
+| Examples | The three targets and their originals are in `design/portraits/`. Test use only (D-13) |
 | Reviews | Format ready (`reviews/README.md`). No reviews yet |
 
 ## Waiting on the owner (*now*)
 
 1. **O-1:** copy Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py` into `brain/reference/rev1/`, and note the Rev1 commit.
-2. **O-2 (the rest):** say where each of the three originals came from, and its licence (Q-10). The files themselves arrived.
-3. Answers to Q-04 (style prototype first?) and Q-17 (where the harness is planned).
+2. The *build* questions, in one pass: Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
 
 ## Next planning steps, in order
 
@@ -44,3 +43,8 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 - **2026-10-19 (later):** The owner installed the Claude GitHub App; Claude's push to `main` works.
   - The owner's sample portraits arrived (in `Sample Portraits/`, committed on the owner's PC only). Claude moved them to `design/portraits/targets/` and `originals/`, under teacher-id names, and noted their sizes.
   - The targets are 500 px; the originals are small (250–340 px wide).
+- **2026-10-19 (later):** The owner answered three questions:
+  - the example originals are of unknown source, for evaluating the processing only (D-13);
+  - credit metadata must be complete (D-14);
+  - the harness is designed in a separate chat (D-15).
+  The examples are to be used to evaluate the processing steps, so the style prototype goes ahead (D-16). Claude started the prototype (P0-3).

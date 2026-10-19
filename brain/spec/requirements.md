@@ -114,8 +114,8 @@ When the file is absent, nothing counts as approved.
 The tool records each request id it has acted on. A request already acted on isn't redone in a later run, even if the library hasn't removed it from `requests.json` yet.
 *Verify:* the second of two runs over the same `requests.json` makes no draft for that request.
 
-**IN-09 · The owner's examples** *fixed* · B2; sources *open (Q-10)*
-`design/portraits/` holds the owner's three hand-made portraits (`targets/`), which are the style target, and their originals (`originals/`). These cover Charles Fillmore, Emilie Cady and Ernest Holmes. The trial also uses the originals (TRI-02). Where the originals came from is still Q-10. Sizes and notes are in `design/portraits/README.md`.
+**IN-09 · The owner's examples** *fixed* · B2, D-13
+`design/portraits/` holds the owner's three hand-made portraits (`targets/`), which are the style target, and their originals (`originals/`). These cover Charles Fillmore, Emilie Cady and Ernest Holmes. The trial also uses the originals (TRI-02). Their source is unknown, so they are test inputs and style targets only, and are **never delivered** (D-13). Sizes and notes are in `design/portraits/README.md`.
 
 **IN-10 · Settings file** *fixed* · B2; layout *proposed* · C
 One settings file, committed to the repo, holds everything except keys:
@@ -219,8 +219,8 @@ A heading without dates never matches.
 
 *Verify:* unit tests.
 
-**SRC-08 · The original's record** *fixed* · B2
-Every original used, or set aside after download, keeps:
+**SRC-08 · The original's record** *fixed* · B2, D-14
+Its purpose (D-14): enough to credit every portrait properly in the library. Every original used, or set aside after download, keeps:
 
 - source (`commons` or `loc`);
 - source id;
@@ -232,7 +232,9 @@ Every original used, or set aside after download, keeps:
 - file size in bytes, pixel dimensions and SHA-256.
 
 The manifest carries the fields its schema asks for (OUT-02).
-*Verify:* every manifest record in the end-to-end fixture run is complete.
+
+The author may be recorded as unknown when the source says so. The source, page link, licence, licence link and credit line are **never blank**; a candidate without them is refused, not delivered (*proposed* · C, from D-14).
+*Verify:* every manifest record in the end-to-end fixture run is complete, and a candidate with no credit line is refused.
 
 **SRC-09 · Polite access** *proposed* · C
 - Every request to Wikimedia and loc.gov carries a descriptive User-Agent with the contact line from settings.
@@ -550,7 +552,7 @@ The trial runs first. The first full run then uses its defaults. Nothing waits f
 **TRI-02 · The trial set** *fixed* · B2; curation *proposed* · C
 The set is:
 
-- the owner's three originals (whose targets are the hand-made portraits);
+- the owner's three originals (whose targets are the hand-made portraits). These are test inputs only and are never delivered (D-13);
 - about 20 originals found by the match rules, including:
   - scanned prints with a dot pattern;
   - a tiny original;

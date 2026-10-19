@@ -61,7 +61,7 @@ The project serves two purposes:
    - `brain/status.md` is updated at the end of each working session.
 8. **Reviewers write in `brain/reviews/` and don't edit the spec directly.** Claude merges accepted points and records the decisions.
 
-## During the build (provisional until the harness's own format is settled; see Q-17)
+## During the build (provisional until the harness, designed in a separate chat, settles its format; see D-15)
 
 - Build **one feature at a time**, in the order of `brain/plan/features.md`, and respect each card's *Depends on*.
 - A feature is done when every check on its card passes and the whole test suite still passes.

@@ -15,14 +15,9 @@ The owner added them on 2026-10-19 in a folder called `Sample Portraits/`. Claud
 | `emilie-cady` | `targets/emilie-cady.png` | `originals/emilie-cady.jpg` | `Cady_Emilie.png`, `H_Emilie_Cady (2).jpg` |
 | `ernest-holmes` | `targets/ernest-holmes.png` | `originals/ernest-holmes.webp` | `Holmes_Ernest.png`, `holmes-young (2).webp` |
 
-## Where the originals came from: **unknown (Q-10)**
+## Where the originals came from: unknown, so they're never delivered (D-13)
 
-The owner still needs to say where each original came from (the Commons file page or loc.gov item, if that's where it was found), and its licence.
-
-- If an original is on Commons or LoC with an allowed licence and a certain match (SRC-01..03), its teacher can be delivered normally.
-- If not, the example is used only as a style target, and that teacher goes through normal sourcing like everyone else.
-
-The file names suggest Commons for Fillmore and Cady, but that is a guess and is not relied on. The Holmes original is a WebP, which suggests a website rather than Commons.
+The owner supplied these originals so the processing steps can be worked out and tested. Their sources aren't known, so they are style targets and test inputs only. The tool never delivers them, and Fillmore, Cady and Holmes are sourced normally, like every other teacher.
 
 ## What the files are (measured 2026-10-19)
 
