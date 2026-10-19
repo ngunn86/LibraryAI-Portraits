@@ -1,0 +1,167 @@
+# Open questions
+
+Each question waits for the owner and carries Claude's proposal. When one is settled it is marked *resolved → D-nn*, the answer goes into [decisions.md](decisions.md), and the affected requirements are updated.
+
+**Priority:**
+
+| Priority | Meaning |
+|---|---|
+| **now** | Planning can't finish without it |
+| **build** | Needed before the harness starts |
+| **trial** | Needed before the trial |
+| **later** | Can wait |
+
+## Summary
+
+| Q | Question | Priority | Proposal in one line | Status |
+|---|---|---|---|---|
+| Q-01 | What is an "authority match"? | build | With both years, the tool may find the Wikidata id itself (one unique human match); with neither id nor both years, skip and report | open |
+| Q-02 | Re-runs: skip teachers whose draft is already waiting? | build | Yes, using the tool's own delivery record until `status.json` exists | open |
+| Q-03 | Deliver through a synced folder or the Drive API? | build | Synced folder; the API stays a later option | open |
+| Q-04 | Prove the style in planning, before the harness builds? | **now** | Yes: prototype the recipe here against the three examples | open |
+| Q-05 | Add a code-drawn outline as a fourth trial contender? | build | Yes | open |
+| Q-06 | What does "remake" mean when most steps are deterministic? | build | Re-run only the steps that can change; otherwise set aside | open |
+| Q-07 | Do pre-check rejections count toward the three originals? | build | No, but cap pre-checks at 8 per teacher per run | open |
+| Q-08 | What can a Try-again note change? | build | It guides a fresh attempt and the check; it never changes recipe settings | open |
+| Q-09 | Who defines `requests.json` and `status.json`? | **now** | Rev1 if PORT-060/061 already does; otherwise this repo's draft, offered to Rev1 | open |
+| Q-10 | The owner's three originals: where are they, where did they come from, and are they delivered? | **now** | Copy them into `design/portraits/` with their sources; deliver them only if they meet SRC rules | open |
+| Q-11 | Are engravings and drawings acceptable originals? | trial | Yes, if they pass the pre-check, with the medium recorded; the trial shows how they look | open |
+| Q-12 | How are dates validated? | build | Year, year-month or full date; reject circa dates, future dates, death before birth and lifespans over 120 years | open |
+| Q-13 | What happens to duplicate `teacher_id`s? | later | Refuse every row that shares the id | open |
+| Q-14 | Where does `teachers.csv` live? | later | `data/teachers.csv` in this repo | open |
+| Q-15 | Which stack? | build | Python 3.12 + uv, in WSL | open |
+| Q-16 | Does the manifest carry the portrait's own licence (CC BY-SA share-alike)? | **now** | Check the schema; if it's missing, raise it with Rev1 | open |
+| Q-17 | Where is the harness planned and built, and what format does it read? | **now** | Its own repo; this repo supplies feature cards in a fixed format | open |
+| Q-18 | Which cut-out provider? | trial | Bria through fal, as in the brief; a free local model is an optional extra contender | open |
+| Q-19 | In the trial, what counts as "close"? | trial | Total score within 5% of the best | open |
+| Q-20 | Can Claude push to this repo? | **now** | Install the Claude GitHub App on this repo | open |
+
+---
+
+## Details
+
+### Q-01 · What is an "authority match"? · build
+- **Background.** B2 says a teacher with neither a Wikidata id nor both years "can still be searched, but only an authority match (below) counts". Nothing below defines one.
+  - Rules 1 and 2 need a Wikidata id.
+  - Rule 3 needs both years.
+  - So such a teacher has no rule that can match.
+- **Proposal (SRC-06):**
+  - **(a)** Check every given id: the item must be a human, and its years must agree with the list's.
+  - **(b)** With both years and no id, the tool may resolve the id itself, but only when exactly one human on Wikidata matches the name or an alias and both years. The resolved id is reported for the owner to add to the list.
+  - **(c)** With neither an id nor both years, skip the teacher and name them in the report.
+- **Alternative.** "Authority" could mean a Library of Congress name authority record (id.loc.gov), which also carries dates. That adds a third service for little gain, since Wikidata items usually link to it anyway.
+
+### Q-02 · Re-runs before the library exists · build
+- **Background.** Until the library writes `status.json`, nothing counts as approved. Read literally, a second run would remake and pay again for every teacher it already delivered.
+- **Proposal.** The tool keeps its own delivery record and skips any teacher with a draft waiting, unless a request names them. Once `status.json` exists, its `waiting` status takes over.
+
+### Q-03 · Synced folder or Drive API · build
+- **Background.** B2 gives a Drive folder id plus a Drive credential. But Google Drive for desktop is already installed on the owner's PC.
+- **Proposal.** The delivery target is a folder path that Drive for desktop syncs:
+  - no credential and no Drive code;
+  - it works on any machine with Drive for desktop;
+  - WSL may need a one-line mount of the Drive letter.
+
+  The API stays a later option behind the same interface.
+- **Cost of the alternative.** OAuth or service-account setup, a credential to keep safe, and upload code with retries.
+
+### Q-04 · Prove the style before the harness builds it · now
+- **Background.** Matching the three hand-made portraits is open-ended tuning judged by eye. That is the hardest kind of task for an unattended harness, and a poor first test of one.
+- **Proposal.** In Phase 0, in this chat, Claude prototypes the code recipe (crop, descreen, halftone, code outline) against the three examples and their originals, side by side, until the owner says it's close. The output is:
+  - starting settings (`recipe_version` 0.1.0);
+  - a reference output for each example;
+  - the code metrics' thresholds (TRI-08).
+
+  The harness then builds the machinery around a recipe that is already known to work, and F-16 locks it in with a regression test.
+- **Needs:** O-2 (the examples and their originals).
+
+### Q-05 · A code-drawn outline as a fourth contender · build
+- **Background.** The cut-out already gives the figure's exact shape. Widening and smoothing that mask, then tracing its edge, gives a line that:
+  - sits exactly on the dots;
+  - costs nothing;
+  - comes out the same every run.
+
+  Image models tend to shift the figure slightly when they redraw it, so a model-drawn line needs an alignment step to sit on the halftone.
+- **Proposal.** Add the code method as a fourth contender (PIP-07, TRI-03). Nothing in the style changes; only the drawing method could. The trial rule decides: the best wins, the cheaper when close.
+  - If code wins, most of the roughly 17 cents per attempt goes away.
+  - If code wins, the "different family" rule for the checker becomes moot.
+
+### Q-06 · What "remake" means · build
+- **Background.** If code draws the outline, every step except the cut-out and the checks is deterministic. Remaking a failed draft with the same inputs gives the same draft, and asking the checker again until it says yes would just be gaming it.
+- **Proposal (PIP-10).**
+  - A remake re-runs only the steps that can come out differently: a new image-model outline, or the cut-out from another provider if one is configured.
+  - When the failing criterion is one code would only repeat (likeness, damage, moiré, crop, or anything under the code outline), the original is set aside after one failure.
+
+### Q-07 · Pre-check rejections and the three-original limit · build
+- **Background.** The pre-check costs very little. Group photos and tiny originals are common, so counting them toward the three originals would leave many teachers blank for no good reason.
+- **Proposal.** Pre-check rejections don't count toward the three. There is a separate cap of 8 pre-checks per teacher per run, to bound spend.
+
+### Q-08 · What a Try-again note can change · build
+- **Background.** The recipe is one set of settings for every teacher (STY-05), so an admin's note such as "crop lower" can't change settings for one teacher.
+- **Proposal.**
+  - A note triggers a fresh attempt: a new model outline, or the next cut-out provider.
+  - It is passed to the outline model's prompt and to the checker as an extra criterion, and it is quoted in the report.
+  - If the code outline wins the trial, a Try-again on the same original can only re-cut. In that case the tool says so in the report and suggests "Find another original".
+- **Alternative.** Allow a small, recorded set of per-teacher adjustments, such as crop offset. That would break "one set of settings for every teacher", so it's the owner's call.
+
+### Q-09 · Who defines `requests.json` and `status.json` · now
+- **Background.** Rev1's PORT-060/061 may already define them.
+- **Proposal.** If they do, copy the definitions here unchanged. If not, this repo's draft ([contracts/requests-and-status.md](contracts/requests-and-status.md)) is offered to Rev1. Resolved when O-1 arrives.
+
+### Q-10 · The owner's three originals · now
+- **Questions:**
+  - Are the originals in Rev1's `design/portraits/` beside the hand-made portraits?
+  - Where did they come from (Commons, LoC, elsewhere)?
+  - Should the tool deliver portraits for those three teachers too?
+- **Proposal.** Copy the targets and originals into this repo's `design/portraits/`, with a `sources.md` naming each original's source and licence.
+  - If an original meets SRC-01..03, its teacher is delivered normally.
+  - If not, it's used only as a style target and the teacher goes through normal sourcing.
+
+### Q-11 · Engravings and drawings · trial
+- **Background.** B2 says "photograph", but the trial set includes an engraving on purpose.
+- **Proposal.** Accept any medium that passes the pre-check, and record the medium. The trial shows whether engravings halftone well. If they don't, a setting turns them off.
+
+### Q-12 · Dates · build
+- **Proposal ([contracts/teachers-csv.md](contracts/teachers-csv.md)).**
+  - Accept `YYYY`, `YYYY-MM` or `YYYY-MM-DD`.
+  - "Impossible" means any of: an invalid calendar date, death before birth, a date in the future, or a lifespan over 120 years.
+  - Reject circa and approximate forms. Leave the field blank and give a Wikidata id instead.
+
+### Q-13 · Duplicate `teacher_id`s · later
+- **Proposal.** Refuse every row that shares the id, and name them all, because the tool can't know which row is meant.
+
+### Q-14 · Where `teachers.csv` lives · later
+- **Proposal.** `data/teachers.csv` in this repo, so it is versioned and its changes are visible. Alternative: in the Drive folder, beside `requests.json`.
+
+### Q-15 · Stack · build
+- **Proposal.** Python 3.12 with uv, in WSL Ubuntu. Details in [spec/architecture.md](spec/architecture.md).
+
+### Q-16 · The portrait's own licence · now
+- **Background.**
+  - A portrait made from a CC BY-SA original is an adaptation, so it must itself be shared under CC BY-SA, with credit.
+  - CC BY needs credit and a note that changes were made.
+  - Public-domain and CC0 originals need neither.
+- **Proposal (SRC-11).**
+  - The credit line says "adapted from".
+  - The record carries the portrait's licence.
+  - If the Rev1 schema has no field for it, raise it with Rev1 rather than changing the schema here.
+
+### Q-17 · The harness · now
+- **Background.** This project is the harness's first run, but the harness doesn't exist yet, and its input format isn't fixed.
+- **Proposal.**
+  - The harness gets its own repo, because it will be reused for Library-AI and later projects.
+  - This repo supplies feature cards in the fixed field format of [plan/features.md](plan/features.md), and the conductor reads them.
+  - The harness's own plan is made in a separate thread, so it doesn't crowd this one.
+- **Questions:** where the harness is planned, and whether that work has started.
+
+### Q-18 · Cut-out provider · trial
+- **Background.** B2 names Bria RMBG 2.0 through OpenRouter, or fal directly.
+- **Option.** A free local model (for example BiRefNet, MIT licence) could run on the owner's PC with no key and no cost.
+- **Proposal.** Bria through fal is the default, as written. The local model is an optional extra contender in the trial, only if the owner wants it.
+
+### Q-19 · "Close" in the trial's winner rule · trial
+- **Proposal.** A contender is close when its total check score is within 5% of the best. Among close contenders, the cheapest per attempt wins.
+
+### Q-20 · Claude pushing to this repo · now
+- **Background.** On 2026-10-19 the GitHub connection was made, but pushes were refused (403) because the Claude GitHub App isn't installed on this repo.
+- **Fix.** On GitHub, add LibraryAI-Portraits to the Claude app's repository access. Until then, Claude commits locally and the owner pushes, or Claude copies files into the owner's local clone.
