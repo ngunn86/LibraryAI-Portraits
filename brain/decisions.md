@@ -231,3 +231,17 @@ A deploy may be a one-tap step by the owner, announced in the harness digest. De
 
 → T-05, T-08, T-19, IN-06, IN-07
 
+**D-39 · 2026-10-19 · The versions of a portrait, exactly** · owner · *closes T-02*
+Answers to T-02's choices (mock-ups in `prototype/out/versions-board.png`):
+1. **Original:** the file is kept exactly as downloaded. Its viewing copy for the admin page and previews is a **PNG**, not a JPEG: "make it PNG please to preserve transparency."
+2. **White version:** "1000 px large, and 500px small versions."
+3. **Black-and-white version:** **option C, black edge.** The gap and the line are black, so the figure sits on a thin black margin. It is clipped at the line's outer edge, which gives the same footprint as the white version. Same crop as the white version, at 1,000 px and 500 px.
+4. **AI working files:** the AI-enhanced copy and the cut-out mask are kept **and offered to the library** through the API.
+
+Claude's proposals carried with this decision (not objected to; the layout is confirmed at T-06):
+- the version names;
+- the portrait ids `<teacher_id>-<n>`, never reused;
+- the viewing copy at most 1,600 px on the long side, never enlarged.
+
+→ T-02, T-06, T-08, T-13, T-15, STY-08, STY-09, OUT-05, OUT-11
+

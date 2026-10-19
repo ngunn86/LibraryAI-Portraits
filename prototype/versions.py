@@ -1,6 +1,9 @@
-"""T-02 mock-ups: the three versions of a portrait, and the options for the black-and-white one.
+"""T-02: the versions of a portrait (D-39), and the mock-ups of the black-and-white options shown to the owner.
 
-Run: python prototype/versions.py  ->  prototype/out/versions-board.png, versions-zoom.png
+Run: python prototype/versions.py  ->  prototype/out/versions/<teacher>/ (the chosen versions, both sizes),
+     prototype/out/versions-board.png, versions-zoom.png (the options A, B, C on light, dark and coloured pages)
+
+The owner chose option C (D-39); recipe.bw_version makes it. A and B are kept here for the record.
 
 Inside the outline, the black-and-white version has only one possible picture: white where the
 white version has dots, black elsewhere. "White dots on black" and "black dots on white" are the
@@ -13,7 +16,7 @@ import sys, json
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from common import *
-from recipe import make_master, SETTINGS
+from recipe import make_master, bw_version, small, check_master, check_bw, SETTINGS
 from PIL import ImageDraw, ImageFont
 
 OUT = ROOT / "prototype/out"
@@ -63,10 +66,19 @@ def main():
         white, info = make_master(rgb, mask, face, layers=True)
         bw = bw_versions(info["layers"])
         tiles[tid] = {"W": white, **bw}
-        for k, im in [("white", white)] + [(f"bw-{k}", v) for k, v in bw.items()]:
-            p = OUT / f"{tid}.version-{k}.png"
+        # the chosen versions (D-39): white and black-and-white (C), 1,000 px and 500 px
+        bwc = bw_version(info["layers"])
+        assert (bwc == bw["C"]).all()
+        d = OUT / "versions" / tid
+        d.mkdir(parents=True, exist_ok=True)
+        made = {"white-1000": white, "white-500": small(white), "bw-1000": bwc, "bw-500": small(bwc)}
+        problems = check_master(made["white-1000"]) + check_master(made["white-500"], N=500) \
+            + check_bw(made["bw-1000"], made["white-1000"]) + check_bw(made["bw-500"], made["white-500"])
+        assert not problems, (tid, problems)
+        for k, im in made.items():
+            p = d / f"{k}.png"
             Image.fromarray(im, "RGBA").save(p, optimize=True)
-            sizes[f"{tid}.{k}"] = p.stat().st_size
+            sizes[f"{tid}/{k}"] = p.stat().st_size
     # board: one block per page colour; rows = teachers, columns = white version, A, B, C
     cols = [("W", "White version (today)"), ("A", "B&W  A: white line"), ("B", "B&W  B: no line"), ("C", "B&W  C: black edge")]
     T, gap = 300, 10

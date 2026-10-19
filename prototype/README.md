@@ -1,4 +1,4 @@
-# Style prototype (P0-3): results, 2026-10-19 (recipe 0.3.1)
+# Style prototype (P0-3): results, 2026-10-19 (recipe 0.4.0)
 
 This folder answers one question before the harness builds anything: can code reproduce the owner's three hand-made portraits? It holds reference code and reference outputs, **not the product**. The harness builds the real modules (F-12..F-16) from what's learned here.
 
@@ -13,6 +13,20 @@ This folder answers one question before the harness builds anything: can code re
 | Framing | Each original registered onto its target (eye landmarks, refined by image alignment; correlation 0.91–0.99) | Eye-to-mouth distance **0.237 of the side** (0.223–0.246; this measure doesn't change when the head turns). Eye line at **0.443** of the height (0.40–0.51). Face centred (0.46–0.56). Fillmore and Cady are exactly 2× their originals, so their framing mostly came from the originals |
 | Tone | Dot coverage vs. original brightness, over the registered figure | A levels-and-gamma curve. The white point sits at the face's own brightest tones (p98), and shadows drop out to transparent well above black |
 | Line | Coverage profile inward from the figure's edge | About **3 px wide with a ~1 px gap** at 500 px, i.e. **6 px and 2 px** on the 1,000 px master (Fillmore, Holmes). Cady's is thicker (about 4.5 px at 500). The dots are clipped to a smoothed silhouette, and the line follows that same silhouette |
+
+## Changes in 0.4.0 (2026-10-19)
+
+The other versions of a portrait (D-39, tracker T-02). The white master is unchanged.
+
+- `bw_version`: the black-and-white version, option C (`bw_edge = "black"`).
+  - Inside the figure it is white where the master has dots and black elsewhere.
+  - The gap and the line are black.
+  - It is clipped at the line's outer edge, so it has the master's footprint.
+- `small`: the 500 px copies (`small_px`), scaled by area averaging with premultiplied alpha.
+- `check_bw`: every visible pixel is grey, the top corners are transparent, and it is opaque wherever the master shows.
+- `make_master(..., layers=True)` returns the layers the versions are built from.
+
+All checks pass on the three examples, at both sizes. Outputs are in `out/versions/`.
 
 ## Changes in 0.3.1 (2026-10-19)
 
@@ -122,9 +136,9 @@ F-16 also checks that the recipe re-creates `out/*.png` from `fixtures/` within 
 | `out/board.png` | Original · owner's portrait · prototype at the owner's framing · prototype with automatic crop |
 | `out/zoom.png` | Close-ups: owner's (left) vs prototype (right) |
 | `out/descreen-compare.png` | Texture close-ups: owner's · 0.1.0 (no descreen) · 0.2.0 (descreen) |
-| `versions.py` | T-02 mock-ups: the black-and-white version's edge options (A white line, B no line, C black edge), from the recipe's layers |
+| `versions.py` | Makes the chosen versions (D-39) and the T-02 mock-ups of the black-and-white edge options (A white line, B no line, C black edge, the owner's choice) |
+| `out/versions/<teacher>/` | The chosen versions: `white-1000`, `white-500`, `bw-1000`, `bw-500` (reference outputs for F-16) |
 | `out/versions-board.png`, `out/versions-zoom.png` | The white version and options A–C on a light, a dark and a coloured page; the edge enlarged |
-| `out/*.version-*.png` | Each example's white version and options A–C, 1,000 × 1,000 |
 | `out/*.png` | 1,000 × 1,000 masters (reference outputs for F-16) |
 
 ## Re-running

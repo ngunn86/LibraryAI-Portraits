@@ -1,14 +1,14 @@
 {
- "charles-fillmore.white": 156082,
- "charles-fillmore.bw-A": 173861,
- "charles-fillmore.bw-B": 167429,
- "charles-fillmore.bw-C": 170646,
- "emilie-cady.white": 150567,
- "emilie-cady.bw-A": 168372,
- "emilie-cady.bw-B": 161078,
- "emilie-cady.bw-C": 165955,
- "ernest-holmes.white": 143739,
- "ernest-holmes.bw-A": 161601,
- "ernest-holmes.bw-B": 155208,
- "ernest-holmes.bw-C": 158282
+ "charles-fillmore/white-1000": 156082,
+ "charles-fillmore/white-500": 90113,
+ "charles-fillmore/bw-1000": 170646,
+ "charles-fillmore/bw-500": 117533,
+ "emilie-cady/white-1000": 150567,
+ "emilie-cady/white-500": 86951,
+ "emilie-cady/bw-1000": 165955,
+ "emilie-cady/bw-500": 112350,
+ "ernest-holmes/white-1000": 143739,
+ "ernest-holmes/white-500": 87378,
+ "ernest-holmes/bw-1000": 158282,
+ "ernest-holmes/bw-500": 120411
 }

@@ -1,6 +1,15 @@
 # T-02 · The three versions of a portrait, exactly
 
-**Status:** in discussion (2026-10-19). Claude's proposals below wait for the owner.
+**Status: decided (2026-10-19, D-39).** The owner's answers:
+
+| Item | Claude proposed | Owner decided |
+|---|---|---|
+| Black-and-white edge | A, white line | **C, black edge** |
+| Original | exact file + JPEG viewing copy | exact file + **PNG** viewing copy ("to preserve transparency") |
+| Sizes | 1,000 px only | **1,000 px and 500 px** |
+| AI working files | kept, internal | kept **and offered to the library** |
+
+Names and ids stay Claude's proposals, confirmed at T-06. What follows is the discussion as it was put to the owner.
 **Tracker:** [T-02](../tracker.md) · **Decided so far:** D-26 (the three versions)
 **Pictures:** `prototype/out/versions-board.png` (all options on a light, a dark and a coloured page) and `prototype/out/versions-zoom.png` (the edge, enlarged). Made by `prototype/versions.py` from the recipe 0.3.1 outputs.
 
@@ -66,6 +75,12 @@
   - the admin page can show what the AI changed;
   - a re-run with a new recipe needn't pay for the AI call again;
   - the rights record can point to them when it says AI-assisted restoration was used (T-13).
+
+## What was built after the decision
+
+- Recipe 0.4.0 makes the versions: `bw_version` (option C), `small` (500 px), and `check_bw`. The white master is unchanged.
+- The chosen versions for the three examples are in `prototype/out/versions/<teacher>/` (`white-1000`, `white-500`, `bw-1000`, `bw-500`). File sizes: 87–171 KB each.
+- Requirements: STY-08, STY-09 and OUT-11 added; OUT-05 amended.
 
 ## Affects
 

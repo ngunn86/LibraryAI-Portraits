@@ -128,4 +128,5 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 
 - **2026-10-19:** v1 created from tracker T-01 (fully hosted, D-31), D-32 (GitHub token), D-33 (admin page), D-35 (owner can deploy by hand) and the Railway review. Railway is assumed, pending the owner's confirmation in the harness chat.
 - **2026-10-19 (evening):** Host decided: Railway (D-36). The Replit spike is skipped. The test no longer picks a host; it proves the harness on Railway. It follows Rev1's shared hosting review once that's copied here.
+- **2026-10-19 (evening):** D-39 (the versions of a portrait) puts eight files per portrait in the bucket, including byte-for-byte originals that can be large TIFFs. No new requirement: HT-13 already covers storing and serving files. For the real app, about 540 portraits at roughly 15 MB each is about 8 GB, or roughly $0.12 a month on Railway's buckets.
 

@@ -4,10 +4,13 @@ Steps (code only; the cut-out and the face landmarks are inputs):
   descreen (find and remove a printed dot pattern; edge-preserving blur) -> crop -> [blend in the aligned
   AI-enhanced copy at 50%, whose keyed background can also give the cut-out; PIP-13] -> tone (levels from the face) -> halftone (45° round dots, white on
   transparency) -> smoothed figure mask -> code-drawn outline -> composite -> 1000 x 1000 RGBA master.
+The other versions (D-39) come from the master's layers: the black-and-white version (bw_version: the dots on
+black, with a black edge where the white line was, clipped at the line's outer edge; STY-08) and the 500 px
+copies of both (small; STY-09).
 """
 import numpy as np, cv2
 
-RECIPE_VERSION = "0.3.1"
+RECIPE_VERSION = "0.4.0"
 
 SETTINGS = {
     "size_px": 1000,
@@ -47,6 +50,9 @@ SETTINGS = {
     "body_blend_px": 120,         # height over which head smoothing blends into body smoothing
     "outline_gap_px": 2,          # transparent gap between the figure and the line
     "outline_width_px": 6,        # line width
+    # the other versions (D-39, T-02)
+    "bw_edge": "black",           # black-and-white version: gap and line drawn black (option C); clipped at the line's outer edge
+    "small_px": 500,              # side of the small copies of the white and black-and-white versions
 }
 
 
@@ -342,3 +348,53 @@ def check_master(rgba, N=1000):
     if any(rgba[y, x, 3] for y, x in [(0, 0), (0, N - 1)]):
         problems.append("top corners not transparent")
     return problems
+
+
+def bw_version(layers, s=SETTINGS):
+    """STY-08: the black-and-white version (option C, D-39). Inside the outline: white where the master has dots,
+    black elsewhere; the gap and the line are black; transparent outside the line's outer edge. Same size and
+    footprint as the master."""
+    g, w = s["outline_gap_px"], s["outline_width_px"]
+    dots, fig, ring, dist = layers["dots"], layers["figure"], layers["ring"], layers["dist"]
+    outer = np.maximum(np.clip((g + w + 0.5) - dist, 0, 1), fig)        # soft outer edge of the line
+    value = dots * fig + (ring if s["bw_edge"] == "white" else 0)
+    out = np.zeros(dots.shape + (4,), np.uint8)
+    out[..., :3] = np.round(np.clip(value, 0, 1) * 255)[..., None].astype(np.uint8)
+    out[..., 3] = np.round(np.clip(outer, 0, 1) * 255).astype(np.uint8)
+    out[out[..., 3] == 0, :3] = 0
+    return out
+
+
+def small(rgba, s=SETTINGS):
+    """STY-09: the small copy of a version: area-averaged with premultiplied alpha, so edges stay clean."""
+    n = s["small_px"]
+    a = rgba[..., 3:4].astype(np.float32) / 255
+    pm = cv2.resize(np.concatenate([rgba[..., :3].astype(np.float32) * a, a], axis=2), (n, n), interpolation=cv2.INTER_AREA)
+    a2 = pm[..., 3:4]
+    out = np.zeros((n, n, 4), np.uint8)
+    out[..., :3] = np.round(np.clip(pm[..., :3] / np.maximum(a2, 1e-6), 0, 255)).astype(np.uint8)
+    out[..., 3] = np.round(a2[..., 0] * 255).astype(np.uint8)
+    out[out[..., 3] == 0, :3] = 0
+    return out
+
+
+def check_bw(rgba, master=None):
+    """STY-08: square RGBA; every visible pixel grey (R = G = B); top corners transparent; the inside of the
+    figure fully opaque; and, given the master, the same footprint (opaque wherever the master shows)."""
+    problems = []
+    N = rgba.shape[0]
+    if rgba.ndim != 3 or rgba.shape != (N, N, 4):
+        problems.append(f"size {rgba.shape}")
+        return problems
+    vis = rgba[..., 3] > 0
+    c = rgba[..., :3][vis].astype(int)
+    if (c[:, 0] != c[:, 1]).any() or (c[:, 1] != c[:, 2]).any():
+        problems.append("visible pixels that aren't grey")
+    if any(rgba[y, x, 3] for y, x in [(0, 0), (0, N - 1)]):
+        problems.append("top corners not transparent")
+    if master is not None:
+        shows = cv2.erode((master[..., 3] > 0).astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+        if (rgba[..., 3][shows] < 255).mean() > 0.001:
+            problems.append("not opaque everywhere the master shows")
+    return problems
+

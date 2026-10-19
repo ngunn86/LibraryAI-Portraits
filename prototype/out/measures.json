@@ -1,5 +1,5 @@
 {
- "recipe_version": "0.3.1",
+ "recipe_version": "0.4.0",
  "settings": {
   "size_px": 1000,
   "eye_mouth_frac": 0.237,
@@ -31,7 +31,9 @@
   "body_smooth_px": 28,
   "body_blend_px": 120,
   "outline_gap_px": 2,
-  "outline_width_px": 6
+  "outline_width_px": 6,
+  "bw_edge": "black",
+  "small_px": 500
  },
  "examples": {
   "charles-fillmore": {

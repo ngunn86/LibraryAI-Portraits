@@ -16,6 +16,8 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended.
+>
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
 > **Reconciliation pending.** Library-AI---Rev1 holds the original `tool`-tagged requirement lines: PORT-001 to 022, PORT-040, PORT-070 to 081 and PORT-091.
@@ -370,6 +372,25 @@ The owner's three hand-made portraits are the target.
 - The recipe's starting numbers were set by matching them in Phase 0 (D-16). See `prototype/README.md` and `prototype/out/board.png`.
 - The harness builds the real modules to reproduce `prototype/out/` from `prototype/fixtures/` (F-16).
 
+**STY-08 · The black-and-white version** *fixed* · D-26, D-39; exact test *proposed* · C
+Made by code from the same layers as the master (STY-06), with nothing new to tune:
+
+- inside the figure: white where the master has dots, black everywhere else;
+- the master's gap and line are drawn **black** (option C, `bw_edge = "black"`), so the figure sits on an 8 px black margin;
+- transparent outside the line's outer edge, so its footprint is exactly the master's;
+- 1,000 × 1,000 PNG, 8-bit RGBA, the same crop as the master.
+
+*Verify:* `check_bw` (prototype `recipe.py`):
+- every visible pixel is grey (R = G = B), black or white except where edges are smoothed;
+- the top corners are transparent;
+- it is opaque everywhere the master shows.
+
+**STY-09 · Small copies** *fixed* · D-39; method *proposed* · C
+- The master and the black-and-white version each also come at 500 × 500 px (`small_px`).
+- They are scaled down from the 1,000 px files by area averaging with premultiplied alpha, so the edges stay clean.
+
+*Verify:* the master's checker (STY-06) and `check_bw` pass at 500 px.
+
 ---
 
 ## 5. The pipeline, per teacher
@@ -532,9 +553,12 @@ The run's `tool_run` block records the run id, start time, tool version and the 
 
 *Verify:* fixture with a record missing its licence, refused with the field named (AC-02).
 
-**OUT-05 · Originals copy for comparison** *fixed* · B2
-Each delivered original is downsized to at most 1,600 px on the long side. It is for the admin's comparison only.
-*Verify:* unit test.
+**OUT-05 · Originals copy for comparison** *fixed* · B2, amended by D-39
+- The original is kept exactly as downloaded (OUT-11).
+- Its viewing copy is a **PNG**, which keeps any transparency the original has. It is at most 1,600 px on the long side and never enlarged.
+- It is for the admin page and previews.
+
+*Verify:* unit test: a large fixture comes out at 1,600 px and a small one keeps its size; a fixture with transparency keeps it.
 
 **OUT-06 · Run report** *fixed* · B2; contents *proposed* · C
 `report.md` says, in plain words:
@@ -567,6 +591,23 @@ A later run's draft for a teacher replaces the draft that teacher has waiting; t
 - Library-AI's acceptance check of the hand-off is to import this sample unchanged.
 
 *Verify:* the stub accepts it, and the schema validates it.
+
+**OUT-11 · The files of a portrait** *fixed* · D-26, D-39; names *proposed* · C (layout confirmed at T-06)
+Each portrait has an id, `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n` counts up in the order portraits are found and is never reused. The portrait's files are:
+
+| File | What | Offered to the library |
+|---|---|---|
+| `original.<ext>` | The original, byte for byte as downloaded; SHA-256 in the rights log (SRC-12) | yes |
+| `original-view.png` | Viewing copy (OUT-05) | yes |
+| `white-1000.png`, `white-500.png` | The master (STY-06) and its small copy (STY-09) | yes |
+| `bw-1000.png`, `bw-500.png` | The black-and-white version (STY-08) and its small copy | yes |
+| `enhanced.png` | The AI-enhanced copy (PIP-13), as the model returned it, with its alignment and drift scores in the record. Kept even when the safeguards refused it, marked as not used, with the reason | yes (D-39) |
+| `mask.png` | The cut-out mask: 8-bit grey, white is the person, at the original's size and position | yes (D-39) |
+
+- Download names for people: `Charles Fillmore - portrait 1 - white 1000.png`.
+- The licence and credit of each file are T-13; the API paths are T-08.
+
+*Verify:* the fixture run produces all eight files per portrait, and each passes its own check.
 
 ---
 

@@ -23,7 +23,7 @@
 | T | Topic | Stage | Depends on | Status |
 |---|---|---|---|---|
 | T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **decided** (D-31..D-36): fully hosted on **Railway**, two-way API ([notes](topics/T-01-where-it-runs.md)) |
-| T-02 | The three versions of a portrait, exactly | 1 Shape | none | **in discussion** (D-26 sets the three; [notes](topics/T-02-three-versions.md)) |
+| T-02 | The three versions of a portrait, exactly | 1 Shape | none | **decided** (D-39): original + PNG viewing copy; white and black-edge B&W at 1,000 and 500 px; AI files offered ([notes](topics/T-02-three-versions.md)) |
 | T-03 | How many portraits per teacher, and what counts as different | 1 Shape | none | open (D-25 sets up to 3) |
 | T-04 | Categories for each portrait | 1 Shape | T-03 | open |
 | T-05 | Approval: what the library approves, and the main portrait | 1 Shape | T-01, T-03 | **decided** (D-38): in the library's queue, reported back |
@@ -36,7 +36,7 @@
 | T-12 | Match rules: when a picture certainly shows the teacher | 3 Finding | T-10, T-11 | mostly decided |
 | T-13 | Rights, licences and credits | 3 Finding | T-02, T-07, T-11 | mostly decided |
 | T-14 | The white-dot version: processing recipe | 4 Processing | T-02 | mostly decided (recipe 0.3.1) |
-| T-15 | The black-and-white version: style and recipe | 4 Processing | T-02, T-14 | open |
+| T-15 | The black-and-white version: style and recipe | 4 Processing | T-02, T-14 | **mostly decided** (D-39: option C, made from the master's layers) |
 | T-16 | Telling portraits apart (same photo or a different one) | 4 Processing | T-03, T-14 | open |
 | T-17 | Checks and failure rules | 4 Processing | T-02, T-03, T-14, T-15 | open |
 | T-18 | Models and prompts | 4 Processing | T-14 – T-17 | mostly decided (D-19, D-20) |
@@ -83,7 +83,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Decided so far:** the library pulls records from the tool (D-28). All AI goes through OpenRouter with one key (D-19).
 - **Affects:** SCOPE-02, OUT-01..OUT-10, RUN-01, the architecture, and the Drive hand-off of B2.
 
-### T-02 · The three versions of a portrait, exactly · **in discussion**
+### T-02 · The three versions of a portrait, exactly · **decided**
 - **Depends on:** nothing.
 - **To decide:**
   1. **Original:** the file exactly as downloaded, at full size? Or also a smaller copy for viewing?
@@ -92,12 +92,13 @@ Topics within a stage can move in parallel when they don't depend on each other.
   4. File naming and formats for all three.
   5. Whether working files (the AI-enhanced copy, the cut-out mask) are kept. *(Added 2026-10-19.)*
 - **Decided so far:** the three versions (D-26).
-- **Proposed** ([notes](topics/T-02-three-versions.md), mock-ups in `prototype/out/versions-board.png`):
-  - the original kept byte for byte, plus a JPEG viewing copy;
-  - the white version as designed, 1,000 px only;
-  - the black-and-white version as option A (the white version on black, cut at the outline, white line kept), same crop and size;
-  - version names `original.*`, `original-view.jpg`, `white.png`, `bw.png`;
-  - the working files kept, internal.
+- **Decided (D-39)** ([notes](topics/T-02-three-versions.md), mock-ups in `prototype/out/versions-board.png`):
+  - the original is kept byte for byte, plus a **PNG** viewing copy (keeps transparency);
+  - the white version comes at **1,000 px and 500 px**;
+  - the black-and-white version is **option C, black edge**: the gap and line are black, it is clipped at the line's outer edge, and it comes at both sizes;
+  - the AI-enhanced copy and the cut-out mask are kept **and offered to the library**;
+  - names and ids are Claude's proposals, confirmed at T-06.
+- **Written into:** STY-08, STY-09, OUT-05 (amended), OUT-11; recipe 0.4.0 (`bw_version`, `small`, `check_bw`); outputs in `prototype/out/versions/`.
 - **Affects:** STY-01..STY-07, OUT-*, T-06, T-13 (each version's licence), T-15.
 
 ### T-03 · How many portraits per teacher, and what counts as different · open
@@ -147,7 +148,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Depends on:** T-01, T-02, T-03.
 - **To decide:**
   1. Where files live: the Google Drive folder, cloud storage behind the API, or both.
-  2. **The layout by teacher** (D-27), for example `teachers/<teacher_id>/<portrait_id>/original.*, white.png, bw.png, record.json`.
+  2. **The layout by teacher** (D-27). The files of a portrait are set by OUT-11 (D-39): `original.*`, `original-view.png`, `white-1000.png`, `white-500.png`, `bw-1000.png`, `bw-500.png`, `enhanced.png`, `mask.png`, plus the record. Proposed: `portraits/<teacher_id>/<portrait_id>/…`.
   3. What happens to a replaced portrait: kept as history, or removed?
   4. Full-size originals: kept for every candidate, or only for kept portraits? Backups?
   5. **Your view:** an admin page (D-33). What it shows: portraits by teacher, run status, the trial board, approvals?
@@ -169,7 +170,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 ### T-08 · The library API · open
 - **Depends on:** T-01, T-06, T-07.
 - **To decide:**
-  1. **What the library can read:** teachers; portraits by teacher; the versions and their files; credits and rights; what's changed since a date.
+  1. **What the library can read:** teachers; portraits by teacher; the eight files of each portrait (OUT-11, D-39, the AI-enhanced copy and mask included); credits and rights; what's changed since a date.
   2. **What the library can send** (if T-01 allows): approvals, turn-downs, requests, the main-portrait choice.
   3. **Access:** a key per client, and read-only versus read and write.
   4. Versioning of the API, and its documentation (an OpenAPI file).
@@ -230,7 +231,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - Complete credits (D-14).
   - A permanent rights log (SRC-12, proposed).
 - **To decide:**
-  1. The licence of each derived version, especially from CC BY-SA originals (Q-16, SRC-11).
+  1. The licence of each derived version, especially from CC BY-SA originals (Q-16, SRC-11). This now includes the AI-enhanced copy and the mask, which are offered to the library too (D-39).
   2. Whether the original file may be shown by the library, and with what credit.
   3. The credit-line format for each source.
 
@@ -249,12 +250,12 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - the code-drawn outline as the default (Q-05);
   - the cut-out sanity limits.
 
-### T-15 · The black-and-white version · open
+### T-15 · The black-and-white version · **mostly decided**
 - **Depends on:** T-02, T-14.
-- **To decide:**
-  - the style (with T-02);
-  - whether it shares the white version's tones, crop and cut-out (proposed: yes, so the two always match);
-  - prototype it and put it in front of you.
+- **Decided (D-39, at T-02):**
+  - option C, black edge, prototyped and chosen (`recipe.bw_version`, STY-08);
+  - it is made from the master's own layers, so it shares the white version's tones, crop, cut-out and footprint by construction.
+- **Left:** a look at it on real AI-enhanced copies (F-27, F-28), along with T-14's verdict.
 
 ### T-16 · Telling portraits apart · open
 - **Depends on:** T-03, T-14 (it uses the aligned face crop).
@@ -405,4 +406,14 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
   Next: T-02.
 - **2026-10-19 18:40.** T-02 opened. Mock-ups of the black-and-white version (A white line, B no line, C black edge) on light, dark and coloured pages (`prototype/versions.py`). Finding: inside the outline there is only one possible picture, so the choice is the edge. Proposals in `topics/T-02-three-versions.md`. Item 5 (working files) added. Waiting for the owner.
+- **2026-10-19 19:00.** **T-02 decided** (D-39). The owner changed three of Claude's proposals:
+  - black-and-white option C (black edge), not A;
+  - a PNG viewing copy, not a JPEG;
+  - 500 px copies as well as 1,000 px;
+  - AI working files offered to the library, not internal only.
+
+  Recipe 0.4.0 makes the versions; the white master is unchanged. Requirements STY-08, STY-09 and OUT-11 added, OUT-05 amended.
+  - Carried forward: T-06 confirms the names, T-08 serves the eight files, T-13 sets each file's licence and credit (the AI copy included), and T-15 tunes the black-and-white version if needed.
+
+  Next: T-03.
 
