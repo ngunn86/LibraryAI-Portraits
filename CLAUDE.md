@@ -20,13 +20,24 @@ The project serves two purposes:
 
 ## Where things stand
 
-**Phase 0: planning.** There is no code yet. Everything lives in `brain/`. Current state, blockers and next steps are in [brain/status.md](brain/status.md).
+**Phase 0: planning.** There is no code yet. Everything lives in `brain/`. Planning follows [brain/tracker.md](brain/tracker.md) topic by topic; the current state is in [brain/status.md](brain/status.md).
+
+**Owner's requirements of 2026-10-19 (D-24..D-30):**
+
+- up to 3 different portraits per teacher;
+- three versions of each (original, white dots, black-and-white);
+- organised by teacher;
+- an API for the library;
+- no extraction from books.
+
+They are being planned through the tracker. Spec sections they touch are marked as under rework.
 
 ## Repo map
 
 | Path | What it holds |
 |---|---|
 | `brain/README.md` | Index of the notes and their conventions (IDs, status words, how to edit) |
+| `brain/tracker.md` | **The planning tracker**: every topic to decide, in dependency order, with status and an append-only log |
 | `brain/status.md` | Where planning stands, what's blocked, what's next, session log |
 | `brain/brief/` | The owner's briefs, verbatim. v2 (2026-10-19) is current; v1 is superseded and kept for history |
 | `brain/spec/requirements.md` | **The normative requirements**, with stable IDs. This is what gets built and tested |

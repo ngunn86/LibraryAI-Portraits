@@ -1,5 +1,7 @@
 # Feature cards (build order)
 
+> **To be rewritten (tracker topic T-25).** These cards predate the owner's requirements of 2026-10-19 (D-24..D-29): several portraits per teacher, three versions, organised by teacher, and a library API. They stay as a working draft until stages 1–5 of the tracker are decided.
+
 Status: **proposed** (Claude, 2026-10-19). The harness builds these one at a time, in this order, respecting *Depends on*. Every check is a pytest test marked with the feature, so `uv run pytest -m f07` runs F-07's checks (see [build-plan.md §5](build-plan.md)).
 
 ## Card format (fixed, so the conductor can parse it)
@@ -35,10 +37,10 @@ Status: **proposed** (Claude, 2026-10-19). The harness builds these one at a tim
 | F-08 | Wikidata: fetch, sanity check, find ids | 2 | F-06 | none | network | no |
 | F-09 | Commons: P18 file and P180 depicts search | 2 | F-07, F-08 | none | network | no |
 | F-10 | Library of Congress: name and dates match | 2 | F-07 | none | network | yes |
-| F-33 | Internet Archive book plates (R4, SRC-13) | 2 | F-06, F-07, F-32 | none | network | yes |
-| F-34 | Wellcome Collection | 2 | F-06, F-07, F-32, F-33 | none | network | yes |
-| F-35 | Finding missing dates and Wikidata ids (IN-13) | 2 | F-08, F-31, F-33 | none | network | yes |
-| F-11 | Candidates: assemble, order, de-duplicate, download | 2 | F-04, F-08, F-09, F-10*, F-32, F-33*, F-34* | none | network | no |
+| F-33 | ~~Internet Archive book plates~~: withdrawn (D-24) | — | — | — | — | — |
+| F-34 | Wellcome Collection (picture records) | 2 | F-06, F-07, F-32 | none | network | yes |
+| F-35 | Finding missing dates and Wikidata ids (IN-13) | 2 | F-08, F-10, F-31 | none | network | yes |
+| F-11 | Candidates: assemble, order, de-duplicate, download | 2 | F-04, F-08, F-09, F-10*, F-32, F-34* | none | network | no |
 | F-12 | Crop | 3 | F-01 | none | none | no |
 | F-13 | Descreen and edge-preserving blur | 3 | F-01 | none | none | no |
 | F-14 | Halftone | 3 | F-01 | none | none | no |
@@ -59,7 +61,7 @@ Status: **proposed** (Claude, 2026-10-19). The harness builds these one at a tim
 | F-28 | Trial, board and defaults | 6 | F-27 | O-2, O-3, O-4 | paid ≤ $40 | no |
 | F-29 | Examples reproduced | 6 | F-16, F-28 | O-2 | paid ≤ $5 | yes |
 
-\* If F-10, F-33 or F-34 is parked, F-11 is built without that source, and the digest says so.
+\* If F-10 or F-34 is parked, F-11 is built without that source, and the digest says so.
 
 SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-06 is also enforced by F-06's allowlist test.
 
@@ -227,7 +229,7 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
   - Recording the same original twice keeps one row (keyed by source and source id, and SHA-256 once downloaded) and updates its verdict history.
   - A refused original keeps its reason, and later runs don't research it again.
   - The CSV export has every field listed in SRC-12, and the raw source record is stored next to it.
-  - Credit lines are built for each source type (licence, rights advisory, book plate).
+  - Credit lines are built for each source type (licence, rights advisory, rights statement).
 - **Test data:** records from F-07's fixtures.
 - **Live calls:** none
 - **Parkable:** no
@@ -286,35 +288,19 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Parkable:** yes (rules 1 and 2 still work without it)
 - **Size:** M
 
-### F-33 · Internet Archive book plates
-*(Added after numbering; built here, after F-10.)*
-- **Phase:** 2
-- **Goal:** Find portraits printed in teachers' own books (and books about them) published before 1931, and pick the pages that look like photographs, ready for the pre-check to confirm and read their captions (R4).
-- **Covers:** SRC-03 (R4), SRC-13, SRC-02 (publication rule)
-- **Depends on:** F-06, F-07, F-32
-- **Owner input:** none (Q-23 decides adoption; built because it's proposed to adopt now)
-- **Build:** `portraits/sources/internet_archive.py`, `portraits/sources/plates.py`
-- **Checks:**
-  - Author search (name and aliases) over recorded responses returns only books catalogued before 1931. Decade dates are read as the pipeline reads them ("192-" counts as 1929), and borrow-only items are excluded.
-  - On recorded IIIF thumbnails of three books (one with a captioned frontispiece, one uncaptioned, one with none), code picks the plate pages and never a text page.
-  - Each candidate carries the book's record (identifier, title, author, year, publisher) and the page number for the rights log.
-  - Only Archive hosts are contacted (allowlist).
-- **Test data:** recorded search and IIIF responses.
-- **Live calls:** network (free; fixture recording)
-- **Parkable:** yes (the other sources still work)
-- **Size:** M
+### F-33 · Internet Archive book plates · *withdrawn* (D-24)
+Book plates are omitted unless they prove absolutely necessary. The ID is kept so it's never reused.
 
 ### F-34 · Wellcome Collection
 *(Added after numbering; built here, after F-33.)*
 - **Phase:** 2
-- **Goal:** Picture records and book plates from Wellcome Collection with open licences (pdm, CC0, CC BY), matched by R3 or R4.
-- **Covers:** SRC-03 (R3, R4), SRC-02
-- **Depends on:** F-06, F-07, F-32, F-33
+- **Goal:** Picture records from Wellcome Collection with open licences (pdm, CC0, CC BY), matched by R3. Book plates are dropped (D-24).
+- **Covers:** SRC-03 (R3), SRC-02
+- **Depends on:** F-06, F-07, F-32
 - **Owner input:** none (Q-23)
 - **Build:** `portraits/sources/wellcome.py`
 - **Checks:**
   - Over recorded responses, a record with a matching name heading and dates is returned with its licence classified; a closed or restricted item is refused.
-  - Book plates reuse F-33's page picker.
 - **Test data:** recorded responses.
 - **Live calls:** network (free; fixture recording)
 - **Parkable:** yes
@@ -325,25 +311,25 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Phase:** 2
 - **Goal:** Propose life dates and Wikidata ids for teachers without them, and accept them only when two independent sources agree.
 - **Covers:** IN-13, SRC-06
-- **Depends on:** F-08, F-31, F-33
+- **Depends on:** F-08, F-10, F-31
 - **Owner input:** the owner accepts or corrects `data/teachers-proposed.csv` when convenient; nothing waits for it
 - **Build:** in `portraits/teachers_sync.py`; the `teachers enrich` command.
 - **Checks:**
   - These cases are tested with fixtures:
-    - Wikidata and a catalogue author heading agree on the person and both years → accepted into `teachers.csv`.
+    - Wikidata and a name-authority heading (LoC) agree on the person and both years → accepted into `teachers.csv`.
     - They disagree → proposed only, with both pieces of evidence.
     - Only one source has data → proposed only.
   - Accepted values are marked as found by the tool, so the report can list them.
 - **Test data:** recorded Wikidata and catalogue responses.
 - **Live calls:** network (free; fixture recording)
-- **Parkable:** yes (book plates don't need dates)
+- **Parkable:** yes (teachers with Wikidata ids or dates still work)
 - **Size:** S
 
 ### F-11 · Candidates: assemble, order, de-duplicate, download
 - **Phase:** 2
 - **Goal:** For one teacher, gather every allowed candidate from all rules, order them, drop duplicates and set-asides, and download originals with checksums.
 - **Covers:** SRC-04, SRC-07, SRC-08, IN-04, PIP-01, PIP-12
-- **Depends on:** F-04, F-08, F-09, F-10, F-32, F-33, F-34 (F-10, F-33 and F-34 optional)
+- **Depends on:** F-04, F-08, F-09, F-10, F-32, F-34 (F-10 and F-34 optional)
 - **Owner input:** none
 - **Build:** `portraits/sources/candidates.py`
 - **Checks:**
@@ -482,7 +468,6 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Build:** `portraits/models/precheck.py`; `prompts/precheck.md`
 - **Checks:**
   - A stubbed pass and a stubbed fail parse into a verdict with reasons, a face box and the medium.
-  - For a book plate, the caption text and the person it names are parsed. A plate whose caption names someone else, or has no caption, does not pass as an R4 match (Q-24).
   - A face smaller than `min_face_px` is failed by code, even if the model says pass.
   - Malformed model output is retried once. If it's still malformed, the step reports an error: the teacher's job pauses, and the original is not set aside.
   - Results are cached by original SHA-256 and model.
@@ -649,7 +634,7 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Owner input:** none
 - **Build:** `tests/test_f26_end_to_end.py`; refreshes the sample run in `tests/fixtures/sample-run/`.
 - **Checks:**
-  - Run 1, over 7 fixture teachers covering: a pass; a pre-check refusal then a pass; a set-aside then a pass; a book-plate (R4) pass; no candidates; a wrong Wikidata id; a refused row. The receiver stub accepts the folder, and the rights log has a row for every original considered.
+  - Run 1, over 7 fixture teachers covering: a pass; a pre-check refusal then a pass; a set-aside then a pass; no candidates; a wrong Wikidata id; a refused row. The receiver stub accepts the folder, and the rights log has a row for every original considered.
   - Then `requests.json` (one of each kind) and `status.json` (one approved, one turned down) are written with the stub's helpers.
   - Run 2: requests are handled first; the approved teacher is skipped; the turned-down original is set aside and another is tried; the stub accepts run 2.
   - The sample run in the repo is regenerated from run 1 and still validates (OUT-10).

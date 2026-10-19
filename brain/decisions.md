@@ -143,3 +143,43 @@ The owner pointed to `collection/authors.csv` in library-pipeline ("an authors l
 "Still do the edge preserving blurring you already committed on the original image etc to prevent weird artifacts from the halftone filter."
 It is kept on every original, as in D-17. *Proposed* (C): the AI copy gets the same blur before blending. → PIP-05, PIP-13
 
+## The owner's new requirements (2026-10-19, 11:53)
+
+**D-24 · 2026-10-19 · No portraits extracted from books** · owner · *withdraws rule R4 and SRC-13*
+"Omit the Internet archive please. It's too much of a hassle to fetch and extract images from books unless it's absolutely necessary."
+- The Internet Archive and book plates are dropped, and so are plates in LoC or Wellcome digitised books.
+- This can be reopened only if coverage proves it's absolutely necessary.
+
+→ SRC-03, SRC-13, F-33, Q-24
+
+**D-25 · 2026-10-19 · Up to three different portraits per teacher** · owner
+"Find and collect / process / categorize multiple different portraits of each teacher if they are available. For popular teachers like Charles Fillmore, we may have up to 3 different portraits."
+- The tool must check, visually, that the portraits it keeps are actually different.
+- What counts as different, and how it's checked, is tracker topics T-03 and T-16.
+
+→ T-03, T-04, T-16
+
+**D-26 · 2026-10-19 · Three versions of every portrait** · owner
+1. The original file.
+2. The processed version as designed so far: white halftone dots on transparency, with the white outline.
+3. **A black-and-white halftone cropped to the outline:** black and white inside the outline, transparent outside.
+
+The exact definitions are tracker topics T-02 and T-15.
+
+**D-27 · 2026-10-19 · Portraits organised by teacher** · owner
+"The app we are building will need to organize these portraits for us by teacher after processing." → T-06
+
+**D-28 · 2026-10-19 · An API for the library** · owner
+"We will also need to build API integration so the library can integrate with this tool, and pull the records."
+This replaces or extends the file hand-off of B2. Where it runs and what it offers are tracker topics T-01, T-08 and T-09.
+
+**D-29 · 2026-10-19 · Plan the other picture sources, detail them later** · owner · *answers part of Q-23*
+"Build a plan to incorporate the other repositories you suggest for picture sources. For now, track that we need to do it. When we get to a formal planning review we will go over what is required in detail."
+- Sources to plan: Wikidata/Commons, the Library of Congress, Wellcome Collection, Smithsonian Open Access, NYPL Digital Collections and DPLA (leads).
+- The Internet Archive is omitted (D-24).
+- The details are tracker topic T-11.
+
+**D-30 · 2026-10-19 · Plan in dependency order, with a tracker** · owner
+"Build a detailed plan for all the things we need to review and plan to make this app. We should be making those decisions first that later ones may depend on. Create a tracker that logs everything and tracks it as we go."
+`brain/tracker.md` is the planning tracker. Topics are taken in its order.
+

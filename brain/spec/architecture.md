@@ -46,9 +46,8 @@ portraits/
     wikidata.py       entity fetch, the id sanity check, id resolution (SRC-03 rule 1, SRC-06)
     commons.py        file info and metadata; depicts (P180) search (SRC-03 rule 2)
     loc.py            Prints and Photographs search; heading and dates match (SRC-03 rule 3, SRC-05); LoC books for plates
-    internet_archive.py  books by author before 1931; IIIF page images (SRC-03 R4, SRC-13)
-    wellcome.py       images and digitised books with open licences (Q-23)
-    plates.py         find photo-like pages in a book's first pages (SRC-13)
+    wellcome.py       picture records with open licences (D-29)
+    smithsonian.py, nypl.py, dpla.py   planned picture sources (D-29; details at tracker T-11)
     rights_log.py     the permanent rights log and its CSV export (SRC-12)
     candidates.py     assemble, de-duplicate, order, exclude set-asides; download with checksum (SRC-07, SRC-08)
   imaging/
@@ -134,10 +133,7 @@ state_dir = "~/.local/share/nexus-portraits"
 
 [sources]
 contact = "New Thought Nexus portraits tool; <contact address>"   # User-Agent (SRC-09)
-adopted = ["wikidata", "commons", "loc", "internet_archive", "wellcome"]   # Q-23; only these hosts are allowed (SRC-01)
-plate_pages_scanned = 16          # SRC-13
-plate_candidates_per_book = 3
-plate_max_year = 1930             # R4: books published before 1931
+adopted = ["wikidata", "commons", "loc", "wellcome"]   # D-29 (more at tracker T-11); only these hosts are allowed (SRC-01)
 
 [teachers]
 authors_csv = "/mnt/b/Documents/GitHub/library-pipeline/collection/authors.csv"   # read-only (IN-12)

@@ -1,6 +1,6 @@
 # Open questions
 
-Each question waits for the owner and carries Claude's proposal. When one is settled it is marked *resolved → D-nn*, the answer goes into [decisions.md](decisions.md), and the affected requirements are updated.
+Each question waits for the owner and carries Claude's proposal. **The order we take them in is set by the [planning tracker](tracker.md)**: each question belongs to a tracker topic. When one is settled it is marked *resolved → D-nn*, the answer goes into [decisions.md](decisions.md), and the affected requirements are updated.
 
 **Priority:**
 
@@ -37,8 +37,8 @@ Each question waits for the owner and carries Claude's proposal. When one is set
 | Q-20 | Can Claude push to this repo? | — | Install the Claude GitHub App on this repo | resolved 2026-10-19 (app installed; push works) |
 | Q-21 | Adopt the owner's AI-enhanced blend, which changes STY-04's "no image model on the likeness"? | — | Yes, with safeguards | resolved → D-18 |
 | Q-22 | Which AI tools and prompts did the owner use, and are the in-between files still available? | — | Claude proposes them | resolved → D-20 (no files; prompts in `prototype/prompts/`) |
-| Q-23 | Which image sources to adopt? | **now** | Now: Wikidata/Commons, LoC, Internet Archive book plates, Wellcome (all keyless). Later if needed: Smithsonian, NYPL, DPLA leads. Never: HathiTrust, Google Books, IAPSOP, Openverse/Flickr | open |
-| Q-24 | Accept uncaptioned portraits at the front of a teacher's own book? | trial | No: report them as "likely" for the owner to accept by link | open |
+| Q-23 | Which image sources to adopt? | — | — | resolved → D-24 (no Internet Archive) and D-29 (plan the others; details at the formal review, tracker T-11) |
+| Q-24 | Accept uncaptioned portraits at the front of a teacher's own book? | — | — | withdrawn (D-24: no book plates) |
 | Q-25 | Free data keys (Smithsonian, NYPL, DPLA) later, if coverage is low? | later | Yes, only after the first run shows the gap; they're not AI keys | open |
 | Q-26 | Which authors become teachers: `active` only, or `proposed` too? | build | `active` only, as the pipeline does | open |
 
@@ -192,7 +192,7 @@ The owner installed the Claude GitHub App on this repo, and Claude's push works.
   - Are the enhanced copies and cut-outs for Fillmore, Cady and Holmes still available?
 - **Proposal.** Put them in `design/portraits/enhanced/<teacher_id>.*` and `design/portraits/cutouts/<teacher_id>.png`. The prototype can then test the blend on real enhanced copies and compare cut-outs. The prompts become the recipe's prompt text.
 
-### Q-23 · Which image sources to adopt · now
+### Q-23 · Which image sources to adopt · resolved → D-24, D-29 (details: tracker T-11)
 - **Background.** The owner asked for more sources than Commons and LoC (D-21). The full comparison is in [spec/sources.md](spec/sources.md).
 - **Proposal: adopt now** these four, all keyless, which fits the one-key wish (D-19):
   - Wikidata with Commons;
@@ -206,7 +206,7 @@ The owner installed the Claude GitHub App on this repo, and Claude's push works.
   - IAPSOP, whose scans are NC-licensed;
   - Openverse and Flickr, where licence claims are unreliable.
 
-### Q-24 · Uncaptioned author frontispieces · trial
+### Q-24 · Uncaptioned author frontispieces · withdrawn (D-24)
 - **Background.** A portrait at the front of a teacher's own book is very likely the teacher. Without a caption or signature, though, it could be a founder, a spouse or a patron.
 - **Proposal.** Don't use them automatically. List them in the report as "likely" candidates with their links; the owner can accept one with a `try_link` request.
 - **Alternative.** Accept them when the book is by the teacher and was published in their lifetime, marked as a weaker match. The trial would show how often that's wrong.

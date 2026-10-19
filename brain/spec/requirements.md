@@ -9,6 +9,15 @@ This file is normative. "Must" is required; "should" is the default unless a goo
 
 Conventions are in [../README.md](../README.md).
 
+> **Rework pending (2026-10-19).** The owner's new requirements change what the tool produces and how it hands off:
+>
+> - up to 3 different portraits per teacher (D-25);
+> - three versions of each (D-26);
+> - organised by teacher (D-27);
+> - an API for the library (D-28).
+>
+> The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
+
 > **Reconciliation pending.** Library-AI---Rev1 holds the original `tool`-tagged requirement lines: PORT-001 to 022, PORT-040, PORT-070 to 081 and PORT-091.
 >
 > - Every one of those lines must map to at least one requirement here, and any difference becomes an open question.
@@ -151,7 +160,7 @@ An invalid setting stops the tool with a message naming the setting. The layout 
   - the author headings in the catalogue records of the teacher's own books (for example `Fillmore, Charles, 1854-1948`).
 - It accepts them automatically only when both agree on the person and both years.
 - Anything else goes to `data/teachers-proposed.csv` with the evidence, for the owner to accept, and is listed in the report.
-- Book plates (R4) don't need dates, so teachers without them can still get portraits.
+- The catalogue headings come from the picture sources' own records and the LoC name authority, not from books (D-24).
 
 *Verify:* fixtures where both sources agree (accepted), disagree (proposed only), or only one has data (proposed only).
 
@@ -166,7 +175,7 @@ An invalid setting stops the tool with a message naming the setting. The layout 
 ## 3. Sources, rights and matching
 
 **SRC-01 · Adopted sources only, enforced in code** *fixed* · B2, widened by D-21; which sources *open (Q-23)*
-- Originals come only from the sources marked adopted in [sources.md](sources.md). Proposed to adopt now: Wikidata with Wikimedia Commons, the Library of Congress, Internet Archive books (plates), and Wellcome Collection. The brief named only Commons and LoC; the owner asked for more on 2026-10-19 (D-21).
+- Originals come only from the sources marked adopted in [sources.md](sources.md). Planned (D-29): Wikidata with Wikimedia Commons, the Library of Congress, Wellcome Collection, Smithsonian Open Access, NYPL Digital Collections and DPLA (leads). The Internet Archive is omitted (D-24). The brief named only Commons and LoC; the owner asked for more (D-21). The per-source details are tracker topic T-11.
 - The tool's source client may contact only the hosts of the adopted sources (listed in settings).
 - The model client may contact only the configured model API hosts.
 - Any other host is refused. This is also how SRC-10 is enforced.
@@ -197,11 +206,7 @@ A file counts as showing the teacher only by one of these rules, tried in this o
 1. **R1:** the image on the teacher's Wikidata item (property P18).
 2. **R2:** Commons files whose structured data says they depict the teacher's Wikidata item (property P180).
 3. **R3:** picture records (LoC Prints and Photographs, and other adopted picture sources) that name the teacher with matching dates (SRC-05).
-4. **R4 (book plate):** a plate in a book published before 1931, where:
-   - the book is by the teacher (catalogue author, with dates agreeing where both are given), or is about them (catalogue subject);
-   - the plate's printed caption or facsimile signature names the teacher, as read by the pre-check and quoted in the record.
-
-   An uncaptioned plate never counts (Q-24).
+4. ~~**R4 (book plate)**~~: *withdrawn* by D-24. Portraits are not extracted from books unless that proves absolutely necessary.
 
 These never count:
 
@@ -210,7 +215,7 @@ These never count:
 - a name match without dates;
 - any search-result ranking.
 
-*Verify:* recorded-response fixtures for each rule, plus negative fixtures: a category-only file, a name-only LoC record, a record with the wrong dates, a plate whose caption names someone else, an uncaptioned plate, and a plate from a 1935 book.
+*Verify:* recorded-response fixtures for each rule, plus negative fixtures: a category-only file, a name-only LoC record, and a record with the wrong dates.
 
 **SRC-04 · An owner's link is the owner's match** *fixed* · B2; limits *proposed* · C
 - A link pasted in a `try_link` request is accepted as the owner's own match, recorded as `matched_by: owner_link`.
@@ -287,7 +292,7 @@ The tool has no setting, path or code that reads Library-AI's scans or the owner
 
 **SRC-12 · The rights log** *proposed* · C, from D-21 ("pull the metadata and rights etc with these files, and keep track of them")
 - Every original considered, **including the ones refused**, gets one permanent row. The row holds:
-  - source, ids and links (for book plates, also the page and the book);
+  - source, ids and links;
   - the description as given;
   - the rights evidence as given, quoted raw;
   - the rule applied, the verdict and the reason;
@@ -300,7 +305,7 @@ The tool has no setting, path or code that reads Library-AI's scans or the owner
 
 *Verify:* the end-to-end fixture run (F-26) leaves one row per original considered, refusals included, and a second run adds no duplicate rows.
 
-**SRC-13 · Finding plates in books** *proposed* · C (rule R4)
+**SRC-13 · Finding plates in books** *withdrawn* (D-24). Kept below for reference only, in case book plates ever become necessary.
 - For each teacher, search the adopted book sources by author (name and aliases; key works first) for books before 1931.
 - From small page images of the first 16 pages plus any pages listed as plates, code picks the pages that look like photographs. At most 3 per book go to the pre-check, which confirms a single portrait and reads its caption.
 - A confirmed plate is downloaded at full resolution, through IIIF where offered.
@@ -378,7 +383,7 @@ Take the best candidate that hasn't been set aside (SRC-07).
   - the face fully in view;
   - the face large enough: a face-box width of at least `min_face_px` = 90 source pixels. The owner's own originals measure 108–183 px;
   - not badly damaged.
-- It returns a structured verdict: pass or fail, reasons, an approximate face box, whether the original is a photograph or another medium (Q-11), and any caption or facsimile signature as written, with the person it names. The caption is what makes a book plate a match (R4, SRC-03).
+- It returns a structured verdict: pass or fail, reasons, an approximate face box, whether the original is a photograph or another medium (Q-11), and any caption or facsimile signature as written, with the person it names (recorded; a caption naming someone else fails the pre-check).
 - A failing original is set aside with its reason. Nothing else is spent on it.
 
 *Verify:* stubbed model responses drive the pass and fail paths. Live behaviour is judged in the trial.

@@ -4,6 +4,7 @@ These notes hold everything the project knows: what to build, why, what's settle
 
 ## Reading order
 
+1. [tracker.md](tracker.md): every planning topic, in the order we decide them, and where each stands.
 1. [status.md](status.md): where things stand right now.
 2. [brief/brief-v2-2026-10-19.md](brief/brief-v2-2026-10-19.md): the owner's brief (the source of truth for intent).
 3. [spec/requirements.md](spec/requirements.md): the requirements, with IDs.
@@ -50,6 +51,7 @@ These notes hold everything the project knows: what to build, why, what's settle
 | R | Risks | plan/build-plan.md |
 | D | Decisions | decisions.md |
 | Q | Open questions | open-questions.md |
+| T | Planning topics | tracker.md |
 
 ### Editing
 
