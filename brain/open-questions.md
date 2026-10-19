@@ -32,11 +32,11 @@ Each question waits for the owner and carries Claude's proposal. When one is set
 | Q-15 | Which stack? | build | Python 3.12 + uv, in WSL | open |
 | Q-16 | Does the manifest carry the portrait's own licence (CC BY-SA share-alike)? | **now** | Check the schema; if it's missing, raise it with Rev1 | open |
 | Q-17 | Where is the harness planned and built, and what format does it read? | — | Its own repo; this repo supplies feature cards in a fixed format | resolved → D-15 (a separate chat; format provisional) |
-| Q-18 | Which cut-out provider? | trial | Trial contenders: the owner's AI tool (it beat the prototype's stand-in), Bria through fal, and optionally a free local model | open |
+| Q-18 | Which cut-out provider? | — | An OpenRouter image model, with the cut-out from the enhanced copy's keyed background | resolved → D-19 (method proposed in PIP-03) |
 | Q-19 | In the trial, what counts as "close"? | trial | Total score within 5% of the best | open |
 | Q-20 | Can Claude push to this repo? | — | Install the Claude GitHub App on this repo | resolved 2026-10-19 (app installed; push works) |
-| Q-21 | Adopt the owner's AI-enhanced blend, which changes STY-04's "no image model on the likeness"? | **now** | Yes, with safeguards: 50% blend, aligned first, likeness checked against the original, recorded; the trial runs with and without it | open |
-| Q-22 | Which AI tools and prompts did the owner use for the enhancement and the cut-out, and are the in-between files still available? | **now** | Add them to `design/portraits/` (`enhanced/`, `cutouts/`) so the prototype can use them | open |
+| Q-21 | Adopt the owner's AI-enhanced blend, which changes STY-04's "no image model on the likeness"? | — | Yes, with safeguards | resolved → D-18 |
+| Q-22 | Which AI tools and prompts did the owner use, and are the in-between files still available? | — | Claude proposes them | resolved → D-20 (no files; prompts in `prototype/prompts/`) |
 
 ---
 
@@ -156,7 +156,7 @@ Each question waits for the owner and carries Claude's proposal. When one is set
   - The harness's own plan is made in a separate thread, so it doesn't crowd this one.
 - **Questions:** where the harness is planned, and whether that work has started.
 
-### Q-18 · Cut-out provider · trial
+### Q-18 · Cut-out provider · resolved → D-19
 - **Background.** B2 names Bria RMBG 2.0 through OpenRouter, or fal directly.
 - **Update, 2026-10-19.** The owner's own method used an AI tool for the cut-out, and it did better than the prototype's free stand-in.
 - **Option.** A free local model (for example BiRefNet, MIT licence) could run on the owner's PC with no key and no cost.
@@ -168,7 +168,7 @@ Each question waits for the owner and carries Claude's proposal. When one is set
 ### Q-20 · Claude pushing to this repo · resolved 2026-10-19
 The owner installed the Claude GitHub App on this repo, and Claude's push works. Claude pushes planning notes directly to `main` during Phase 0.
 
-### Q-21 · The AI-enhanced blend and STY-04 · now
+### Q-21 · The AI-enhanced blend and STY-04 · resolved → D-18
 - **Background.** The owner's own method: an AI tool made a subtly enhanced copy, which was laid over the original scan at about 50% before the halftone. The brief's STY-04 says the dots come from the photo's tones and no image model ever alters the face. A 50% blend means an image model shapes half of the tones the dots are made from.
 - **Why it matters.** The portraits show real people. An image model can quietly change a face: eye shape, jaw, age. Done at 50% this is subtle, but it is a change to the likeness.
 - **Proposal: adopt it as PIP-13, with safeguards.**
@@ -181,7 +181,7 @@ The owner installed the Claude GitHub App on this repo, and Claude's push works.
   - STY-04 becomes: "the dots are made by code; an image model may contribute at most `enhance_blend` of the tones, through an aligned blend, and never draws the dots."
 - **Alternative.** Keep STY-04 as written and get the same clarity from code: descreen plus sharpening, as in recipe 0.2.0.
 
-### Q-22 · The owner's tools and in-between files · now
+### Q-22 · The owner's tools and in-between files · resolved → D-20
 - **Questions:**
   - Which AI tool, and which prompt, made the enhanced copies?
   - Which tool removed the background?

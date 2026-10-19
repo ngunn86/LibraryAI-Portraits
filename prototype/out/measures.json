@@ -1,5 +1,5 @@
 {
- "recipe_version": "0.2.0",
+ "recipe_version": "0.3.0",
  "settings": {
   "size_px": 1000,
   "eye_mouth_frac": 0.237,
@@ -21,6 +21,8 @@
   "sharpen_radius_cells": 1.0,
   "enhance_blend": 0.5,
   "enhance_min_align": 0.9,
+  "key_lo": 0.15,
+  "key_hi": 0.45,
   "dots_across": 110,
   "grid_angle_deg": 45,
   "supersample": 4,

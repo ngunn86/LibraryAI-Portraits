@@ -131,7 +131,7 @@ An invalid setting stops the tool with a message naming the setting. The layout 
 *Verify:* unit tests.
 
 **IN-11 · Keys live outside the repo** *fixed* · B2
-- The OpenRouter key, the fal key if needed and any Drive credential are read only from environment variables, or from a keys file outside the repo.
+- The OpenRouter key (the tool's only AI key; D-19), and any Drive credential, are read only from environment variables, or from a keys file outside the repo.
 - They are never written to logs, reports, the state store or the delivery folder.
 
 *Verify:* a test scans every file a stubbed run writes and finds no key value.
@@ -282,12 +282,14 @@ The tool has no setting, path or code that reads Library-AI's scans or the owner
 The geometry settings come from the style prototype. *Measured* (recipe 0.1.0): eye-to-mouth distance 0.237 of the side, eye line at 0.443 of the height, face centred.
 *Verify:* on fixtures, the eye line, eye-to-mouth distance and face centre fall inside the setting ranges.
 
-**STY-04 · The likeness is the photo's own** *fixed* · B2; *open (Q-21)*: the owner's own method blends in an AI-enhanced copy (PIP-13)
-- The dots are made by code from the photo's tones.
-- No image model ever produces or alters the dots or the face.
-- An image model, if one is used (PIP-07), draws only the outline line, which code extracts and lays over the dots.
+**STY-04 · The likeness stays the photo's own** *fixed* · B2, amended by D-18
+- The dots are always made by code.
+- They're made from the tones of the original, blended with an aligned, AI-enhanced copy that contributes at most `enhance_blend` (0.5) of the tones (PIP-13). The owner chose this because many originals are poor and the halftone loses more detail; the copy adds detail back while staying close to the original.
+- No image model ever draws the dots. No AI image reaches the portrait except through that aligned, recorded blend.
+- The likeness is always checked against the original (PIP-09).
+- An image model, if used for the outline (PIP-07, trial contenders only), draws only the line, which code extracts.
 
-*Verify:* by construction. The halftone function's only input is the cropped photo, and a test checks that the model output never reaches the dot layer.
+*Verify:* by construction. The halftone function's only input is the cropped (and, if used, blended) tone image. A test checks that no model output reaches the dot layer except through the PIP-13 blend, at the set share.
 
 **STY-05 · One recipe for every teacher** *fixed* · B2
 - One set of settings applies to every teacher.
@@ -328,9 +330,12 @@ Take the best candidate that hasn't been set aside (SRC-07).
 
 *Verify:* stubbed model responses drive the pass and fail paths. Live behaviour is judged in the trial.
 
-**PIP-03 · Cut-out** *fixed* · B2; provider *open (Q-18)*
-- A background-removal model makes the cut-out: Bria RMBG 2.0 or the like, with a direct fal key if OpenRouter has none.
-- The owner's own method used an AI tool to remove the background. It did better than the prototype's free stand-in, which struggled with a dark suit against a dark background (2026-10-19). The owner's tool joins the trial's cut-out contenders (Q-18, Q-22).
+**PIP-03 · Cut-out** *fixed* · B2, D-19 (through OpenRouter, one key); method *proposed* · C
+- OpenRouter has no dedicated background-removal model (checked 2026-10-19), so an image-editing model does it:
+  - **By default, the cut-out comes from the enhanced copy (PIP-13).** That call returns the person on a flat pure-green background, and code reads the mask from the green (`key_mask`). One call gives both the copy and its cut-out, and they line up by construction.
+  - **Fallback:** if that mask fails a simple sanity check (figure share of the frame out of range, or more than one large piece), a separate "background to green, change nothing else" call is made on the same model (`cutout_keyed` prompt).
+  - A free local model (no key, no cost) is an optional trial contender only.
+- The owner's own method used an AI tool for the background, and it did better than the prototype's free stand-in, which struggled with a dark suit against a dark background (2026-10-19).
 - The cut-out is kept in the state store and reused for every later try on the same original.
 
 *Verify:* a stub test proves the second try doesn't call the model again.
@@ -377,7 +382,7 @@ The method is a setting.
 Code lays the line over the dots and writes the master (STY-06).
 
 **PIP-09 · Check the draft** *fixed* · B2; output *proposed* · C
-- A vision model of a different family from the outline model checks the draft. The family rule is checked when settings load; with the code outline, any family may check.
+- A vision model checks the draft. Its family must differ from the image models used on the draft: the enhance model and, for trial contenders, the outline model. The family rule is checked when settings load. A Claude model via OpenRouter satisfies it against Google, OpenAI and other image models.
 - The criteria are:
   - the outline hugs the figure;
   - the cut-out is clean;
@@ -413,17 +418,18 @@ Code lays the line over the dots and writes the master (STY-06).
 
 *Verify:* a two-run fixture.
 
-**PIP-13 · Blend in an AI-enhanced copy** *proposed* · owner's method (2026-10-19); *open (Q-21)* because it changes STY-04
+**PIP-13 · Blend in an AI-enhanced copy** *fixed* · D-18 (the owner's method, with the safeguards below); details *proposed* · C
 The owner's own portraits were made this way: an AI tool made a subtly enhanced copy of the portrait, the copy was laid over the original scan at about 50%, and only then was the halftone made. The proposal:
-- After descreening (PIP-05), an image model makes a subtly enhanced copy of the original. It is asked to clean up and clarify, not to change the face.
+- After descreening (PIP-05), an image model makes a subtly enhanced copy of the original, through OpenRouter (D-19). The prompt is `prototype/prompts/enhance_keyed.md`: clean up and clarify, keep the face and framing exactly, black and white, background flat pure green.
+- Starting model: `google/gemini-3-pro-image` (Nano Banana Pro). Challengers: `google/gemini-3.1-flash-image` (Nano Banana 2, cheaper) and `openai/gpt-image-2`. The trial decides (TRI-04). Model ids were checked on OpenRouter on 2026-10-19 and are confirmed again by `doctor`.
 - Code **aligns** the copy to the original before blending, because image models often shift or rescale what they redraw. Without alignment, the blend shows double edges.
   - If the alignment is poor (below a set correlation), the copy is discarded and the original is used alone. This is recorded.
-- Code blends the aligned copy with the original at `enhance_blend` (0.5). The dots are still made by code from the blended tones.
+- Code blends the aligned copy with the original at `enhance_blend` (0.5), **in the portrait's own frame** (after cropping), so the copy's extra resolution survives. It is usually 2–4× the original's size. The dots are still made by code from the blended tones.
 - The draft check's "face matches the original" criterion (PIP-09) compares against the **original**, not the enhanced copy.
 - The copy is cached per original, and its model, prompt version, blend share and alignment score are recorded with the attempt.
 - Cost: one image-model call per original, not per attempt.
 
-*Verify:* a synthetic copy that is rescaled by 3%, shifted and sharpened is aligned and blended without double edges (prototype: edge agreement 0.99, against 0.58–0.72 unaligned). A copy that can't be aligned is refused. The second try on an original makes no new call.
+*Verify:* synthetic keyed copies (2.8× the size, sharpened, rescaled by 2%, shifted, with a green background) are aligned (correlation ≥ 0.99 in the prototype) and blended without double edges (edge agreement 0.98–1.00). Their keyed cut-out matches the stand-in's (overlap 0.94–0.99). A copy that can't be aligned is refused. The second try on an original makes no new call.
 
 ---
 
@@ -530,7 +536,7 @@ Teachers are processed one at a time.
 *Verify:* kill-and-resume test with stubbed models counts calls.
 
 **RUN-04 · Spend cap and ledger** *fixed* · B2; method *proposed* · C
-- The tool uses its own OpenRouter key, and its own fal key if needed.
+- The tool uses its own OpenRouter key. That is the only AI key (D-19).
 - The cap per run comes from settings: $250 for the first run.
 - Before each paid call, the client checks that the spend so far plus that call's estimated maximum fits under the cap. If it doesn't, the run stops cleanly, delivers what's finished and says so in the report.
 - The actual cost of every call is logged per attempt, from the provider's usage data where given, otherwise from the estimate in settings, and totalled in the report.

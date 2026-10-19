@@ -36,7 +36,7 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 | O-1 | Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py`, plus the Rev1 commit they're from | P0-1 (**now**) | Copied into `brain/reference/rev1/` unchanged. Rev1 stays read-only for Claude |
 | O-2 | The three hand-made portraits and their originals | P0-3 (**now**) | **Done 2026-10-19** (`design/portraits/`); sources unknown, so test use only (D-13) |
 | O-3 | `teachers.csv`: a first partial list (about 25 teachers, Wikidata ids where known), then the full list | P0-4; the full list before R-1 | Format: [../contracts/teachers-csv.md](../contracts/teachers-csv.md) |
-| O-4 | The tool's own OpenRouter key (and a fal key if needed), set as environment variables in WSL. Never in chat or the repo | F-27 | A key separate from other projects, so spend is easy to see |
+| O-4 | The tool's own OpenRouter key, set as an environment variable in WSL. It is the only AI key (D-19). Never in chat or the repo | F-27 | A key separate from other projects, so spend is easy to see |
 | O-5 | The delivery folder: create `portraits/` in Drive and give its path (or its id, if Q-03 goes the API way) | F-27 | |
 | O-6 | The Claude GitHub App installed on this repo (Q-20) | **now** | **Done 2026-10-19** |
 | O-7 | The harness, ready to run | Phase 1 | Designed in a separate chat (D-15) |
@@ -94,7 +94,7 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 | Where | Paid by | Limit |
 |---|---|---|
 | Coding and reviewing during the build | The owner's subscriptions (Claude, ChatGPT/Codex, Gemini), through the harness | Subscription usage limits |
-| F-27 live smoke test (one teacher) | The tool's OpenRouter key (and fal if used) | ≤ $2 |
+| F-27 live smoke test (one teacher) | The tool's OpenRouter key | ≤ $2 |
 | F-28 trial (about 23 originals × 3–4 contenders) | The tool's key | ≤ $40 (trial sub-cap; B2 estimate about $30) |
 | F-29 reproducing the examples (reuses the trial's cache) | The tool's key | ≤ $5 |
 | R-1 first full run, a few hundred teachers | The tool's key | $250 cap (B2 estimate $100–200) |

@@ -55,7 +55,7 @@ portraits/
     outline_extract.py  extract and align a model-drawn line (PIP-07)
     compose.py        composite and master writer; the STY-06 checker
   models/
-    client.py         OpenRouter and fal; spend ledger and cap (RUN-04); stub mode (RUN-06)
+    client.py         OpenRouter only (D-19); spend ledger and cap (RUN-04); stub mode (RUN-06)
     precheck.py       (PIP-02)
     cutout.py         (PIP-03)
     enhance.py        the AI-enhanced copy (PIP-13, proposed)
@@ -83,10 +83,10 @@ teachers.csv row
   → order, de-duplicate, drop set-asides (SRC-07)
   → download original (checksum, record)                    [state: originals]
   → PRE-CHECK  (vision model, paid)                         [cache]
-  → CUT-OUT    (background model, paid)                     [cache]
   → descreen + edge-preserving blur      (code, free)
-  → ENHANCE    (image model, paid, PIP-13) → align → blend 50%   [cache]
-  → crop → halftone                      (code, free)
+  → ENHANCE    (image model, paid, PIP-13): restored copy on flat green   [cache]
+  → align copy to original; key mask = CUT-OUT (PIP-03; fallback: keyed cut-out call)
+  → crop → blend 50% in the frame → halftone   (code, free)
   → OUTLINE    (image model, paid  |  code, free)           [cache]
   → composite → STY-06 check             (code)
   → DRAFT CHECK (vision model, paid)                        [cache]
@@ -137,8 +137,9 @@ precheck_cap_per_teacher = 8       # proposed (PIP-11)
 
 [models]                            # exact model ids confirmed by `doctor` at build time
 precheck      = { id = "…", family = "…", est_cost_usd = 0.0 }
-cutout        = { id = "…", provider = "fal", est_cost_usd = 0.0 }
-enhance       = { id = "…", family = "…", est_cost_usd = 0.0, enabled = true }   # PIP-13 (Q-21)
+enhance       = { id = "google/gemini-3-pro-image", family = "google", est_cost_usd = 0.15, enabled = true }   # PIP-13 (D-18)
+enhance_challengers = [ { id = "google/gemini-3.1-flash-image", family = "google" }, { id = "openai/gpt-image-2", family = "openai" } ]
+cutout        = { source = "enhance", fallback_prompt = "cutout_keyed" }   # PIP-03: keyed background (D-19)
 outline       = { method = "model", id = "…", family = "google", est_cost_usd = 0.0 }   # or method = "code"
 challengers   = [ { id = "…", family = "openai" }, { id = "…", family = "bfl" } ]
 draft_check   = { id = "…", family = "…", est_cost_usd = 0.0 }
@@ -185,14 +186,14 @@ outline_width_px = 6
 The tool reads these environment variables:
 
 - `OPENROUTER_API_KEY`;
-- `FAL_KEY` (only if the cut-out uses fal);
 - a Drive credential path, only if Q-03 goes the API way.
 
 If a variable isn't set, the tool reads `~/.config/nexus-portraits/keys.env`. Keys are never logged, and `doctor` reports only whether each key is present.
 
 ## Things to verify at build time (not assumed here)
 
-- The exact model ids, and that each one is available through OpenRouter. Also whether a background-removal model is offered there, or only on fal.
+- The exact model ids, and that each one is still available through OpenRouter. On 2026-10-19, OpenRouter's image collection listed Nano Banana Pro (`google/gemini-3-pro-image`), Nano Banana 2 (`google/gemini-3.1-flash-image`), GPT Image 2 (`openai/gpt-image-2`) and Seedream 4.5, but no dedicated background-removal model and no FLUX.2 Pro (the brief's third outline contender). If FLUX.2 Pro is still missing at build, replace it with another listed model or drop it.
+- The OpenRouter request shape for image editing: an image in the message, image output requested, and an aspect-ratio option close to the original's.
 - Whether OpenRouter's response includes the actual cost per call. RUN-04 falls back to estimates.
 - The Commons API for depicts search. Expected: the search API with `haswbstatement:P180=<Q-id>` in the file namespace, plus `imageinfo` with `extmetadata` for licence, artist and credit. The Commons query service needs a login, so it's avoided.
 - The fields of the loc.gov JSON API for Prints and Photographs: names, dates, rights advisory and image links.

@@ -1,8 +1,8 @@
-# Style prototype (P0-3): results, 2026-10-19 (recipe 0.2.0)
+# Style prototype (P0-3): results, 2026-10-19 (recipe 0.3.0)
 
 This folder answers one question before the harness builds anything: can code reproduce the owner's three hand-made portraits? It holds reference code and reference outputs, **not the product**. The harness builds the real modules (F-12..F-16) from what's learned here.
 
-**Result:** recipe **0.2.0** reproduces the style closely on all three examples. The halftone, tone, line and crop are done entirely by code. The only model inputs are a cut-out and the face landmarks. See `out/board.png`, which is waiting for the owner's look.
+**Result:** recipe **0.3.0** reproduces the style closely on all three examples. The halftone, tone, line and crop are done entirely by code. The only model inputs are a cut-out and the face landmarks. See `out/board.png`, which is waiting for the owner's look.
 
 ## What was measured on the owner's portraits
 
@@ -14,17 +14,29 @@ This folder answers one question before the harness builds anything: can code re
 | Tone | Dot coverage vs. original brightness, over the registered figure | A levels-and-gamma curve. The white point sits at the face's own brightest tones (p98), and shadows drop out to transparent well above black |
 | Line | Coverage profile inward from the figure's edge | About **3 px wide with a ~1 px gap** at 500 px, i.e. **6 px and 2 px** on the 1,000 px master (Fillmore, Holmes). Cady's is thicker (about 4.5 px at 500). The dots are clipped to a smoothed silhouette, and the line follows that same silhouette |
 
+## Changes in 0.3.0 (owner's decisions D-18 to D-20, 2026-10-19)
+
+- **The AI-enhanced blend is adopted (D-18).**
+  - One image call per original, through OpenRouter (D-19), returns the original subtly restored, in black and white, on a flat pure-green background (`prompts/enhance_keyed.md`).
+  - Code aligns the copy to the original, over the figure only, then blends it 50/50 **in the portrait's frame**. That keeps the copy's extra resolution, which matters for small originals.
+- **The cut-out comes from the same image.** The green background gives the mask (`key_mask`), so the copy and its cut-out always line up. If that mask looks wrong, a fallback "background to green, change nothing else" call is made (`prompts/cutout_keyed.md`). OpenRouter has no dedicated background-removal model.
+- **Mechanics test** (`test_enhance_mechanics.py`, no AI). Synthetic keyed copies were made at 2.8× the size, sharpened, rescaled by 2%, shifted and put on green:
+  - aligned at a correlation of 0.997–0.999;
+  - blended without double edges (edge agreement with the unblended result 0.98–1.00);
+  - keyed cut-out matching the stand-in's (overlap 0.94–0.99).
+
+  Real AI copies are first tried in the live smoke test and the trial.
+- **Proposed prompts for every model step** are in `prompts/` (D-20).
+- With no enhanced copy supplied, 0.3.0 gives the same output as 0.2.0, so `out/` is unchanged.
+
 ## Changes in 0.2.0 (owner's feedback, 2026-10-19)
 
 - **Descreen (D-17).** Fillmore and Cady come from books and already carry a printed dot pattern. That made the new halftone's texture look strange: broken dots and a herringbone pattern around Cady's eyes.
   - Every original now gets an edge-preserving (bilateral) blur, sized in dot cells.
   - When a printed screen is found, its peaks are also notch-filtered and the blur is stronger.
   - Detection finds a screen in Fillmore and Cady but not in Holmes, which matches what the owner said. See `out/descreen-compare.png`.
-- **The AI-enhanced blend (PIP-13, Q-21): the owner's method, built in code but not yet run on real copies.**
-  - `blend_enhanced` aligns an enhanced copy to the original, then blends it at 50%.
-  - Tested on synthetic copies that were rescaled by 3%, shifted and sharpened: alignment correlation 0.99+, and edge agreement with the original 0.99, against 0.58–0.72 if the copy is blended unaligned.
-  - It waits for real enhanced copies (Q-22).
-- **The cut-out.** The owner's AI cut-out did better than the stand-in here, which was expected (see below). It becomes a trial contender (Q-18).
+- **The AI-enhanced blend (PIP-13): the owner's method.** A first version blended an aligned copy at the original's size. Unaligned blends showed double edges: edge agreement 0.58–0.72, against 0.99 aligned. This was superseded in 0.3.0.
+- **The cut-out.** The owner's AI cut-out did better than the stand-in here, which was expected (see below).
 
 ## The recipe (0.2.0)
 
@@ -33,7 +45,8 @@ These are the settings in `recipe.py`. They become the `[recipe]` block of `sett
 ```
 descreen: edge-preserving blur on every original, 0.30 cell (0.6 with a screen) · colour sigma 0.08
           screen = compact spectral peaks ≥ 1.6 log units above surroundings in ≥ 2 directions, notch-filtered
-enhance:  (when a copy is supplied) align by image correlation (≥ 0.90), blend 0.5
+enhance:  (when a copy is supplied) align by image correlation over the figure (≥ 0.90), blend 0.5 in the frame;
+          cut-out from the copy's green background (greenness 0.15–0.45 soft edge)
 size_px 1000 · dots_across 110 (side ÷ cell pitch along the 45° grid) · grid_angle_deg 45 · supersample 4
 crop:    eye_mouth_frac 0.237 · eye_y_frac 0.443 · face_centre_x_frac 0.50 · min_face_px 90
 tone:    white = face p98 + 0.02 · black = face p5 − 0.2 × (p98 − p5) · gamma 1.8
@@ -44,8 +57,10 @@ outline: mask_smooth_px 9 (head) · body_smooth_px 28 below the chin, blended ov
 
 ### The steps
 
-0. **Descreen.** In the original's own pixels: notch-filter any printed screen, then an edge-preserving blur. Then optionally blend in the aligned AI-enhanced copy.
+0. **Descreen.** In the original's own pixels: notch-filter any printed screen, then an edge-preserving blur.
+0b. **Enhanced copy.** Align it to the original. Its green background gives the cut-out.
 1. **Crop.** A similarity transform from the face landmarks: scale from the eye-to-mouth distance, the eye line at a fixed height, and the face box centred horizontally.
+1b. **Blend.** 50% original, 50% aligned enhanced copy, in the frame.
 2. **Tone.** Levels from the face's own tones, plus a gamma and an unsharp mask.
 3. **Halftone.** A round-dot screen at 45°, rendered at 4× and averaged down for smooth dot edges.
 4. **Figure mask.** The cut-out, smoothed: gently for the head (hair keeps its overall shape) and harder below the chin (clean shoulder curves). Holes are filled and only the largest piece is kept.
@@ -89,6 +104,8 @@ F-16 also checks that the recipe re-creates `out/*.png` from `fixtures/` within 
 | `register.py`, `measure_dots.py`, `tune_tone.py` | How the owner's portraits were measured and the tone fitted |
 | `make_fixtures.py` | Saves the model-dependent inputs (cut-outs, landmarks, registrations) to `fixtures/` |
 | `run_examples.py` | Re-runs the recipe from `fixtures/` alone and writes `out/` |
+| `test_enhance_mechanics.py` | Checks alignment, blending and the keyed cut-out with synthetic copies; writes `out/enhance-mechanics.json` |
+| `prompts/` | Proposed prompts for every model step (D-20) |
 | `out/board.png` | Original · owner's portrait · prototype at the owner's framing · prototype with automatic crop |
 | `out/zoom.png` | Close-ups: owner's (left) vs prototype (right) |
 | `out/descreen-compare.png` | Texture close-ups: owner's · 0.1.0 (no descreen) · 0.2.0 (descreen) |

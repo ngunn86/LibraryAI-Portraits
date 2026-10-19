@@ -1,0 +1,20 @@
+{
+ "charles-fillmore": {
+  "align_corr": 0.997,
+  "used": true,
+  "edge_agreement_with_plain": 0.989,
+  "keyed_cutout_iou_vs_standin": 0.986
+ },
+ "emilie-cady": {
+  "align_corr": 0.999,
+  "used": true,
+  "edge_agreement_with_plain": 0.984,
+  "keyed_cutout_iou_vs_standin": 0.957
+ },
+ "ernest-holmes": {
+  "align_corr": 0.998,
+  "used": true,
+  "edge_agreement_with_plain": 0.999,
+  "keyed_cutout_iou_vs_standin": 0.942
+ }
+}

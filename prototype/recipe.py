@@ -1,13 +1,13 @@
 """The portrait recipe, prototype version (P0-3). Reference code for the harness, not the product.
 
 Steps (code only; the cut-out and the face landmarks are inputs):
-  descreen (find and remove a printed dot pattern; edge-preserving blur) -> [optional: blend with an
-  AI-enhanced copy, PIP-13] -> crop -> tone (levels from the face) -> halftone (45° round dots, white on
+  descreen (find and remove a printed dot pattern; edge-preserving blur) -> crop -> [blend in the aligned
+  AI-enhanced copy at 50%, whose keyed background can also give the cut-out; PIP-13] -> tone (levels from the face) -> halftone (45° round dots, white on
   transparency) -> smoothed figure mask -> code-drawn outline -> composite -> 1000 x 1000 RGBA master.
 """
 import numpy as np, cv2
 
-RECIPE_VERSION = "0.2.0"
+RECIPE_VERSION = "0.3.0"
 
 SETTINGS = {
     "size_px": 1000,
@@ -34,6 +34,8 @@ SETTINGS = {
     # AI-enhanced blend (PIP-13, proposed; owner's method): applied only when an enhanced copy is supplied
     "enhance_blend": 0.5,         # share of the aligned enhanced copy in the blend
     "enhance_min_align": 0.90,    # minimum alignment correlation, else the enhanced copy is not used
+    "key_lo": 0.15,               # keyed background: greenness below this is the person...
+    "key_hi": 0.45,               # ...and above this is background (soft edge in between)
     # halftone
     "dots_across": 110,           # side / dot-cell pitch, measured along the 45° grid
     "grid_angle_deg": 45,
@@ -197,27 +199,41 @@ def smooth_mask(mask, s=SETTINGS, chin_y=None):
     return out
 
 
-def blend_enhanced(L, enhanced, s=SETTINGS):
-    """PIP-13 (proposed, owner's method): blend an AI-enhanced copy of the original with it, after aligning.
+def key_mask(rgb, s=SETTINGS):
+    """Cut-out mask from an image whose background was replaced with flat pure green (the enhance prompt asks
+    for this). The portraits are black-and-white, so 'how much greener than grey' separates them cleanly."""
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    greenness = g - np.maximum(r, b)                  # ~0 for grey/sepia, ~1 for pure green
+    lo, hi = s["key_lo"], s["key_hi"]
+    m = 1 - np.clip((greenness - lo) / (hi - lo), 0, 1)
+    return m.astype(np.float32)
 
-    Image models often shift or rescale what they redraw, so the enhanced copy is first aligned to the
-    original (affine, by image correlation). If alignment is poor, the enhanced copy is not used.
+
+def align_enhanced(L, enhanced_rgb, s=SETTINGS):
+    """Find the affine map from the original's pixels to the enhanced copy's pixels (PIP-13).
+
+    Image models re-render at their own size and often shift or rescale slightly, so the copy is first
+    scaled to the original's size, then aligned by image correlation over the figure only (the keyed
+    background is ignored). Returns (3x3 map original->enhanced, correlation, enhanced grey, key mask).
     """
-    E = enhanced @ np.array([0.299, 0.587, 0.114], np.float32) if enhanced.ndim == 3 else enhanced
+    E = enhanced_rgb.astype(np.float32)
+    Eg = E @ np.array([0.299, 0.587, 0.114], np.float32)
+    Em = key_mask(E, s)
     h, w = L.shape
-    E = cv2.resize(E.astype(np.float32), (w, h), interpolation=cv2.INTER_AREA)
-    warp = np.eye(2, 3, dtype=np.float32)
-    crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 200, 1e-6)
+    He, We = Eg.shape
+    D = np.diag([w / We, h / He, 1.0]).astype(np.float64)        # enhanced -> original-sized
+    Er = cv2.resize(Eg, (w, h), interpolation=cv2.INTER_AREA)
+    Emr = (cv2.resize(Em, (w, h), interpolation=cv2.INTER_AREA) > 0.5).astype(np.uint8)
+    Emr = cv2.erode(Emr, np.ones((5, 5), np.uint8))
+    M = np.eye(2, 3, dtype=np.float32)
+    crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 300, 1e-6)
     try:
-        cc, warp = cv2.findTransformECC(cv2.GaussianBlur(L, (0, 0), 2), cv2.GaussianBlur(E, (0, 0), 2), warp,
-                                        cv2.MOTION_AFFINE, crit, None, 1)
+        cc, M = cv2.findTransformECC(cv2.GaussianBlur(L, (0, 0), 1.5), cv2.GaussianBlur(Er, (0, 0), 1.5), M,
+                                     cv2.MOTION_AFFINE, crit, Emr if Emr.any() else None, 1)
     except cv2.error:
-        cc = 0.0
-    if cc < s["enhance_min_align"]:
-        return L, dict(used=False, align_corr=round(float(cc), 3))
-    Ea = cv2.warpAffine(E, warp, (w, h), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP, borderMode=cv2.BORDER_REPLICATE)
-    k = s["enhance_blend"]
-    return (1 - k) * L + k * Ea, dict(used=True, align_corr=round(float(cc), 3), blend=k)
+        return None, 0.0, Eg, Em
+    M3 = np.vstack([M, [0, 0, 1]]).astype(np.float64)            # original -> original-sized enhanced
+    return np.linalg.inv(D) @ M3, float(cc), Eg, Em             # original -> enhanced
 
 
 def make_master(rgb, cutout_mask, face, s=SETTINGS, warp=None, enhanced=None):
@@ -228,12 +244,28 @@ def make_master(rgb, cutout_mask, face, s=SETTINGS, warp=None, enhanced=None):
     pitch = N / s["dots_across"]
     scale = float(np.sqrt(abs(np.linalg.det(W[:, :2]))))
     L, ds = descreen(L.astype(np.float32), pitch / scale, s)
-    if enhanced is not None:
-        L, bl = blend_enhanced(L, enhanced, s)
-    else:
-        bl = None
     Lc = cv2.warpAffine(L.astype(np.float32), W, (N, N), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
-    Mc = cv2.warpAffine(cutout_mask.astype(np.float32), W, (N, N), flags=cv2.INTER_LINEAR, borderValue=0)
+    bl = None
+    if enhanced is not None:
+        # PIP-13: blend in the frame, so the copy's extra resolution survives (it is usually 2-4x the original)
+        A, cc, Eg, Em = align_enhanced(L, enhanced, s)
+        bl = dict(used=False, align_corr=round(cc, 3))
+        if A is not None and cc >= s["enhance_min_align"]:
+            W3 = np.vstack([W, [0, 0, 1]]).astype(np.float64)
+            T = (A @ np.linalg.inv(W3))[:2].astype(np.float32)      # frame -> enhanced (inverse map)
+            Ec = cv2.warpAffine(Eg, T, (N, N), flags=cv2.INTER_CUBIC + cv2.WARP_INVERSE_MAP, borderMode=cv2.BORDER_REPLICATE)
+            k = s["enhance_blend"]
+            Lc = (1 - k) * Lc + k * Ec
+            bl = dict(used=True, align_corr=round(cc, 3), blend=k)
+            if cutout_mask is None:                                  # the keyed background is the cut-out
+                cutout_mask_frame = cv2.warpAffine(Em, T, (N, N), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP, borderValue=0)
+                bl["cutout"] = "from enhanced copy"
+    if cutout_mask is None and not (bl and bl.get("cutout")):
+        raise ValueError("no cut-out: give a cut-out mask, or an enhanced copy with a keyed background")
+    if cutout_mask is not None:
+        Mc = cv2.warpAffine(cutout_mask.astype(np.float32), W, (N, N), flags=cv2.INTER_LINEAR, borderValue=0)
+    else:
+        Mc = cutout_mask_frame
     bx = np.array(face["box"], np.float64).reshape(2, 2)
     bxf = np.hstack([bx, np.ones((2, 1))]) @ W.T
     cov, levels = tone_to_coverage(Lc, Mc, bxf.ravel(), pitch, s)

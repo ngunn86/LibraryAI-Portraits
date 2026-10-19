@@ -28,7 +28,7 @@ The tool's input is the owner's `teachers.csv`. Its output is a shared Drive fol
 
 → STY-01..07
 
-**D-05 · 2026-10-17 · Starting models** · B1, B2
+**D-05 · 2026-10-17 · Starting models** · B1, B2 · *cut-out provider superseded by D-19*
 - The outline starts with Gemini 3 Pro Image, with GPT Image 2 and FLUX.2 Pro as challengers.
 - The draft check uses a vision model from a different family than the outline model.
 - The cut-out uses Bria RMBG 2.0 or the like, with a direct fal key if OpenRouter has none.
@@ -112,4 +112,23 @@ The owner supplied the examples "so you can evaluate the steps you need to proce
 **D-17 · 2026-10-19 · Descreen book prints with an edge-preserving blur** · owner
 "Two of my portraits, Fillmore and Cady, come from books and already have a dot pattern... You need to apply a filter with an edge preserving blur before applying the new halftone texture."
 Every original gets an edge-preserving blur before the halftone, stronger with a notch filter when a printed screen is found. → PIP-05, F-13
+
+**D-18 · 2026-10-19 · Adopt the AI-enhanced blend, with safeguards** · owner · *resolves Q-21; amends STY-04*
+"So many of the ones we have are bad quality, and applying the halftone filter reduces the quality further. Using a 50% blend with the safeguards you suggest adds detail back into the image, while staying close to the original portrait."
+The safeguards are:
+- a light-touch prompt;
+- align before blending, and refuse the copy if it won't align;
+- a 50% blend share, kept as a setting;
+- the likeness checked against the original;
+- everything recorded;
+- the trial compares with and without the blend.
+
+→ PIP-13, STY-04, F-30
+
+**D-19 · 2026-10-19 · All AI through OpenRouter, one key** · owner · *resolves Q-18 (provider)*
+"I want the AI accessible from open router so I only have to enter one key."
+Every model call (pre-check, enhance, cut-out, draft check, outline contenders) goes through OpenRouter, and there is no fal key. OpenRouter has no dedicated background-removal model, so the cut-out comes from an image-editing model's keyed background (PIP-03). → PIP-03, IN-11, RUN-04, architecture
+
+**D-20 · 2026-10-19 · Claude proposes the prompts** · owner · *resolves Q-22*
+The owner's in-between files from months ago no longer exist, and the owner asked Claude to suggest the tools and prompts. The proposals are in `prototype/prompts/` and are tested in the trial. → PIP-02, PIP-03, PIP-09, PIP-13
 

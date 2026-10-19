@@ -13,18 +13,16 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 | Architecture | Proposed (Python 3.12, uv, SQLite, one CLI) |
 | Contracts | Teacher list, requests and status, and the delivery folder are drafted. The manifest schema waits for O-1 |
 | Build plan and features | 29 feature cards across phases 1–6, with checks, dependencies, live/stub, parkable |
-| Decisions | D-01..D-16 |
-| Open questions | Q-01..Q-20. Still open and marked *now*: Q-09, Q-16 (both need O-1). Resolved: Q-04, Q-10, Q-17, Q-20 |
+| Decisions | D-01..D-20 |
+| Open questions | Q-01..Q-22. Still open and marked *now*: Q-09, Q-16 (both need O-1). Resolved: Q-04, Q-10, Q-17, Q-18, Q-20, Q-21, Q-22 |
 | Examples | The three targets and their originals are in `design/portraits/`. Test use only (D-13) |
-| Style prototype | Recipe 0.2.0 (descreen added, D-17) reproduces the three examples (`prototype/README.md`, `prototype/out/board.png`). The owner's enhanced-blend method is built in code (PIP-13) and waits for Q-21 and Q-22 |
+| Style prototype | Recipe 0.3.0: descreen (D-17), AI-enhanced blend with the cut-out from its green background (D-18, D-19), and prompts for every model step (D-20). Real AI copies are first tried in F-27 and F-28 |
 | Reviews | Format ready (`reviews/README.md`). No reviews yet |
 
 ## Waiting on the owner (*now*)
 
 1. **O-1:** copy Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py` into `brain/reference/rev1/`, and note the Rev1 commit.
-2. **Q-21:** adopt the AI-enhanced blend, which changes STY-04?
-3. **Q-22:** which AI tools and prompts were used for the enhancement and the cut-out, and are the in-between files for the three examples still available?
-4. The *build* questions, in one pass: Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
+2. The *build* questions, in one pass: Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
 
 ## Next planning steps, in order
 
@@ -62,3 +60,7 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
   - The owner's own method blended a subtly AI-enhanced copy at about 50% before the halftone.
   - The owner's AI cut-out did better than the stand-in.
   Recipe 0.2.0 adds descreening: a screen is detected in Fillmore and Cady, not in Holmes, and the texture is cleaner. The enhanced blend is added as PIP-13 and F-30 (align, then blend), pending Q-21, since it changes STY-04. The owner's cut-out tool becomes a trial contender (Q-18, Q-22).
+- **2026-10-19 (later):** The owner adopted the AI-enhanced blend with the safeguards (D-18). All AI goes through OpenRouter with one key (D-19). There are no in-between files, so Claude proposes the prompts (D-20).
+  - Recipe 0.3.0: one OpenRouter image call per original gives a restored copy on flat green, which supplies both the 50% blend (aligned, in the frame) and the cut-out.
+  - Proposed models: Nano Banana Pro to start, with Nano Banana 2 and GPT Image 2 as challengers.
+  - Mechanics checked on synthetic copies. Prompts are in `prototype/prompts/`.

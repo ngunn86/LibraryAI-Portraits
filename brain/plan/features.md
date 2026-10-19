@@ -41,8 +41,8 @@ Status: **proposed** (Claude, 2026-10-19). The harness builds these one at a tim
 | F-16 | Recipe regression on the examples | 3 | F-12..F-15 | O-2, P0-3 | none | yes |
 | F-17 | Model client, spend ledger and cap | 4 | F-04, F-06 | none | none | no |
 | F-18 | Pre-check | 4 | F-17 | none | none | no |
-| F-19 | Cut-out | 4 | F-17 | none | none | no |
-| F-30 | AI-enhanced copy: make, align, blend (PIP-13; if Q-21 says yes) | 4 | F-13, F-17 | none | none | yes |
+| F-30 | AI-enhanced copy: make, align, blend (PIP-13, D-18) | 4 | F-13, F-17 | none | none | yes |
+| F-19 | Cut-out (keyed background) | 4 | F-17, F-30 | none | none | no |
 | F-20 | Model-drawn outline: extract and align | 4 | F-15, F-17 | none | none | yes |
 | F-21 | Draft check (and compare-with-target) | 4 | F-17 | none | none | no |
 | F-22 | `doctor` | 5 | F-02, F-17 | none | none | yes |
@@ -362,7 +362,7 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 
 ### F-17 · Model client, spend ledger and cap
 - **Phase:** 4
-- **Goal:** One client for OpenRouter (and fal) that every paid step uses: stub mode, cost logging, and a hard cap checked before every call.
+- **Goal:** One client for OpenRouter (the only AI provider, D-19) that every paid step uses: stub mode, cost logging, and a hard cap checked before every call.
 - **Covers:** RUN-04, RUN-06, IN-11, SRC-01 (model hosts)
 - **Depends on:** F-04, F-06
 - **Owner input:** none
@@ -396,39 +396,40 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Parkable:** no
 - **Size:** S
 
-### F-19 · Cut-out
-- **Phase:** 4
-- **Goal:** Get a clean figure cut-out from the background-removal model and keep it for later tries.
-- **Covers:** PIP-03
-- **Depends on:** F-17
-- **Owner input:** none (Q-18 decides the provider)
-- **Build:** `portraits/models/cutout.py`
-- **Checks:**
-  - A stubbed result is stored as an RGBA image with a mask.
-  - A second request for the same original, model and settings is a cache hit with no call.
-  - An empty or all-opaque mask is reported as a failed cut-out.
-- **Test data:** canned images.
-- **Live calls:** none
-- **Parkable:** no
-- **Size:** S
-
 ### F-30 · AI-enhanced copy: make, align, blend
-*(The ID is out of sequence because it was added after numbering; it is built here, after F-19. It applies only if Q-21 is answered yes.)*
+*(The ID is out of sequence because it was added after numbering; it is built here, before F-19, whose cut-out comes from it. Adopted by D-18.)*
 - **Phase:** 4
 - **Goal:** Have an image model make a subtly enhanced copy of the descreened original, align it to the original, and blend it in at the set share (the owner's method).
 - **Covers:** PIP-13
 - **Depends on:** F-13, F-17
-- **Owner input:** none to build. The prompt text comes from Q-22; until then, a placeholder prompt is used.
-- **Build:** `portraits/models/enhance.py`; `portraits/imaging/blend.py`; `prompts/enhance.md`. Reference code: `prototype/recipe.py`, `blend_enhanced`.
+- **Owner input:** none (D-18, D-20; prompt `prototype/prompts/enhance_keyed.md`)
+- **Build:** `portraits/models/enhance.py`; `portraits/imaging/blend.py`; `prompts/enhance_keyed.md`. Reference code: `prototype/recipe.py`, `align_enhanced` and the blend in `make_master`; mechanics test `prototype/test_enhance_mechanics.py`.
 - **Checks:**
-  - A stubbed copy that is rescaled by 3%, shifted by a few pixels and sharpened is aligned (correlation ≥ 0.90) and blended. Edge agreement with the original is ≥ 0.98 (the prototype gets 0.99).
+  - A stubbed keyed copy (2.8× the original's size, sharpened, rescaled by 2%, shifted, background pure green) is aligned (correlation ≥ 0.90) and blended in the frame. Edge agreement with the unblended result is ≥ 0.97 (the prototype gets 0.98–1.00).
   - A stubbed copy that can't be aligned (a different face, or a big crop change) is refused. The original is used alone, and the refusal is recorded.
   - The second try on the same original is a cache hit, with no call.
   - The blend share, alignment score, model and prompt version are recorded with the attempt.
   - Turning `enhance.enabled` off skips the step entirely.
 - **Test data:** synthetic copies made in tests.
 - **Live calls:** none
-- **Parkable:** yes (the pipeline works without it)
+- **Parkable:** yes (the pipeline then runs without the blend, and F-19 uses its fallback call)
+- **Size:** S
+
+### F-19 · Cut-out
+- **Phase:** 4
+- **Goal:** Get the figure's cut-out mask, by default from the enhanced copy's keyed green background (F-30), with a fallback keyed-cut-out call, and keep it for later tries.
+- **Covers:** PIP-03
+- **Depends on:** F-17, F-30
+- **Owner input:** none (D-19; prompt `prototype/prompts/cutout_keyed.md`; reference code `prototype/recipe.py`, `key_mask`)
+- **Build:** `portraits/models/cutout.py`
+- **Checks:**
+  - A synthetic keyed image (a grey figure on pure green, with soft hair edges) gives a mask matching the true figure (overlap ≥ 0.97).
+  - A mask whose figure share of the frame is out of range, or which has more than one large piece, triggers the fallback call (stubbed); the fallback's result is used and recorded.
+  - A second request for the same original, model and settings is a cache hit with no call.
+  - An empty or all-opaque mask is reported as a failed cut-out.
+- **Test data:** synthetic keyed images; canned responses.
+- **Live calls:** none
+- **Parkable:** no
 - **Size:** S
 
 ### F-20 · Model-drawn outline: extract and align
@@ -589,8 +590,8 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Build:** `portraits/trial.py`; the `trial` command; board output (PDF and HTML).
 - **Checks:**
   - Every trial item is processed by every contender. The same cut-out and code are used for every contender (shown by cache keys).
-  - If PIP-13 is adopted (Q-21), every item is also made with and without the enhanced blend, and the board shows both.
-  - The cut-out contenders (Q-18) are compared on the same items.
+  - Every item is also made with and without the enhanced blend (D-18), with each enhance contender (PIP-13), and the board shows them side by side.
+  - The keyed cut-out from each enhance contender is compared on the same items; how often the fallback call was needed is reported.
   - `trial/<run-id>/board.pdf` and `board.html` exist. Each row shows the original, every contender's result with scores and cost, and the examples.
   - The winner follows TRI-04 (the "close" rule from Q-19), and the reasoning is written in the trial report.
   - Items whose outcome differs from the trial set's expected outcome are listed; this is a finding, not a failure.
