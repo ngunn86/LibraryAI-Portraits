@@ -175,6 +175,78 @@ If Replit passes all seven, the decision is Replit. If it fails on 1 or 6, the h
 - logs can be read from a phone;
 - a staging copy can sit beside the live one.
 
+
+## Railway in detail (owner asked to explore it, 2026-10-19)
+
+The owner may move Library-AI to Railway too, and likes the idea of the harness deploying and testing by itself. If Library-AI moves, Railway also gets this build's "rehearsal for Rev1" value (H10).
+
+### How our app would sit on Railway
+
+```
+Railway project "nexus-portraits"   (one GitHub repo)
+  environments:  production · staging · a temporary one per pull request
+  services:
+    web       API + admin pages (Python); /health checked before each deploy goes live
+    worker    runs queued jobs (portraits) from Postgres; always on, or woken on a schedule (T-19)
+    cron      nightly: sync the teacher list from GitHub, queue new teachers; exits when done
+    postgres  Railway Postgres (a service with a volume); backups switched on
+  bucket      "portraits": S3-compatible storage, one per environment (originals, white, black-and-white)
+  variables   OPENROUTER_API_KEY · GITHUB_TOKEN (read-only, library-pipeline) · LIBRARY_API_KEY · admin login
+              (database and bucket credentials are filled in by Railway)
+```
+
+### How it meets the requirements
+
+| # | Requirement | On Railway |
+|---|---|---|
+| H1 | Web app always reachable | A web service. A **healthcheck** (`/health`) must answer before traffic switches to a new deploy, so a broken release never goes live |
+| H2 | Long job and schedule | A worker service, plus a **cron service**. A cron run must finish and exit; a run is *skipped* if the previous one is still going. `railway cron run` starts one by hand. No time limit is documented, so the spike checks a 40-minute run |
+| H3 | Postgres | Railway Postgres is a service with a volume. **Backups** can be scheduled (daily, kept 6 days; weekly, kept a month; monthly, kept 3 months), and **point-in-time recovery** can be switched on. Which plans include these: check in the spike |
+| H4 | Files | **Storage Buckets**: S3-compatible, $0.015 per GB-month, free egress and free operations, private, with presigned links. Each environment gets its own bucket, and any service can use it. This avoids the "one volume per service" limit |
+| H5 | Secrets | Variables per environment. Database and bucket credentials are referenced automatically |
+| H6 | Deploys | **Automatic from GitHub branches.** The CLI also deploys (`railway up`, `railway redeploy`) |
+| H7 | Staging | **Environments** (production, staging), plus a **temporary environment per pull request**, removed when it's merged or closed |
+| H8 | Logs | The CLI (`railway logs`, `railway deployment list`) and the web dashboard. There's also an **MCP server for Claude Code** (`railway mcp`, using the CLI's login). It can list services, redeploy and analyse logs; destructive actions ask for confirmation |
+| H9 | Cost | Hobby **$5/month, including $5 of usage**. After that: RAM $10/GB-month, CPU $20/vCPU-month, volumes $0.15/GB-month, buckets $0.015/GB-month, egress $0.05/GB. Estimate for this app: **about $8–15/month** (a small web service, the database, a worker that mostly idles, a few GB in a bucket). Staging adds a little unless it's put to sleep when idle |
+| Rollback | — | One click in the dashboard to an earlier deploy (it reuses that build, so it takes seconds), within the plan's retention window. The CLI can redeploy or restart |
+
+### What the harness could do by itself on Railway
+
+1. **Open a pull request.** Railway creates a temporary copy with its own database and bucket. The harness runs the smoke tests against that copy's URL.
+2. **Merge.** Staging deploys automatically. The harness runs the smoke tests again and reads the logs (CLI or MCP).
+3. **Promote.** After the owner's veto window in the digest, production deploys, either by merging to the production branch or with a CLI command. The healthcheck blocks a broken release.
+4. **Recover.** If something slips through, the owner rolls back with one click (from a phone), and the harness redeploys the fix.
+
+### Caveats to know about
+
+- **The project-file format is changing.** Railway's older per-service config file (`railway.json` / `railway.toml`) stops being read on **2026-12-01**. Its replacement, "Infrastructure as Code", describes the whole project in one file (`.railway/railway.ts`; Python and Go versions are still in beta) and is applied with `railway config plan` / `apply`, or by a GitHub Action when a pull request merges.
+  - It's new, and some users report gaps.
+  - Plan: use the TypeScript file and keep it small. Anything it can't do is set once in the dashboard and noted in the repo.
+- **Volumes cause a brief pause on redeploy.** Only the database uses a volume. App files live in the bucket, so web and worker deploys stay seamless.
+- **Cron runs must exit,** and overlapping runs are skipped. That suits a "process what's queued, then stop" worker.
+- **The MCP server needs a person's login, not a project token.** Its destructive actions ask for confirmation, so the harness should use the CLI with a token for routine deploys, and the MCP server for reading and diagnosis. To verify in the spike.
+- **For Library-AI** (if it moves): check Postgres extensions such as pgvector, and backups, in that project's own planning.
+
+### The deploy spike on Railway (about an hour)
+
+1. Create the project from the GitHub repo, with production and staging environments and temporary copies for pull requests switched on.
+2. Deploy a "hello" Python web app with `/health`. Check that a push to staging deploys it, and that a pull request gets its own URL.
+3. Add Postgres and a bucket. The app writes to and reads from both, and a presigned link opens a file.
+4. A cron service runs a 40-minute job, and `railway cron run` starts it by hand.
+5. From WSL, `railway logs` and `railway deployment list` work, as does the MCP server in Claude Code.
+6. A broken build is held back by the healthcheck, and a dashboard rollback works.
+7. Note which plan includes Postgres backups, point-in-time recovery, and how long rollback images are kept.
+8. Read the cost view after a day.
+
+### Recommendation
+
+**Railway, on the Hobby plan to start.** Move to Pro ($20/month) only if the spike shows backups or rollback retention need it.
+
+- It fits every requirement.
+- It lets the harness deploy and test by itself.
+- It costs about $8–15/month.
+- If Library-AI moves there too, this build is a direct rehearsal.
+
 ## Sources (checked 2026-10-19)
 
 - Replit deployment pricing: https://docs.replit.com/billing/deployment-pricing.md
@@ -184,4 +256,13 @@ If Replit passes all seven, the decision is Replit. If it fails on 1 or 6, the h
 - Render costs and free-tier limits: https://render.com/articles/how-much-does-cloud-application-hosting-cost-for-small-businesses
 - Railway environments: https://docs.railway.com/reference/environments
 - DigitalOcean pricing summary (third-party): https://kuberns.com/blogs/digitalocean-pricing/
+- Railway cron jobs (CLI): https://docs.railway.com/cli/cron
+- Railway Storage Buckets: https://docs.railway.com/storage-buckets
+- Railway MCP server: https://docs.railway.com/ai/mcp-server
+- Railway volumes: https://docs.railway.com/volumes/reference
+- Railway rollback and healthchecks: https://docs.railway.com/guides/roll-back-bad-deploy
+- Railway Postgres backups: https://docs.railway.com/guides/postgres-backups-restores
+- Railway config as code (deprecated 2026-12-01): https://docs.railway.com/config-as-code/reference
+- Railway Infrastructure as Code: https://docs.railway.com/infrastructure-as-code
+- Community feedback on Railway IaC: https://station.railway.com/feedback/sharing-my-frustration-with-railway-iac-d953c8ba
 

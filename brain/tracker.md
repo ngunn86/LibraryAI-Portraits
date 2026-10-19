@@ -378,4 +378,10 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - the owner can deploy by hand from Replit.
 
   Q-03 superseded, Q-25 resolved. Still open in T-01: which host (options beyond Replit in the notes).
+- **2026-10-19 12:33.** T-01 host: the owner is exploring Railway, may move Library-AI there too, and wants the harness to deploy and test by itself. Claude looked at Railway in detail (notes: "Railway in detail"):
+  - it covers every requirement, via environments, temporary copies per pull request, buckets, cron, Postgres backups, the CLI and an MCP server;
+  - estimate: about $8–15/month on Hobby;
+  - caveat: its config format changes on 2026-12-01.
+
+  Recommendation: Railway (Hobby), after a one-hour spike.
 
