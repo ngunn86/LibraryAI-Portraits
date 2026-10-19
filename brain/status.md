@@ -2,7 +2,7 @@
 
 **Phase 0: planning.** There is no code yet. Last updated 2026-10-19 by Claude.
 
-**Planning now follows [tracker.md](tracker.md)** (D-30): 26 topics in dependency order. **Next: T-01, where the app runs and how the library reaches it.**
+**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **Now: T-01, where the app runs and how the library reaches it** (in discussion; leaning fully hosted, see `topics/T-01-where-it-runs.md`).
 
 ## Where things stand
 
@@ -82,3 +82,4 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
   - an API for the library;
   - plan in dependency order with a tracker.
   Claude created `brain/tracker.md` (T-01..T-26), withdrew R4, SRC-13, F-33 and Q-24, and marked the run-based delivery as under rework. Next: T-01.
+- **2026-10-19 (later):** T-01 discussion. The owner leans towards fully hosted, for the harness test. Claude's feasibility review is in `topics/T-01-where-it-runs.md`: feasible, since the AI runs at OpenRouter and the code steps need a small instance; build in layers; a deploy spike picks the host (Replit first, Railway or Render as the fallback). Tracker T-27 added (the harness's deploy duties).

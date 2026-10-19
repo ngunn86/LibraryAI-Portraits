@@ -38,6 +38,7 @@ They are being planned through the tracker. Spec sections they touch are marked 
 |---|---|
 | `brain/README.md` | Index of the notes and their conventions (IDs, status words, how to edit) |
 | `brain/tracker.md` | **The planning tracker**: every topic to decide, in dependency order, with status and an append-only log |
+| `brain/topics/` | Discussion notes for tracker topics that need more than a few lines (for example T-01) |
 | `brain/status.md` | Where planning stands, what's blocked, what's next, session log |
 | `brain/brief/` | The owner's briefs, verbatim. v2 (2026-10-19) is current; v1 is superseded and kept for history |
 | `brain/spec/requirements.md` | **The normative requirements**, with stable IDs. This is what gets built and tested |

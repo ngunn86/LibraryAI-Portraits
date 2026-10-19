@@ -22,7 +22,7 @@
 
 | T | Topic | Stage | Depends on | Status |
 |---|---|---|---|---|
-| T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **next** |
+| T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **in discussion**: leaning fully hosted ([notes](topics/T-01-where-it-runs.md)) |
 | T-02 | The three versions of a portrait, exactly | 1 Shape | none | open (D-26 sets the three) |
 | T-03 | How many portraits per teacher, and what counts as different | 1 Shape | none | open (D-25 sets up to 3) |
 | T-04 | Categories for each portrait | 1 Shape | T-03 | open |
@@ -48,6 +48,7 @@
 | T-24 | Testing approach | 6 Build | T-23 | mostly decided (D-09) |
 | T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | open |
 | T-26 | Outside reviews and plan freeze | 6 Build | T-25 | open |
+| T-27 | What the harness must do for a hosted app (hand-off to the harness chat) | 6 Build | T-01 | open |
 
 **Why this order:**
 
@@ -62,7 +63,12 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
 ## Stage 1: The shape of the app
 
-### T-01 · Where the app runs and how the library reaches it · **next**
+### T-01 · Where the app runs and how the library reaches it · **in discussion**
+- **Notes:** [topics/T-01-where-it-runs.md](topics/T-01-where-it-runs.md) (feasibility review, hosts, deploy spike, recommendation).
+- **Where it stands (2026-10-19):**
+  - The owner leans towards **fully hosted**, to test everything the harness needs to test.
+  - If hosted, the API both serves records and takes approvals and requests back (owner: "you can build the API as you suggest").
+  - Claude's review: feasible. Build in layers. Choose the host with a deploy spike: Replit first (Rev1's platform), Railway or Render as the fallback.
 - **Depends on:** nothing. It comes first because storage (T-06), the API (T-08), runs (T-19), security (T-21) and the stack (T-23) all follow from it.
 - **To decide:**
   1. Where processing runs: your PC (as planned so far), or a hosted service.
@@ -330,6 +336,19 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - tag `plan-v1`;
   - hand over to the harness.
 
+### T-27 · What the harness must do for a hosted app · open
+- **Depends on:** T-01.
+- **To decide, and pass to the harness chat (D-15):** a hosted build needs the harness to:
+  - deploy a branch to staging without clicking;
+  - run smoke tests against the live URL;
+  - read the host's logs;
+  - run database migrations;
+  - manage secrets in the host (never in the repo);
+  - wait for the owner's veto, then promote staging to production;
+  - roll back a bad deploy;
+  - keep live AI spend under the app's cap.
+- **Output:** a short hand-off note (`brain/handoffs/harness.md`) for the other chat.
+
 ---
 
 ## Log (append-only)
@@ -346,3 +365,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **2026-10-19.** Withdrawn because of D-24: rule R4, SRC-13, F-33 and Q-24. F-34 is narrowed to picture records.
 - **2026-10-19.** The run-based delivery layout (OUT-01..OUT-10) and the Rev1 manifest hand-off are under review (T-06, T-08, T-09).
 - **2026-10-19.** Next: T-01.
+- **2026-10-19 12:08.** T-01 in discussion. The owner leans towards fully hosted, to test the harness on everything an app build needs. If hosted, the API is two-way. Claude's feasibility review is in `topics/T-01-where-it-runs.md`: feasible, build in layers, deploy spike to pick the host (Replit first). New topic T-27 added: what the harness must do for a hosted app.
+
