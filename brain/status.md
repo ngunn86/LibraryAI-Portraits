@@ -2,7 +2,7 @@
 
 **Phase 0: planning.** There is no code yet. Last updated 2026-10-19 by Claude.
 
-**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **Now: T-01**, mostly decided: fully hosted, two-way API, authors list through GitHub, an admin page (D-31..D-35). **Picking the host** (`topics/T-01-where-it-runs.md`). Next: T-02.
+**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **Now: T-01**, mostly decided: fully hosted, two-way API, authors list through GitHub, an admin page (D-31..D-35). **Host: Railway is recommended.** The owner is confirming it in the harness chat (`topics/T-01-where-it-runs.md`). Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated). Next: T-02.
 
 ## Where things stand
 
@@ -91,3 +91,4 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
   - the owner can deploy by hand from Replit (phone).
 
   Host options beyond Replit compared against ten requirements (Railway, Render, DigitalOcean, Cloud Run). Recommendation: Replit (the Rev1 rehearsal), or Railway for automatic deploys and staging.
+- **2026-10-19 (later):** Railway explored in depth (notes in T-01). The owner may move Library-AI there too. Claude wrote `handoffs/harness-throwaway-test.md` (HT-01..HT-29), the throwaway hosted app the harness must build, deploy, test and tear down before feature work, and will keep it updated. The owner is checking Railway in the other chat.

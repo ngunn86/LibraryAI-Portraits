@@ -39,6 +39,7 @@ They are being planned through the tracker. Spec sections they touch are marked 
 | `brain/README.md` | Index of the notes and their conventions (IDs, status words, how to edit) |
 | `brain/tracker.md` | **The planning tracker**: every topic to decide, in dependency order, with status and an append-only log |
 | `brain/topics/` | Discussion notes for tracker topics that need more than a few lines (for example T-01) |
+| `brain/handoffs/` | Documents for the owner's other chats. `harness-throwaway-test.md` is **kept updated** whenever a decision changes what the hosted app needs |
 | `brain/status.md` | Where planning stands, what's blocked, what's next, session log |
 | `brain/brief/` | The owner's briefs, verbatim. v2 (2026-10-19) is current; v1 is superseded and kept for history |
 | `brain/spec/requirements.md` | **The normative requirements**, with stable IDs. This is what gets built and tested |
@@ -72,6 +73,7 @@ They are being planned through the tracker. Spec sections they touch are marked 
 7. **Notes are edited in place.**
    - When the owner settles something, Claude records it in `brain/decisions.md` (dated) and updates the affected requirement's status.
    - `brain/status.md` is updated at the end of each working session.
+   - `brain/handoffs/harness-throwaway-test.md` is updated, with a change-log line, whenever a decision changes the hosting, deploys, jobs, data, secrets or integrations.
 8. **Reviewers write in `brain/reviews/` and don't edit the spec directly.** Claude merges accepted points and records the decisions.
 
 ## During the build (provisional until the harness, designed in a separate chat, settles its format; see D-15)

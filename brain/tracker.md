@@ -48,7 +48,7 @@
 | T-24 | Testing approach | 6 Build | T-23 | mostly decided (D-09) |
 | T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | open |
 | T-26 | Outside reviews and plan freeze | 6 Build | T-25 | open |
-| T-27 | What the harness must do for a hosted app (hand-off to the harness chat) | 6 Build | T-01 | open |
+| T-27 | What the harness must do for a hosted app (hand-off to the harness chat) | 6 Build | T-01 | in discussion: [throwaway test requirements](handoffs/harness-throwaway-test.md) v1 |
 
 **Why this order:**
 
@@ -351,7 +351,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - roll back a bad deploy;
   - keep live AI spend under the app's cap.
 - **Relaxed by D-35:** a deploy may be the owner's one-tap step, announced in the digest. Deploying without clicking is a nice-to-have.
-- **Output:** a short hand-off note (`brain/handoffs/harness.md`) for the other chat.
+- **Output:** [handoffs/harness-throwaway-test.md](handoffs/harness-throwaway-test.md), the throwaway test's requirements (HT-01..HT-29) for the owner's harness planning. **Claude keeps it updated** whenever a decision changes what the hosted app needs, with a change-log line each time.
 
 ---
 
@@ -384,4 +384,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - caveat: its config format changes on 2026-12-01.
 
   Recommendation: Railway (Hobby), after a one-hour spike.
+- **2026-10-19 12:43.** At the owner's request, Claude wrote `handoffs/harness-throwaway-test.md` (HT-01..HT-29): what a throwaway hosted app must prove before feature work. The owner plans the test separately and is checking Railway hosting in the other chat. Claude keeps the file updated. T-01's host stays open until then.
 
