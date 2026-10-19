@@ -24,7 +24,7 @@ Each question waits for the owner and carries Claude's proposal. When one is set
 | Q-07 | Do pre-check rejections count toward the three originals? | build | No, but cap pre-checks at 8 per teacher per run | open |
 | Q-08 | What can a Try-again note change? | build | It guides a fresh attempt and the check; it never changes recipe settings | open |
 | Q-09 | Who defines `requests.json` and `status.json`? | **now** | Rev1 if PORT-060/061 already does; otherwise this repo's draft, offered to Rev1 | open |
-| Q-10 | The owner's three originals: where are they, where did they come from, and are they delivered? | **now** | Copy them into `design/portraits/` with their sources; deliver them only if they meet SRC rules | open |
+| Q-10 | Where did the owner's three originals come from, and are those teachers delivered? | **now** | Deliver them only if the original meets the SRC rules; otherwise use them only as style targets | open (files arrived 2026-10-19; sources still needed) |
 | Q-11 | Are engravings and drawings acceptable originals? | trial | Yes, if they pass the pre-check, with the medium recorded; the trial shows how they look | open |
 | Q-12 | How are dates validated? | build | Year, year-month or full date; reject circa dates, future dates, death before birth and lifespans over 120 years | open |
 | Q-13 | What happens to duplicate `teacher_id`s? | later | Refuse every row that shares the id | open |
@@ -34,7 +34,7 @@ Each question waits for the owner and carries Claude's proposal. When one is set
 | Q-17 | Where is the harness planned and built, and what format does it read? | **now** | Its own repo; this repo supplies feature cards in a fixed format | open |
 | Q-18 | Which cut-out provider? | trial | Bria through fal, as in the brief; a free local model is an optional extra contender | open |
 | Q-19 | In the trial, what counts as "close"? | trial | Total score within 5% of the best | open |
-| Q-20 | Can Claude push to this repo? | **now** | Install the Claude GitHub App on this repo | open |
+| Q-20 | Can Claude push to this repo? | — | Install the Claude GitHub App on this repo | resolved 2026-10-19 (app installed; push works) |
 
 ---
 
@@ -109,13 +109,11 @@ Each question waits for the owner and carries Claude's proposal. When one is set
 - **Proposal.** If they do, copy the definitions here unchanged. If not, this repo's draft ([contracts/requests-and-status.md](contracts/requests-and-status.md)) is offered to Rev1. Resolved when O-1 arrives.
 
 ### Q-10 · The owner's three originals · now
-- **Questions:**
-  - Are the originals in Rev1's `design/portraits/` beside the hand-made portraits?
-  - Where did they come from (Commons, LoC, elsewhere)?
-  - Should the tool deliver portraits for those three teachers too?
-- **Proposal.** Copy the targets and originals into this repo's `design/portraits/`, with a `sources.md` naming each original's source and licence.
+- **Update, 2026-10-19:** the three targets and their originals arrived. They are now in `design/portraits/` (see its README).
+- **Still needed:** where each original came from (the Commons file page or loc.gov item, or elsewhere) and its licence.
+- **Proposal:**
   - If an original meets SRC-01..03, its teacher is delivered normally.
-  - If not, it's used only as a style target and the teacher goes through normal sourcing.
+  - If not, it's used only as a style target, and the teacher goes through normal sourcing.
 
 ### Q-11 · Engravings and drawings · trial
 - **Background.** B2 says "photograph", but the trial set includes an engraving on purpose.
@@ -162,6 +160,5 @@ Each question waits for the owner and carries Claude's proposal. When one is set
 ### Q-19 · "Close" in the trial's winner rule · trial
 - **Proposal.** A contender is close when its total check score is within 5% of the best. Among close contenders, the cheapest per attempt wins.
 
-### Q-20 · Claude pushing to this repo · now
-- **Background.** On 2026-10-19 the GitHub connection was made, but pushes were refused (403) because the Claude GitHub App isn't installed on this repo.
-- **Fix.** On GitHub, add LibraryAI-Portraits to the Claude app's repository access. Until then, Claude commits locally and the owner pushes, or Claude copies files into the owner's local clone.
+### Q-20 · Claude pushing to this repo · resolved 2026-10-19
+The owner installed the Claude GitHub App on this repo, and Claude's push works. Claude pushes planning notes directly to `main` during Phase 0.

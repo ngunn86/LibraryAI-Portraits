@@ -114,8 +114,8 @@ When the file is absent, nothing counts as approved.
 The tool records each request id it has acted on. A request already acted on isn't redone in a later run, even if the library hasn't removed it from `requests.json` yet.
 *Verify:* the second of two runs over the same `requests.json` makes no draft for that request.
 
-**IN-09 · The owner's examples** *fixed* · B2; contents *open (Q-10)*
-`design/portraits/` holds the owner's three hand-made portraits, which are the style target. The trial also uses their three originals (TRI-02); where those originals live, and where they came from, is Q-10.
+**IN-09 · The owner's examples** *fixed* · B2; sources *open (Q-10)*
+`design/portraits/` holds the owner's three hand-made portraits (`targets/`), which are the style target, and their originals (`originals/`). These cover Charles Fillmore, Emilie Cady and Ernest Holmes. The trial also uses the originals (TRI-02). Where the originals came from is still Q-10. Sizes and notes are in `design/portraits/README.md`.
 
 **IN-10 · Settings file** *fixed* · B2; layout *proposed* · C
 One settings file, committed to the repo, holds everything except keys:
@@ -318,7 +318,7 @@ Take the best candidate that hasn't been set aside (SRC-07).
 - A vision model confirms all of these:
   - exactly one person;
   - the face fully in view;
-  - the face large enough (a minimum face width in source pixels, set in settings);
+  - the face large enough (a minimum face width in source pixels, set in settings, low enough to accept the owner's own originals, whose faces are only about 100–150 px across);
   - not badly damaged.
 - It returns a structured verdict: pass or fail, reasons, an approximate face box, and whether the original is a photograph or another medium (Q-11).
 - A failing original is set aside with its reason. Nothing else is spent on it.

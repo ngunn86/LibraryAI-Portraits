@@ -38,7 +38,7 @@ The project serves two purposes:
 | `brain/open-questions.md` | Open questions (Q-numbers), each with a proposal, waiting for the owner |
 | `brain/reviews/` | Feedback from reviewing agents. See its README for the format |
 | `brain/reference/rev1/` | *(to come)* Files copied from Library-AI---Rev1, unchanged, with the commit they came from |
-| `design/portraits/` | *(to come)* The owner's three hand-made portraits (the style target) and their originals |
+| `design/portraits/` | The owner's three hand-made portraits (the style target) and their originals; see its README |
 
 ## Rules for every agent
 

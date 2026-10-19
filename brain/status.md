@@ -14,15 +14,15 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 | Contracts | Teacher list, requests and status, and the delivery folder are drafted. The manifest schema waits for O-1 |
 | Build plan and features | 29 feature cards across phases 1–6, with checks, dependencies, live/stub, parkable |
 | Decisions | D-01..D-12 |
-| Open questions | Q-01..Q-20. The ones marked *now*: Q-04, Q-09, Q-10, Q-16, Q-17, Q-20 |
+| Open questions | Q-01..Q-20. Still open and marked *now*: Q-04, Q-09, Q-10 (sources), Q-16, Q-17. Q-20 is resolved |
+| Examples | The three targets and their originals are in `design/portraits/`. Their sources are unknown (Q-10) |
 | Reviews | Format ready (`reviews/README.md`). No reviews yet |
 
 ## Waiting on the owner (*now*)
 
 1. **O-1:** copy Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py` into `brain/reference/rev1/`, and note the Rev1 commit.
-2. **O-2:** put the three hand-made portraits and their originals in `design/portraits/`, with where each original came from (Q-10).
-3. **O-6:** install the Claude GitHub App on this repo, so Claude can push (Q-20).
-4. Answers to Q-04 (style prototype first?) and Q-17 (where the harness is planned).
+2. **O-2 (the rest):** say where each of the three originals came from, and its licence (Q-10). The files themselves arrived.
+3. Answers to Q-04 (style prototype first?) and Q-17 (where the harness is planned).
 
 ## Next planning steps, in order
 
@@ -41,3 +41,6 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
   - Claude reviewed it: authority match undefined; re-runs could pay twice; deliver through a synced folder.
   - Repo created. The GitHub connection was made, but pushes are refused until the Claude app is installed on the repo.
   - Claude wrote the planning notes: rules, requirements, architecture, contracts, decisions, questions, build plan and feature cards.
+- **2026-10-19 (later):** The owner installed the Claude GitHub App; Claude's push to `main` works.
+  - The owner's sample portraits arrived (in `Sample Portraits/`, committed on the owner's PC only). Claude moved them to `design/portraits/targets/` and `originals/`, under teacher-id names, and noted their sizes.
+  - The targets are 500 px; the originals are small (250–340 px wide).
