@@ -16,14 +16,15 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 | Decisions | D-01..D-16 |
 | Open questions | Q-01..Q-20. Still open and marked *now*: Q-09, Q-16 (both need O-1). Resolved: Q-04, Q-10, Q-17, Q-20 |
 | Examples | The three targets and their originals are in `design/portraits/`. Test use only (D-13) |
-| Style prototype | Recipe 0.1.0 reproduces the three examples (`prototype/README.md`, `prototype/out/board.png`). **Waiting for the owner's look** |
+| Style prototype | Recipe 0.2.0 (descreen added, D-17) reproduces the three examples (`prototype/README.md`, `prototype/out/board.png`). The owner's enhanced-blend method is built in code (PIP-13) and waits for Q-21 and Q-22 |
 | Reviews | Format ready (`reviews/README.md`). No reviews yet |
 
 ## Waiting on the owner (*now*)
 
 1. **O-1:** copy Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py` into `brain/reference/rev1/`, and note the Rev1 commit.
-2. **A look at the style prototype's board** (`prototype/out/board.png`): is it close enough, or what should change?
-3. The *build* questions, in one pass: Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
+2. **Q-21:** adopt the AI-enhanced blend, which changes STY-04?
+3. **Q-22:** which AI tools and prompts were used for the enhancement and the cut-out, and are the in-between files for the three examples still available?
+4. The *build* questions, in one pass: Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
 
 ## Next planning steps, in order
 
@@ -56,3 +57,8 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
   - The code-drawn line matches the owner's, which supports Q-05.
   - Known gap: the stand-in cut-out is weak on a dark suit against a dark background (Holmes).
   - Fixtures and reference outputs saved for F-16.
+- **2026-10-19 (later):** Owner feedback on the board:
+  - Fillmore and Cady are book prints with a dot pattern, so descreen with an edge-preserving blur (D-17).
+  - The owner's own method blended a subtly AI-enhanced copy at about 50% before the halftone.
+  - The owner's AI cut-out did better than the stand-in.
+  Recipe 0.2.0 adds descreening: a screen is detected in Fillmore and Cady, not in Holmes, and the texture is cleaner. The enhanced blend is added as PIP-13 and F-30 (align, then blend), pending Q-21, since it changes STY-04. The owner's cut-out tool becomes a trial contender (Q-18, Q-22).

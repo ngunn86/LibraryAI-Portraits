@@ -49,6 +49,7 @@ portraits/
   imaging/
     crop.py           (PIP-04)
     descreen.py       (PIP-05)
+    blend.py          align and blend the enhanced copy (PIP-13, proposed)
     halftone.py       (PIP-06, STY-01)
     outline_code.py   the code-drawn outline (PIP-07, proposed)
     outline_extract.py  extract and align a model-drawn line (PIP-07)
@@ -57,6 +58,7 @@ portraits/
     client.py         OpenRouter and fal; spend ledger and cap (RUN-04); stub mode (RUN-06)
     precheck.py       (PIP-02)
     cutout.py         (PIP-03)
+    enhance.py        the AI-enhanced copy (PIP-13, proposed)
     outline_model.py  (PIP-07)
     draftcheck.py     (PIP-09), including "compare with target" mode (TRI-08)
     prompts/          prompt text, versioned in the repo
@@ -82,7 +84,9 @@ teachers.csv row
   → download original (checksum, record)                    [state: originals]
   → PRE-CHECK  (vision model, paid)                         [cache]
   → CUT-OUT    (background model, paid)                     [cache]
-  → crop → descreen? → halftone          (code, free)
+  → descreen + edge-preserving blur      (code, free)
+  → ENHANCE    (image model, paid, PIP-13) → align → blend 50%   [cache]
+  → crop → halftone                      (code, free)
   → OUTLINE    (image model, paid  |  code, free)           [cache]
   → composite → STY-06 check             (code)
   → DRAFT CHECK (vision model, paid)                        [cache]
@@ -134,12 +138,24 @@ precheck_cap_per_teacher = 8       # proposed (PIP-11)
 [models]                            # exact model ids confirmed by `doctor` at build time
 precheck      = { id = "…", family = "…", est_cost_usd = 0.0 }
 cutout        = { id = "…", provider = "fal", est_cost_usd = 0.0 }
+enhance       = { id = "…", family = "…", est_cost_usd = 0.0, enabled = true }   # PIP-13 (Q-21)
 outline       = { method = "model", id = "…", family = "google", est_cost_usd = 0.0 }   # or method = "code"
 challengers   = [ { id = "…", family = "openai" }, { id = "…", family = "bfl" } ]
 draft_check   = { id = "…", family = "…", est_cost_usd = 0.0 }
 
-[recipe]                            # recipe 0.1.0 from the style prototype (prototype/README.md)
+[recipe]                            # recipe 0.2.0 from the style prototype (prototype/README.md)
 size_px = 1000
+# descreen (PIP-05, D-17)
+edge_blur_cells = 0.30
+edge_blur_color = 0.08
+screen_peak_log = 1.6
+screen_min_cyc_px = 0.08
+screen_min_peaks = 2
+notch_sigma_bins = 2.0
+descreen_blur_cells = 0.6
+# AI-enhanced blend (PIP-13, Q-21)
+enhance_blend = 0.5
+enhance_min_align = 0.90
 # crop (PIP-04)
 eye_mouth_frac = 0.237
 eye_y_frac = 0.443

@@ -1,16 +1,26 @@
 {
- "recipe_version": "0.1.0",
+ "recipe_version": "0.2.0",
  "settings": {
   "size_px": 1000,
   "eye_mouth_frac": 0.237,
   "eye_y_frac": 0.443,
   "face_centre_x_frac": 0.5,
+  "min_face_px": 90,
+  "edge_blur_cells": 0.3,
+  "edge_blur_color": 0.08,
+  "screen_peak_log": 1.6,
+  "screen_min_cyc_px": 0.08,
+  "screen_min_peaks": 2,
+  "notch_sigma_bins": 2.0,
+  "descreen_blur_cells": 0.6,
   "white_from_face_p98": 0.02,
   "black_k": 0.2,
   "gamma": 1.8,
   "tone_blur_cells": 0.05,
   "sharpen_amount": 0.6,
   "sharpen_radius_cells": 1.0,
+  "enhance_blend": 0.5,
+  "enhance_min_align": 0.9,
   "dots_across": 110,
   "grid_angle_deg": 45,
   "supersample": 4,
@@ -25,45 +35,45 @@
    "figure_iou": 0.97,
    "tone_mae": 0.071,
    "tone_corr": 0.987,
-   "coverage_ours": 0.265,
+   "coverage_ours": 0.263,
    "coverage_target": 0.291,
    "dots_across_ours": 110.5,
    "sty06_problems": [],
    "levels": {
-    "black": 0.3601107567548752,
-    "white": 0.9445400965213776,
-    "face_p5": 0.4541823133826256,
-    "face_p98": 0.9245400965213776
+    "black": 0.3617527158260345,
+    "white": 0.9444036698341369,
+    "face_p5": 0.45552787482738494,
+    "face_p98": 0.9244036698341369
    }
   },
   "emilie-cady": {
-   "figure_iou": 0.884,
+   "figure_iou": 0.897,
    "tone_mae": 0.053,
-   "tone_corr": 0.963,
-   "coverage_ours": 0.283,
+   "tone_corr": 0.967,
+   "coverage_ours": 0.278,
    "coverage_target": 0.279,
    "dots_across_ours": 110.5,
    "sty06_problems": [],
    "levels": {
-    "black": 0.5152651290893554,
-    "white": 0.9793255138397217,
-    "face_p5": 0.5892751932144165,
-    "face_p98": 0.9593255138397216
+    "black": 0.5173433895111084,
+    "white": 0.9788981890678405,
+    "face_p5": 0.5909358561038971,
+    "face_p98": 0.9588981890678405
    }
   },
   "ernest-holmes": {
    "figure_iou": 0.921,
-   "tone_mae": 0.059,
+   "tone_mae": 0.058,
    "tone_corr": 0.979,
-   "coverage_ours": 0.253,
+   "coverage_ours": 0.252,
    "coverage_target": 0.23,
    "dots_across_ours": 110.5,
    "sty06_problems": [],
    "levels": {
-    "black": 0.44068624353408814,
-    "white": 0.9002819561958313,
-    "face_p5": 0.5139521956443787,
-    "face_p98": 0.8802819561958313
+    "black": 0.44106814861297605,
+    "white": 0.9002574872970581,
+    "face_p5": 0.5142663717269897,
+    "face_p98": 0.8802574872970581
    }
   }
  }

@@ -109,3 +109,7 @@ The owner supplied the examples "so you can evaluate the steps you need to proce
 
 → STY-07, F-16
 
+**D-17 · 2026-10-19 · Descreen book prints with an edge-preserving blur** · owner
+"Two of my portraits, Fillmore and Cady, come from books and already have a dot pattern... You need to apply a filter with an edge preserving blur before applying the new halftone texture."
+Every original gets an edge-preserving blur before the halftone, stronger with a notch filter when a printed screen is found. → PIP-05, F-13
+

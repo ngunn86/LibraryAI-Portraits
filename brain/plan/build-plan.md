@@ -124,3 +124,4 @@ Fixture recording uses free public APIs, with a polite client (SRC-09).
 | R-7 | This is the harness's first project, so the harness itself is immature | Small features with offline checks; owner inputs listed up front so the build doesn't stall mid-way; clear parking rules |
 | R-8 | Drive sync order, or WSL mount quirks | Write order plus atomic manifest (OUT-03); the library waits for late files; `doctor` checks the folder is writable |
 | R-9 | Wikimedia or LoC rate limits or blocks | A polite client with caching (SRC-09); tests use recorded fixtures, so the build doesn't hit the APIs repeatedly |
+| R-10 | The AI-enhanced copy (PIP-13) quietly changes a face | A 50% blend; alignment required; likeness checked against the original; the trial compares with and without; the admin's approval is the final gate |

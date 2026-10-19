@@ -282,7 +282,7 @@ The tool has no setting, path or code that reads Library-AI's scans or the owner
 The geometry settings come from the style prototype. *Measured* (recipe 0.1.0): eye-to-mouth distance 0.237 of the side, eye line at 0.443 of the height, face centred.
 *Verify:* on fixtures, the eye line, eye-to-mouth distance and face centre fall inside the setting ranges.
 
-**STY-04 · The likeness is the photo's own** *fixed* · B2
+**STY-04 · The likeness is the photo's own** *fixed* · B2; *open (Q-21)*: the owner's own method blends in an AI-enhanced copy (PIP-13)
 - The dots are made by code from the photo's tones.
 - No image model ever produces or alters the dots or the face.
 - An image model, if one is used (PIP-07), draws only the outline line, which code extracts and lays over the dots.
@@ -330,6 +330,7 @@ Take the best candidate that hasn't been set aside (SRC-07).
 
 **PIP-03 · Cut-out** *fixed* · B2; provider *open (Q-18)*
 - A background-removal model makes the cut-out: Bria RMBG 2.0 or the like, with a direct fal key if OpenRouter has none.
+- The owner's own method used an AI tool to remove the background. It did better than the prototype's free stand-in, which struggled with a dark suit against a dark background (2026-10-19). The owner's tool joins the trial's cut-out contenders (Q-18, Q-22).
 - The cut-out is kept in the state store and reused for every later try on the same original.
 
 *Verify:* a stub test proves the second try doesn't call the model again.
@@ -343,12 +344,14 @@ Code crops to STY-03 with a similarity transform from five face landmarks (eyes,
 
 *Verify:* synthetic and fixture images.
 
-**PIP-05 · Descreen, by code** *fixed* · B2
-- Code detects a printed dot pattern by frequency analysis, notch-filters its peaks, applies an edge-preserving blur and restores contrast.
-- This is skipped when no pattern is found.
-- Whether it was applied is recorded.
+**PIP-05 · Descreen, by code** *fixed* · B2, D-17; method *proposed* (prototype, recipe 0.2.0)
+- It runs on the original, before cropping, because a print screen's spacing is defined in the original's pixels.
+- Code detects a printed dot pattern by frequency analysis and notch-filters its peaks, plus their first harmonics. A screen counts when compact spectral peaks stand well above their surroundings in at least two directions.
+- **Every original gets an edge-preserving blur** (bilateral) before the halftone (D-17). It is stronger when a screen was found. Its size is set in dot cells and converted to original pixels, so it suits any original size.
+- Contrast is restored by the tone step (STY-01), whose levels come from the face's own tones.
+- What was found and what was applied are recorded with the attempt.
 
-*Verify:* a synthetic screened image is detected and cleaned (its peaks are reduced by a set factor). A clean image is left untouched.
+*Verify:* the owner's Fillmore and Cady originals (book prints) are detected as screened and Holmes is not (prototype result). A synthetic screened image has its peaks reduced by a set factor. A clean image gets only the mild blur.
 
 **PIP-06 · Halftone, by code** *fixed* · B2
 The halftone is made straight onto transparency, to STY-01.
@@ -409,6 +412,18 @@ Code lays the line over the dots and writes the master (STY-06).
 - Set-asides are listed in the manifest record's set-aside field, as the schema allows, and in the report.
 
 *Verify:* a two-run fixture.
+
+**PIP-13 · Blend in an AI-enhanced copy** *proposed* · owner's method (2026-10-19); *open (Q-21)* because it changes STY-04
+The owner's own portraits were made this way: an AI tool made a subtly enhanced copy of the portrait, the copy was laid over the original scan at about 50%, and only then was the halftone made. The proposal:
+- After descreening (PIP-05), an image model makes a subtly enhanced copy of the original. It is asked to clean up and clarify, not to change the face.
+- Code **aligns** the copy to the original before blending, because image models often shift or rescale what they redraw. Without alignment, the blend shows double edges.
+  - If the alignment is poor (below a set correlation), the copy is discarded and the original is used alone. This is recorded.
+- Code blends the aligned copy with the original at `enhance_blend` (0.5). The dots are still made by code from the blended tones.
+- The draft check's "face matches the original" criterion (PIP-09) compares against the **original**, not the enhanced copy.
+- The copy is cached per original, and its model, prompt version, blend share and alignment score are recorded with the attempt.
+- Cost: one image-model call per original, not per attempt.
+
+*Verify:* a synthetic copy that is rescaled by 3%, shifted and sharpened is aligned and blended without double edges (prototype: edge agreement 0.99, against 0.58–0.72 unaligned). A copy that can't be aligned is refused. The second try on an original makes no new call.
 
 ---
 

@@ -1,12 +1,13 @@
 """The portrait recipe, prototype version (P0-3). Reference code for the harness, not the product.
 
 Steps (code only; the cut-out and the face landmarks are inputs):
-  crop -> tone (levels from the face) -> halftone (45° round dots, white on transparency)
-  -> smoothed figure mask -> code-drawn outline -> composite -> 1000 x 1000 RGBA master.
+  descreen (find and remove a printed dot pattern; edge-preserving blur) -> [optional: blend with an
+  AI-enhanced copy, PIP-13] -> crop -> tone (levels from the face) -> halftone (45° round dots, white on
+  transparency) -> smoothed figure mask -> code-drawn outline -> composite -> 1000 x 1000 RGBA master.
 """
 import numpy as np, cv2
 
-RECIPE_VERSION = "0.1.0"
+RECIPE_VERSION = "0.2.0"
 
 SETTINGS = {
     "size_px": 1000,
@@ -15,6 +16,14 @@ SETTINGS = {
     "eye_y_frac": 0.443,          # eye midpoint height / side
     "face_centre_x_frac": 0.50,   # face box centre / side
     "min_face_px": 90,            # pre-check: smallest face-box width accepted in the original (the owner's own are 108-183)
+    # descreen (PIP-05): blur sizes are in dot cells, converted to original pixels, so they suit any original size
+    "edge_blur_cells": 0.30,      # edge-preserving (bilateral) blur on every original, spatial sigma
+    "edge_blur_color": 0.08,      # bilateral colour sigma (tones 0..1): edges stronger than this survive
+    "screen_peak_log": 1.6,       # a spectral peak this far (log units) above its surroundings counts
+    "screen_min_cyc_px": 0.08,    # ignore frequencies below this (image content, not a print screen)
+    "screen_min_peaks": 2,        # at least two independent peak directions = a printed dot screen
+    "notch_sigma_bins": 2.0,      # width of each notch in the frequency domain
+    "descreen_blur_cells": 0.6,   # stronger edge-preserving blur when a screen was found
     # tone: levels taken from the face's own tones, then a gamma
     "white_from_face_p98": 0.02,  # white point = face p98 + this
     "black_k": 0.2,               # black point = face p5 - k * (face p98 - face p5)
@@ -22,6 +31,9 @@ SETTINGS = {
     "tone_blur_cells": 0.05,      # blur of the tone map before screening, in dot cells
     "sharpen_amount": 0.6,        # unsharp mask before screening (0 = off)
     "sharpen_radius_cells": 1.0,
+    # AI-enhanced blend (PIP-13, proposed; owner's method): applied only when an enhanced copy is supplied
+    "enhance_blend": 0.5,         # share of the aligned enhanced copy in the blend
+    "enhance_min_align": 0.90,    # minimum alignment correlation, else the enhanced copy is not used
     # halftone
     "dots_across": 110,           # side / dot-cell pitch, measured along the 45° grid
     "grid_angle_deg": 45,
@@ -33,6 +45,65 @@ SETTINGS = {
     "outline_gap_px": 2,          # transparent gap between the figure and the line
     "outline_width_px": 6,        # line width
 }
+
+
+def detect_screen(L, s=SETTINGS):
+    """Find a printed dot screen: compact spectral peaks standing well above their surroundings.
+
+    Returns a list of (fy, fx) peak frequencies in cycles/px (one of each symmetric pair).
+    """
+    from scipy.ndimage import median_filter, maximum_filter
+    h, w = L.shape
+    hp = L - cv2.GaussianBlur(L, (0, 0), 3)
+    win = np.outer(np.hanning(h), np.hanning(w)).astype(np.float32)
+    M = np.log1p(np.abs(np.fft.fftshift(np.fft.fft2(hp * win))))
+    D = M - median_filter(M, size=15)
+    fy = (np.arange(h) - h // 2)[:, None] / h
+    fx = (np.arange(w) - w // 2)[None, :] / w
+    fr = np.hypot(fy, fx)
+    cand = (D > s["screen_peak_log"]) & (fr > s["screen_min_cyc_px"]) & (D == maximum_filter(D, size=5)) & (fy >= 0)
+    ys, xs = np.nonzero(cand)
+    order = np.argsort(-D[ys, xs])
+    peaks = []
+    for i in order[:12]:
+        f = (float(fy[ys[i], 0]), float(fx[0, xs[i]]))
+        if all(np.hypot(f[0] - p[0], f[1] - p[1]) > 0.02 for p in peaks):
+            peaks.append(f)
+    # a screen needs at least two directions (a lattice), not just one line pattern
+    dirs = []
+    for f in peaks:
+        a = np.degrees(np.arctan2(f[0], f[1])) % 180
+        if all(min(abs(a - d), 180 - abs(a - d)) > 20 for d in dirs):
+            dirs.append(a)
+    return peaks if len(dirs) >= s["screen_min_peaks"] else []
+
+
+def descreen(L, cell_px_in_original, s=SETTINGS):
+    """Remove a printed dot pattern (notch filter) and smooth grain with an edge-preserving blur.
+
+    `cell_px_in_original`: the size of one output dot cell, in original pixels.
+    """
+    h, w = L.shape
+    peaks = detect_screen(L, s)
+    out = L.astype(np.float32)
+    if peaks:
+        F = np.fft.fftshift(np.fft.fft2(out))
+        fy = (np.arange(h) - h // 2)[:, None] / h
+        fx = (np.arange(w) - w // 2)[None, :] / w
+        notch = np.ones((h, w), np.float32)
+        sig_y, sig_x = s["notch_sigma_bins"] / h, s["notch_sigma_bins"] / w
+        for py, px in peaks:
+            for k in (1, 2):                       # the peak and its first harmonic
+                for sy, sx in ((py, px), (-py, -px)):
+                    cy, cx = k * sy, k * sx
+                    if abs(cy) < 0.5 and abs(cx) < 0.5:
+                        notch *= 1 - np.exp(-(((fy - cy) / sig_y) ** 2 + ((fx - cx) / sig_x) ** 2) / 2)
+        out = np.real(np.fft.ifft2(np.fft.ifftshift(F * notch))).astype(np.float32)
+    blur_cells = s["descreen_blur_cells"] if peaks else s["edge_blur_cells"]
+    sigma_space = max(blur_cells * cell_px_in_original, 0.5)
+    out = cv2.bilateralFilter(np.clip(out, 0, 1), -1, s["edge_blur_color"], sigma_space)
+    return out, dict(screen_found=bool(peaks), screen_peaks=[[round(a, 4), round(b, 4)] for a, b in peaks],
+                     edge_blur_sigma_px=round(float(sigma_space), 2))
 
 
 def crop_transform(face, s=SETTINGS):
@@ -126,16 +197,45 @@ def smooth_mask(mask, s=SETTINGS, chin_y=None):
     return out
 
 
-def make_master(rgb, cutout_mask, face, s=SETTINGS, warp=None):
+def blend_enhanced(L, enhanced, s=SETTINGS):
+    """PIP-13 (proposed, owner's method): blend an AI-enhanced copy of the original with it, after aligning.
+
+    Image models often shift or rescale what they redraw, so the enhanced copy is first aligned to the
+    original (affine, by image correlation). If alignment is poor, the enhanced copy is not used.
+    """
+    E = enhanced @ np.array([0.299, 0.587, 0.114], np.float32) if enhanced.ndim == 3 else enhanced
+    h, w = L.shape
+    E = cv2.resize(E.astype(np.float32), (w, h), interpolation=cv2.INTER_AREA)
+    warp = np.eye(2, 3, dtype=np.float32)
+    crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 200, 1e-6)
+    try:
+        cc, warp = cv2.findTransformECC(cv2.GaussianBlur(L, (0, 0), 2), cv2.GaussianBlur(E, (0, 0), 2), warp,
+                                        cv2.MOTION_AFFINE, crit, None, 1)
+    except cv2.error:
+        cc = 0.0
+    if cc < s["enhance_min_align"]:
+        return L, dict(used=False, align_corr=round(float(cc), 3))
+    Ea = cv2.warpAffine(E, warp, (w, h), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP, borderMode=cv2.BORDER_REPLICATE)
+    k = s["enhance_blend"]
+    return (1 - k) * L + k * Ea, dict(used=True, align_corr=round(float(cc), 3), blend=k)
+
+
+def make_master(rgb, cutout_mask, face, s=SETTINGS, warp=None, enhanced=None):
     """Return (RGBA uint8 N x N master, info dict). `warp` overrides the crop (used to compare at the owner's framing)."""
     N, ss = s["size_px"], s["supersample"]
     W = crop_transform(face, s) if warp is None else warp
     L = rgb @ np.array([0.299, 0.587, 0.114], np.float32) if rgb.ndim == 3 else rgb
+    pitch = N / s["dots_across"]
+    scale = float(np.sqrt(abs(np.linalg.det(W[:, :2]))))
+    L, ds = descreen(L.astype(np.float32), pitch / scale, s)
+    if enhanced is not None:
+        L, bl = blend_enhanced(L, enhanced, s)
+    else:
+        bl = None
     Lc = cv2.warpAffine(L.astype(np.float32), W, (N, N), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
     Mc = cv2.warpAffine(cutout_mask.astype(np.float32), W, (N, N), flags=cv2.INTER_LINEAR, borderValue=0)
     bx = np.array(face["box"], np.float64).reshape(2, 2)
     bxf = np.hstack([bx, np.ones((2, 1))]) @ W.T
-    pitch = N / s["dots_across"]
     cov, levels = tone_to_coverage(Lc, Mc, bxf.ravel(), pitch, s)
     cov = cv2.GaussianBlur(cov, (0, 0), max(pitch * s["tone_blur_cells"], 0.1))
     kf = np.hstack([np.asarray(face["kps"], np.float64), np.ones((5, 1))]) @ W.T
@@ -162,7 +262,7 @@ def make_master(rgb, cutout_mask, face, s=SETTINGS, warp=None):
     out[..., :3] = 255
     out[..., 3] = np.round(alpha * 255).astype(np.uint8)
     out[out[..., 3] == 0, :3] = 0  # fully transparent pixels carry no colour
-    info = dict(recipe_version=RECIPE_VERSION, levels=levels, crop_scale=float(np.sqrt(abs(np.linalg.det(W[:, :2])))))
+    info = dict(recipe_version=RECIPE_VERSION, levels=levels, crop_scale=scale, descreen=ds, enhance_blend=bl)
     return out, info
 
 

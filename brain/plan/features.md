@@ -35,17 +35,18 @@ Status: **proposed** (Claude, 2026-10-19). The harness builds these one at a tim
 | F-10 | Library of Congress: name and dates match | 2 | F-07 | none | network | yes |
 | F-11 | Candidates: assemble, order, de-duplicate, download | 2 | F-04, F-08, F-09, F-10* | none | network | no |
 | F-12 | Crop | 3 | F-01 | none | none | no |
-| F-13 | Descreen | 3 | F-01 | none | none | yes |
+| F-13 | Descreen and edge-preserving blur | 3 | F-01 | none | none | no |
 | F-14 | Halftone | 3 | F-01 | none | none | no |
 | F-15 | Code outline, composite and master check | 3 | F-12, F-14 | none | none | no |
 | F-16 | Recipe regression on the examples | 3 | F-12..F-15 | O-2, P0-3 | none | yes |
 | F-17 | Model client, spend ledger and cap | 4 | F-04, F-06 | none | none | no |
 | F-18 | Pre-check | 4 | F-17 | none | none | no |
 | F-19 | Cut-out | 4 | F-17 | none | none | no |
+| F-30 | AI-enhanced copy: make, align, blend (PIP-13; if Q-21 says yes) | 4 | F-13, F-17 | none | none | yes |
 | F-20 | Model-drawn outline: extract and align | 4 | F-15, F-17 | none | none | yes |
 | F-21 | Draft check (and compare-with-target) | 4 | F-17 | none | none | no |
 | F-22 | `doctor` | 5 | F-02, F-17 | none | none | yes |
-| F-23 | Per-teacher pipeline and failure policy | 5 | F-11, F-13, F-15, F-18, F-19, F-21 (F-20 if not parked) | none | none | no |
+| F-23 | Per-teacher pipeline and failure policy | 5 | F-11, F-13, F-15, F-18, F-19, F-21 (F-20 and F-30 if not parked) | none | none | no |
 | F-24 | Delivery writer, report and zip | 5 | F-03, F-23 | none | none | no |
 | F-25 | Run queue: order, requests, status, resume, dry-run | 5 | F-23, F-24 | none | none | no |
 | F-26 | End-to-end offline run | 5 | F-05, F-25 | none | none | no |
@@ -286,18 +287,20 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 
 ### F-13 · Descreen
 - **Phase:** 3
-- **Goal:** Find and remove a printed dot pattern from a scan before halftoning; leave clean photos alone.
+- **Goal:** Find and remove a printed dot pattern from a scan, and give every original an edge-preserving blur before halftoning (D-17).
 - **Covers:** PIP-05
 - **Depends on:** F-01
-- **Owner input:** none
+- **Owner input:** none (reference code: `prototype/recipe.py`, `detect_screen` and `descreen`)
 - **Build:** `portraits/imaging/descreen.py`
 - **Checks:**
+  - The owner's Fillmore and Cady originals are detected as screened, and Holmes is not.
   - A synthetic image overlaid with a screen pattern is detected, and its frequency peaks fall below a set fraction afterwards.
-  - A clean image is reported as "no pattern" and comes back unchanged.
-  - Whether descreening was applied is returned for the record.
-- **Test data:** synthetic images.
+  - A clean image is reported as "no pattern" and gets only the mild edge-preserving blur. Edges survive: a synthetic step edge keeps at least 90% of its contrast.
+  - The blur size follows the dot cell in original pixels: an original twice the size gets twice the blur.
+  - What was found and applied is returned for the record.
+- **Test data:** `design/portraits/originals/`; synthetic images.
 - **Live calls:** none
-- **Parkable:** yes (the pipeline runs without descreening, and screened originals fail more often)
+- **Parkable:** no (D-17 makes it part of the style)
 - **Size:** M
 
 ### F-14 · Halftone
@@ -407,6 +410,25 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Test data:** canned images.
 - **Live calls:** none
 - **Parkable:** no
+- **Size:** S
+
+### F-30 · AI-enhanced copy: make, align, blend
+*(The ID is out of sequence because it was added after numbering; it is built here, after F-19. It applies only if Q-21 is answered yes.)*
+- **Phase:** 4
+- **Goal:** Have an image model make a subtly enhanced copy of the descreened original, align it to the original, and blend it in at the set share (the owner's method).
+- **Covers:** PIP-13
+- **Depends on:** F-13, F-17
+- **Owner input:** none to build. The prompt text comes from Q-22; until then, a placeholder prompt is used.
+- **Build:** `portraits/models/enhance.py`; `portraits/imaging/blend.py`; `prompts/enhance.md`. Reference code: `prototype/recipe.py`, `blend_enhanced`.
+- **Checks:**
+  - A stubbed copy that is rescaled by 3%, shifted by a few pixels and sharpened is aligned (correlation ≥ 0.90) and blended. Edge agreement with the original is ≥ 0.98 (the prototype gets 0.99).
+  - A stubbed copy that can't be aligned (a different face, or a big crop change) is refused. The original is used alone, and the refusal is recorded.
+  - The second try on the same original is a cache hit, with no call.
+  - The blend share, alignment score, model and prompt version are recorded with the attempt.
+  - Turning `enhance.enabled` off skips the step entirely.
+- **Test data:** synthetic copies made in tests.
+- **Live calls:** none
+- **Parkable:** yes (the pipeline works without it)
 - **Size:** S
 
 ### F-20 · Model-drawn outline: extract and align
@@ -567,6 +589,8 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Build:** `portraits/trial.py`; the `trial` command; board output (PDF and HTML).
 - **Checks:**
   - Every trial item is processed by every contender. The same cut-out and code are used for every contender (shown by cache keys).
+  - If PIP-13 is adopted (Q-21), every item is also made with and without the enhanced blend, and the board shows both.
+  - The cut-out contenders (Q-18) are compared on the same items.
   - `trial/<run-id>/board.pdf` and `board.html` exist. Each row shows the original, every contender's result with scores and cost, and the examples.
   - The winner follows TRI-04 (the "close" rule from Q-19), and the reasoning is written in the trial report.
   - Items whose outcome differs from the trial set's expected outcome are listed; this is a finding, not a failure.
