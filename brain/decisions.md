@@ -132,3 +132,14 @@ Every model call (pre-check, enhance, cut-out, draft check, outline contenders) 
 **D-20 · 2026-10-19 · Claude proposes the prompts** · owner · *resolves Q-22*
 The owner's in-between files from months ago no longer exist, and the owner asked Claude to suggest the tools and prompts. The proposals are in `prototype/prompts/` and are tested in the trial. → PIP-02, PIP-03, PIP-09, PIP-13
 
+**D-21 · 2026-10-19 · Look beyond Commons and LoC, with rights tracked** · owner · *widens D-03*
+"You will have to suggest sources we can pull the files from automatically. I know about wikimedia commons, but there are others. You will also need to pull the metadata and rights etc with these files, and keep track of them."
+Claude proposes the sources, their match rules and the rights evidence in `spec/sources.md`; the owner picks which to adopt (Q-23). Every original considered is kept in a permanent rights log. → SRC-01, SRC-03, SRC-12, SRC-13, AC-06
+
+**D-22 · 2026-10-19 · The teacher list comes from the pipeline's authors list** · owner
+The owner pointed to `collection/authors.csv` in library-pipeline ("an authors list ... I am pulling books for the library project"), which Claude reads read-only. The portraits tool takes its teachers from it, so there is one list. The sync and enrichment method is proposed (IN-12, IN-13). → IN-01, IN-12, IN-13, contracts/teachers-csv.md
+
+**D-23 · 2026-10-19 · The edge-preserving blur stays** · owner
+"Still do the edge preserving blurring you already committed on the original image etc to prevent weird artifacts from the halftone filter."
+It is kept on every original, as in D-17. *Proposed* (C): the AI copy gets the same blur before blending. → PIP-05, PIP-13
+

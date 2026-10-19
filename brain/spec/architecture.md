@@ -34,6 +34,7 @@ portraits/
   config.py           load and validate settings; recipe hash vs recipe_version (STY-05)
   keys.py             read keys from the environment or the keys file; never log them (IN-11)
   teachers.py         load and validate teachers.csv (IN-01..03)
+  teachers_sync.py    build data/teachers.csv from library-pipeline's authors.csv; stable ids; enrichment (IN-12, IN-13)
   contracts/
     manifest.py       build records; validate against portraits.manifest.schema.json (OUT-02, OUT-04)
     requests.py       read and validate requests.json (IN-06)
@@ -44,7 +45,11 @@ portraits/
     licences.py       licence classification (SRC-02)
     wikidata.py       entity fetch, the id sanity check, id resolution (SRC-03 rule 1, SRC-06)
     commons.py        file info and metadata; depicts (P180) search (SRC-03 rule 2)
-    loc.py            Prints and Photographs search; heading and dates match (SRC-03 rule 3, SRC-05)
+    loc.py            Prints and Photographs search; heading and dates match (SRC-03 rule 3, SRC-05); LoC books for plates
+    internet_archive.py  books by author before 1931; IIIF page images (SRC-03 R4, SRC-13)
+    wellcome.py       images and digitised books with open licences (Q-23)
+    plates.py         find photo-like pages in a book's first pages (SRC-13)
+    rights_log.py     the permanent rights log and its CSV export (SRC-12)
     candidates.py     assemble, de-duplicate, order, exclude set-asides; download with checksum (SRC-07, SRC-08)
   imaging/
     crop.py           (PIP-04)
@@ -129,6 +134,14 @@ state_dir = "~/.local/share/nexus-portraits"
 
 [sources]
 contact = "New Thought Nexus portraits tool; <contact address>"   # User-Agent (SRC-09)
+adopted = ["wikidata", "commons", "loc", "internet_archive", "wellcome"]   # Q-23; only these hosts are allowed (SRC-01)
+plate_pages_scanned = 16          # SRC-13
+plate_candidates_per_book = 3
+plate_max_year = 1930             # R4: books published before 1931
+
+[teachers]
+authors_csv = "/mnt/b/Documents/GitHub/library-pipeline/collection/authors.csv"   # read-only (IN-12)
+statuses = ["active"]             # Q-26
 
 [spend]
 run_cap_usd = 250

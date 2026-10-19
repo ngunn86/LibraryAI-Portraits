@@ -6,7 +6,7 @@ Read this first. `AGENTS.md` and `GEMINI.md` point here, so every agent works fr
 
 Nexus Portraits is a standalone command-line tool. It reads the owner's list of New Thought teachers. For each teacher without an approved portrait it:
 
-- finds a public-domain or openly licensed photograph that certainly shows them (Wikimedia Commons or the Library of Congress only, by three strict match rules);
+- finds a public-domain or openly licensed portrait that certainly shows them, from the adopted sources by strict match rules (`brain/spec/sources.md`);
 - turns that photograph into a 1,000 × 1,000 portrait in the owner's halftone style (white dots and a thin white outline on transparency);
 - checks the draft;
 - delivers it with a full rights record to a shared folder.
@@ -31,6 +31,7 @@ The project serves two purposes:
 | `brain/brief/` | The owner's briefs, verbatim. v2 (2026-10-19) is current; v1 is superseded and kept for history |
 | `brain/spec/requirements.md` | **The normative requirements**, with stable IDs. This is what gets built and tested |
 | `brain/spec/architecture.md` | Proposed stack, modules, state store, settings and CLI |
+| `brain/spec/sources.md` | Image sources: which to adopt, match rules, rights evidence, the rights log |
 | `brain/contracts/` | File formats shared with the owner and with Library-AI (teacher list, requests, status, delivery folder, manifest) |
 | `brain/plan/build-plan.md` | Phases, gates, testing approach, spend plan and risks |
 | `brain/plan/features.md` | **Feature cards in build order**: what the harness builds, one at a time, with machine-checkable acceptance checks |
@@ -47,9 +48,9 @@ The project serves two purposes:
    - Items marked **proposed** are Claude's suggestions waiting for the owner. Reviewers are welcome to challenge them.
    - Items marked **open** point to a question in `brain/open-questions.md`.
 2. **IDs are permanent.** Never renumber requirements (`IN-`, `SRC-`, `STY-`, `PIP-`, `OUT-`, `RUN-`, `TRI-`, `AC-`), features (`F-`), decisions (`D-`) or questions (`Q-`). Retire an ID by marking it *withdrawn*, and add new IDs at the end of their group.
-3. **Library-AI---Rev1 is a separate project and read-only from here.** Never write to it. Anything this project needs from it is copied into `brain/reference/rev1/` unchanged, with the source commit noted.
+3. **Library-AI---Rev1 and library-pipeline are separate projects and read-only from here.** Never write to them. Anything this project needs from Rev1 is copied into `brain/reference/rev1/` unchanged, with the source commit noted. The tool reads library-pipeline's `collection/authors.csv` (IN-12) and nothing else of it.
 4. **Keys never go in the repo, chat, logs, reports or the delivery folder.** Keys are read from the environment or from a keys file outside the repo (see `brain/spec/architecture.md`).
-5. **Originals come only from Wikimedia Commons and the Library of Congress, by the match rules in `SRC-03`.**
+5. **Originals come only from the adopted sources in `brain/spec/sources.md`, by the match rules in `SRC-03`.**
    - The tool never reads Library-AI's scans or the owner's reference shelf.
    - The tool's network client refuses every other host except the configured model APIs.
 6. **Testing follows the owner's standard: features work reasonably well and without bugs.**

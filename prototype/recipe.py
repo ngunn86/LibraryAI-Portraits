@@ -7,7 +7,7 @@ Steps (code only; the cut-out and the face landmarks are inputs):
 """
 import numpy as np, cv2
 
-RECIPE_VERSION = "0.3.0"
+RECIPE_VERSION = "0.3.1"
 
 SETTINGS = {
     "size_px": 1000,
@@ -34,6 +34,7 @@ SETTINGS = {
     # AI-enhanced blend (PIP-13, proposed; owner's method): applied only when an enhanced copy is supplied
     "enhance_blend": 0.5,         # share of the aligned enhanced copy in the blend
     "enhance_min_align": 0.90,    # minimum alignment correlation, else the enhanced copy is not used
+    "enhance_max_drift_cells": 0.7,  # after alignment, face details may sit at most this far apart (95th pct)
     "key_lo": 0.15,               # keyed background: greenness below this is the person...
     "key_hi": 0.45,               # ...and above this is background (soft edge in between)
     # halftone
@@ -236,6 +237,28 @@ def align_enhanced(L, enhanced_rgb, s=SETTINGS):
     return np.linalg.inv(D) @ M3, float(cc), Eg, Em             # original -> enhanced
 
 
+def local_drift(L, Eg, A, face_box, cell_px, s=SETTINGS):
+    """After the overall alignment, how far do details inside the face still sit apart? (PIP-13)
+
+    An image model can move an eye or a mouth a little without shifting the whole picture. Overall
+    alignment can't fix that, and a 50% blend would show it as a soft double image. Dense optical flow
+    between the original and the aligned copy measures it; the result is in dot cells.
+    """
+    h, w = L.shape
+    Ea = cv2.warpAffine(Eg, A[:2].astype(np.float32), (w, h), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP,
+                        borderMode=cv2.BORDER_REPLICATE)
+    x0, y0, x1, y1 = [int(round(v)) for v in face_box]
+    x0, y0, x1, y1 = max(x0, 0), max(y0, 0), min(x1, w), min(y1, h)
+    def norm(a):
+        r = a[y0:y1, x0:x1]
+        return np.clip(((a - r.mean()) / (r.std() + 1e-6)) * 40 + 128, 0, 255).astype(np.uint8)
+    g0 = cv2.GaussianBlur(norm(L), (0, 0), 1.0)
+    g1 = cv2.GaussianBlur(norm(Ea), (0, 0), 1.0)
+    flow = cv2.calcOpticalFlowFarneback(g0, g1, None, 0.5, 3, 9, 5, 5, 1.1, 0)
+    mag = np.hypot(flow[..., 0], flow[..., 1])[y0:y1, x0:x1]
+    return float(np.percentile(mag, 95)) / max(cell_px, 1e-6)
+
+
 def make_master(rgb, cutout_mask, face, s=SETTINGS, warp=None, enhanced=None):
     """Return (RGBA uint8 N x N master, info dict). `warp` overrides the crop (used to compare at the owner's framing)."""
     N, ss = s["size_px"], s["supersample"]
@@ -250,13 +273,18 @@ def make_master(rgb, cutout_mask, face, s=SETTINGS, warp=None, enhanced=None):
         # PIP-13: blend in the frame, so the copy's extra resolution survives (it is usually 2-4x the original)
         A, cc, Eg, Em = align_enhanced(L, enhanced, s)
         bl = dict(used=False, align_corr=round(cc, 3))
-        if A is not None and cc >= s["enhance_min_align"]:
+        drift = local_drift(L, Eg, A, face["box"], pitch / scale, s) if A is not None else None
+        if drift is not None:
+            bl["face_drift_cells"] = round(drift, 3)
+        if A is not None and cc >= s["enhance_min_align"] and drift <= s["enhance_max_drift_cells"]:
             W3 = np.vstack([W, [0, 0, 1]]).astype(np.float64)
             T = (A @ np.linalg.inv(W3))[:2].astype(np.float32)      # frame -> enhanced (inverse map)
             Ec = cv2.warpAffine(Eg, T, (N, N), flags=cv2.INTER_CUBIC + cv2.WARP_INVERSE_MAP, borderMode=cv2.BORDER_REPLICATE)
+            # the same edge-preserving blur as the original got, so the copy's own fine texture can't beat with the dots
+            Ec = cv2.bilateralFilter(np.clip(Ec, 0, 1).astype(np.float32), -1, s["edge_blur_color"], s["edge_blur_cells"] * pitch)
             k = s["enhance_blend"]
             Lc = (1 - k) * Lc + k * Ec
-            bl = dict(used=True, align_corr=round(cc, 3), blend=k)
+            bl.update(used=True, blend=k)
             if cutout_mask is None:                                  # the keyed background is the cut-out
                 cutout_mask_frame = cv2.warpAffine(Em, T, (N, N), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP, borderValue=0)
                 bl["cutout"] = "from enhanced copy"

@@ -4,7 +4,7 @@ A standalone tool that makes stylized portraits of New Thought teachers for the 
 
 For each teacher on the owner's list, the tool:
 
-1. finds a public-domain or openly licensed photograph that certainly shows them (Wikimedia Commons or the Library of Congress only);
+1. finds a public-domain or openly licensed portrait that certainly shows them, from a few open collections with reliable rights records (Wikimedia Commons, the Library of Congress, plates in old books on the Internet Archive, and others; see `brain/spec/sources.md`);
 2. turns it into a portrait in the owner's halftone style;
 3. checks the result;
 4. delivers it, with its rights record, to a shared folder.

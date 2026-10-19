@@ -51,8 +51,10 @@ The following are Library-AI's build, not this project:
 
 ## 2. Inputs
 
-**IN-01 · Teacher list** *fixed* · B2
+**IN-01 · Teacher list** *fixed* · B2; source *proposed* · D-22
 The tool reads `teachers.csv`: UTF-8, with a header row, one row per teacher. The columns are `teacher_id`, `name`, `born`, `died`, `wikidata_qid`, `aliases` and `notes`, as defined in [../contracts/teachers-csv.md](../contracts/teachers-csv.md).
+
+The file is **generated** from the library-pipeline's `collection/authors.csv` (read-only) by `portraits teachers sync` (IN-12). The owner keeps one list of authors, and the portraits follow it.
 *Verify:* unit tests over fixture lists.
 
 **IN-02 · Bad rows are refused by name, the rest load** *fixed* · B2; details *proposed* · C
@@ -130,6 +132,29 @@ One settings file, committed to the repo, holds everything except keys:
 An invalid setting stops the tool with a message naming the setting. The layout is in [architecture.md](architecture.md).
 *Verify:* unit tests.
 
+**IN-12 · Teacher list from the pipeline's authors** *proposed* · D-22
+- `portraits teachers sync` reads `authors.csv` from the path in settings. It is never written to.
+- **Which authors:** only `active` rows (182 on 2026-10-19, the same rule the pipeline uses; Q-26).
+- **How it builds or updates `data/teachers.csv`:**
+  - `name` comes from `name`.
+  - `aliases` comes from `aliases`, splitting on `;` (pen names and spellings), which are also used for matching.
+  - `born` and `died` come from `dates` (`1802-1866`; forms the tool can't read are left blank and reported).
+  - `notes` comes from stream and tier.
+- **Stable ids:** a `teacher_id` is made once, as a slug of the name, and kept in `data/teacher-ids.csv`. A renamed author keeps their id. Authors no longer active are flagged in the report, not deleted.
+- **Enrichment (IN-13)** fills `wikidata_qid` and missing dates. Only 71 of the 182 active authors have dates.
+
+*Verify:* a fixture `authors.csv` syncs to the expected `teachers.csv`. A rename keeps the id. A second sync changes nothing.
+
+**IN-13 · Finding missing dates and Wikidata ids** *proposed* · C
+- For each teacher without them, the tool proposes a Wikidata id and life dates from two independent places:
+  - the Wikidata search under SRC-06b;
+  - the author headings in the catalogue records of the teacher's own books (for example `Fillmore, Charles, 1854-1948`).
+- It accepts them automatically only when both agree on the person and both years.
+- Anything else goes to `data/teachers-proposed.csv` with the evidence, for the owner to accept, and is listed in the report.
+- Book plates (R4) don't need dates, so teachers without them can still get portraits.
+
+*Verify:* fixtures where both sources agree (accepted), disagree (proposed only), or only one has data (proposed only).
+
 **IN-11 · Keys live outside the repo** *fixed* · B2
 - The OpenRouter key (the tool's only AI key; D-19), and any Drive credential, are read only from environment variables, or from a keys file outside the repo.
 - They are never written to logs, reports, the state store or the delivery folder.
@@ -140,9 +165,9 @@ An invalid setting stops the tool with a message naming the setting. The layout 
 
 ## 3. Sources, rights and matching
 
-**SRC-01 · Two sources, enforced in code** *fixed* · B2; enforcement *proposed* · C
-- Originals come only from Wikimedia Commons, through Wikidata for rule 1, and from the Library of Congress's Prints and Photographs collections.
-- The tool's source client may contact only the Wikidata, Wikimedia Commons, Wikimedia upload and loc.gov hosts.
+**SRC-01 · Adopted sources only, enforced in code** *fixed* · B2, widened by D-21; which sources *open (Q-23)*
+- Originals come only from the sources marked adopted in [sources.md](sources.md). Proposed to adopt now: Wikidata with Wikimedia Commons, the Library of Congress, Internet Archive books (plates), and Wellcome Collection. The brief named only Commons and LoC; the owner asked for more on 2026-10-19 (D-21).
+- The tool's source client may contact only the hosts of the adopted sources (listed in settings).
 - The model client may contact only the configured model API hosts.
 - Any other host is refused. This is also how SRC-10 is enforced.
 
@@ -166,12 +191,17 @@ An invalid setting stops the tool with a message naming the setting. The layout 
 
 *Verify:* a table test over real licence strings collected from Commons and LoC responses (fixtures).
 
-**SRC-03 · Certain matches only, in order** *fixed* · B2
+**SRC-03 · Certain matches only, in order** *fixed* · B2; rule 3 widened and rule 4 added *proposed* · D-21 (details in [sources.md](sources.md))
 A file counts as showing the teacher only by one of these rules, tried in this order:
 
-1. The image on the teacher's Wikidata item (property P18).
-2. Commons files whose structured data says they depict the teacher's Wikidata item (property P180).
-3. Library of Congress Prints and Photographs records that name the teacher with matching dates (SRC-05).
+1. **R1:** the image on the teacher's Wikidata item (property P18).
+2. **R2:** Commons files whose structured data says they depict the teacher's Wikidata item (property P180).
+3. **R3:** picture records (LoC Prints and Photographs, and other adopted picture sources) that name the teacher with matching dates (SRC-05).
+4. **R4 (book plate):** a plate in a book published before 1931, where:
+   - the book is by the teacher (catalogue author, with dates agreeing where both are given), or is about them (catalogue subject);
+   - the plate's printed caption or facsimile signature names the teacher, as read by the pre-check and quoted in the record.
+
+   An uncaptioned plate never counts (Q-24).
 
 These never count:
 
@@ -180,7 +210,7 @@ These never count:
 - a name match without dates;
 - any search-result ranking.
 
-*Verify:* recorded-response fixtures for each rule, plus negative fixtures: a category-only file, a name-only LoC record, and a record with the wrong dates.
+*Verify:* recorded-response fixtures for each rule, plus negative fixtures: a category-only file, a name-only LoC record, a record with the wrong dates, a plate whose caption names someone else, an uncaptioned plate, and a plate from a 1935 book.
 
 **SRC-04 · An owner's link is the owner's match** *fixed* · B2; limits *proposed* · C
 - A link pasted in a `try_link` request is accepted as the owner's own match, recorded as `matched_by: owner_link`.
@@ -255,6 +285,29 @@ The tool has no setting, path or code that reads Library-AI's scans or the owner
 
 *Verify:* fixture records for each tier.
 
+**SRC-12 · The rights log** *proposed* · C, from D-21 ("pull the metadata and rights etc with these files, and keep track of them")
+- Every original considered, **including the ones refused**, gets one permanent row. The row holds:
+  - source, ids and links (for book plates, also the page and the book);
+  - the description as given;
+  - the rights evidence as given, quoted raw;
+  - the rule applied, the verdict and the reason;
+  - the match rule and what it matched to;
+  - the credit line and the portrait's licence;
+  - the file's size, pixel size and SHA-256;
+  - the date retrieved.
+- The raw source record (JSON) is saved in the state store. Nothing is researched twice.
+- Each run exports the log to `portraits/rights-log.csv` in the delivery folder (*proposed*).
+
+*Verify:* the end-to-end fixture run (F-26) leaves one row per original considered, refusals included, and a second run adds no duplicate rows.
+
+**SRC-13 · Finding plates in books** *proposed* · C (rule R4)
+- For each teacher, search the adopted book sources by author (name and aliases; key works first) for books before 1931.
+- From small page images of the first 16 pages plus any pages listed as plates, code picks the pages that look like photographs. At most 3 per book go to the pre-check, which confirms a single portrait and reads its caption.
+- A confirmed plate is downloaded at full resolution, through IIIF where offered.
+- Borrow-only or restricted items are skipped, never worked around.
+
+*Verify:* recorded fixtures for one book with a captioned author frontispiece, one with an uncaptioned one and one with no plates. Code picks the plate page; a text-only page is never picked.
+
 ---
 
 ## 4. The style
@@ -325,7 +378,7 @@ Take the best candidate that hasn't been set aside (SRC-07).
   - the face fully in view;
   - the face large enough: a face-box width of at least `min_face_px` = 90 source pixels. The owner's own originals measure 108–183 px;
   - not badly damaged.
-- It returns a structured verdict: pass or fail, reasons, an approximate face box, and whether the original is a photograph or another medium (Q-11).
+- It returns a structured verdict: pass or fail, reasons, an approximate face box, whether the original is a photograph or another medium (Q-11), and any caption or facsimile signature as written, with the person it names. The caption is what makes a book plate a match (R4, SRC-03).
 - A failing original is set aside with its reason. Nothing else is spent on it.
 
 *Verify:* stubbed model responses drive the pass and fail paths. Live behaviour is judged in the trial.
@@ -424,6 +477,10 @@ The owner's own portraits were made this way: an AI tool made a subtly enhanced 
 - Starting model: `google/gemini-3-pro-image` (Nano Banana Pro). Challengers: `google/gemini-3.1-flash-image` (Nano Banana 2, cheaper) and `openai/gpt-image-2`. The trial decides (TRI-04). Model ids were checked on OpenRouter on 2026-10-19 and are confirmed again by `doctor`.
 - Code **aligns** the copy to the original before blending, because image models often shift or rescale what they redraw. Without alignment, the blend shows double edges.
   - If the alignment is poor (below a set correlation), the copy is discarded and the original is used alone. This is recorded.
+  - **Local drift check.** The overall alignment can't undo a local change, such as an eye or the mouth moved slightly. So after aligning, code measures (by dense optical flow) how far details inside the face still sit apart. If the 95th percentile exceeds `enhance_max_drift_cells` (0.7 of a dot cell), the copy is discarded.
+    - Prototype: good copies measure 0.32–0.46 cells.
+    - Copies with the eyes and mouth moved by about 1.2 cells measure 0.90–1.09 and are refused.
+- The copy gets the same edge-preserving blur as the original (PIP-05, D-23), in the frame, so its own fine texture can't clash with the dots.
 - Code blends the aligned copy with the original at `enhance_blend` (0.5), **in the portrait's own frame** (after cropping), so the copy's extra resolution survives. It is usually 2–4× the original's size. The dots are still made by code from the blended tones.
 - The draft check's "face matches the original" criterion (PIP-09) compares against the **original**, not the enhanced copy.
 - The copy is cached per original, and its model, prompt version, blend share and alignment score are recorded with the attempt.
@@ -619,7 +676,7 @@ The estimate is about $30, inside the first run's cap. *Proposed:* a trial sub-c
 | AC-03 | The receiver stub accepts the run, and fixtures of `requests.json` and `status.json` change what the next run does: a request is handled first, an approved teacher is skipped, a turned-down original is set aside | F-05, F-26 |
 | AC-04 | The owner's three examples are reproduced closely enough that the check passes them against the hand-made targets | F-29 (TRI-08) |
 | AC-05 | The trial's board exists, the defaults are set from it, and one full harness run (plan, build, tests, digest, veto) has completed on this project | F-28, plus the harness's own record |
-| AC-06 | Nothing in the tool reads the library's reference shelf or scans. Originals come only from the two sources, by the three match rules | SRC-01 test, SRC-03 fixtures |
+| AC-06 | Nothing in the tool reads the library's reference shelf or scans. Originals come only from the adopted sources (two in the brief; widened by D-21, see `sources.md`), by the match rules of SRC-03 | SRC-01 test, SRC-03 fixtures |
 
 ---
 

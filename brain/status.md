@@ -11,18 +11,20 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 | Briefs | v1 (2026-10-17) and v2 (2026-10-19), in `brief/`. v2 is current |
 | Requirements | Drafted with IDs from B2 plus Claude's review. **Not yet reconciled with Rev1's PORT lines** (needs O-1) |
 | Architecture | Proposed (Python 3.12, uv, SQLite, one CLI) |
-| Contracts | Teacher list, requests and status, and the delivery folder are drafted. The manifest schema waits for O-1 |
-| Build plan and features | 29 feature cards across phases 1–6, with checks, dependencies, live/stub, parkable |
-| Decisions | D-01..D-20 |
-| Open questions | Q-01..Q-22. Still open and marked *now*: Q-09, Q-16 (both need O-1). Resolved: Q-04, Q-10, Q-17, Q-18, Q-20, Q-21, Q-22 |
+| Contracts | Teacher list (now generated from library-pipeline's `authors.csv`, D-22), requests and status, and the delivery folder are drafted. The manifest schema waits for O-1 |
+| Sources | Proposed in `spec/sources.md`: Wikidata/Commons, LoC, Internet Archive book plates, Wellcome now; others later; the rights log (SRC-12). Waiting for Q-23 |
+| Build plan and features | 35 feature cards across phases 1–6, with checks, dependencies, live/stub, parkable |
+| Decisions | D-01..D-23 |
+| Open questions | Q-01..Q-26. Still open and marked *now*: Q-09, Q-16 (both need O-1), **Q-23 (which image sources)**. Resolved: Q-04, Q-10, Q-17, Q-18, Q-20, Q-21, Q-22 |
 | Examples | The three targets and their originals are in `design/portraits/`. Test use only (D-13) |
-| Style prototype | Recipe 0.3.0: descreen (D-17), AI-enhanced blend with the cut-out from its green background (D-18, D-19), and prompts for every model step (D-20). Real AI copies are first tried in F-27 and F-28 |
+| Style prototype | Recipe 0.3.1 (local drift check, blur on the AI copy): descreen (D-17), AI-enhanced blend with the cut-out from its green background (D-18, D-19), and prompts for every model step (D-20). Real AI copies are first tried in F-27 and F-28 |
 | Reviews | Format ready (`reviews/README.md`). No reviews yet |
 
 ## Waiting on the owner (*now*)
 
 1. **O-1:** copy Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py` into `brain/reference/rev1/`, and note the Rev1 commit.
-2. The *build* questions, in one pass: Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
+2. **Q-23:** which image sources to adopt (`spec/sources.md`).
+3. The *build* questions, in one pass: Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
 
 ## Next planning steps, in order
 
@@ -64,3 +66,8 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
   - Recipe 0.3.0: one OpenRouter image call per original gives a restored copy on flat green, which supplies both the 50% blend (aligned, in the frame) and the cut-out.
   - Proposed models: Nano Banana Pro to start, with Nano Banana 2 and GPT Image 2 as challengers.
   - Mechanics checked on synthetic copies. Prompts are in `prototype/prompts/`.
+- **2026-10-19 (later):** The owner asked how the larger AI copy is aligned. Claude explained, drew `prototype/out/alignment-explainer.png`, and added a local face-drift check (recipe 0.3.1).
+  - The edge-preserving blur stays (D-23), and the AI copy now gets it too.
+  - Claude read library-pipeline read-only (commit 363aa14). Its `collection/authors.csv` (182 active authors, 71 with dates, no Wikidata ids) becomes the source of `data/teachers.csv`, with stable ids and enrichment (D-22, IN-12, IN-13).
+  - Sources widened at the owner's request (D-21). `spec/sources.md` proposes Wikidata/Commons, LoC, Internet Archive book plates (new rule R4: a pre-1931 book by or about the teacher, with a caption naming them) and Wellcome now; Smithsonian, NYPL and DPLA later. It also adds a permanent rights log (SRC-12).
+  - New cards F-31 to F-35.

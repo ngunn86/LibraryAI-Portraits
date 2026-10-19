@@ -62,6 +62,18 @@ phineas-quimby,Phineas Parkhurst Quimby,1802,1866,,"P. P. Quimby | Phineas P. Qu
 
 Wikidata ids are left blank in this example on purpose. Real ids go in the owner's list.
 
-## Where the file lives (*proposed*, Q-14)
+## Where the file lives, and where it comes from (*proposed*, Q-14, D-22)
 
-`data/teachers.csv` in this repo, so the list is versioned and the harness can see changes. Test fixtures live separately, in `tests/fixtures/`.
+- `data/teachers.csv` in this repo, so the list is versioned and the harness can see changes. Test fixtures live separately, in `tests/fixtures/`.
+- **It is generated, not hand-written:** `portraits teachers sync` builds it from the library-pipeline's `collection/authors.csv`, which is read-only (IN-12). The owner keeps editing one authors list, for the books and the portraits alike.
+
+| authors.csv (pipeline) | teachers.csv (portraits) |
+|---|---|
+| `name` | `name`, and a `teacher_id` slug made once and then kept (`data/teacher-ids.csv`) |
+| `aliases` (`;`-separated) | `aliases` (` \| `-separated) |
+| `dates` (`1802-1866`) | `born`, `died` (blank when missing or unreadable; reported) |
+| `status` | only `active` rows are taken (Q-26) |
+| `stream`, `tier` | `notes` (information only; never used for matching) |
+| none | `wikidata_qid`: filled by enrichment (IN-13) or by the owner |
+
+Enrichment results the tool isn't sure of go to `data/teachers-proposed.csv` with their evidence, for the owner to accept.

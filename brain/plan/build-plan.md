@@ -24,7 +24,7 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 | P0-1 | Copy in Rev1's portrait files and reconcile every `tool` PORT line with the requirements | O-1 | `brain/reference/rev1/`, the filled reconciliation table, new questions if any; Q-09 and Q-16 resolved |
 | P0-2 | Owner answers the questions marked *now* and *build* | the owner | Entries in `decisions.md`; requirement statuses updated |
 | P0-3 | **Style prototype** (D-16): crop, halftone and code outline against the three examples, side by side, until the owner says it's close. **Draft done 2026-10-19; waiting for the owner's look** (`prototype/README.md`, `prototype/out/board.png`). Descreen is left to F-13 and the trial | O-2 | `recipe_version` 0.1.0 settings, a reference output per example, the code-metric thresholds, the prototype code kept under `prototype/` as a reference (not the product) |
-| P0-4 | **Trial set curation** (TRI-02): about 20 real originals found by the match rules, covering every listed case, each with its expected outcome | O-3 (a first partial list) | `tests/fixtures/trial/trial-set.yaml` (proposed path) |
+| P0-4 | **Trial set curation** (TRI-02): about 20 real originals found by the match rules, covering every listed case and including book plates (R4), each with its expected outcome | `authors.csv` (Tier 1 authors first) | `tests/fixtures/trial/trial-set.yaml` (proposed path) |
 | P0-5 | Contract files: JSON Schemas for the teacher list, requests and status, plus a sample run made from prototype outputs | P0-1, P0-3 | Schemas and fixtures ready for F-02, F-03 and F-05 |
 | P0-6 | Review rounds by other AI tools, merged | P0-1..P0-5 | `brain/reviews/*`, with responses |
 | P0-7 | Freeze plan v1: the git tag `plan-v1`, and a status line telling the harness to start | everything above, plus O-7 | Harness starts at F-01 |
@@ -35,7 +35,7 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 |---|---|---|---|
 | O-1 | Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py`, plus the Rev1 commit they're from | P0-1 (**now**) | Copied into `brain/reference/rev1/` unchanged. Rev1 stays read-only for Claude |
 | O-2 | The three hand-made portraits and their originals | P0-3 (**now**) | **Done 2026-10-19** (`design/portraits/`); sources unknown, so test use only (D-13) |
-| O-3 | `teachers.csv`: a first partial list (about 25 teachers, Wikidata ids where known), then the full list | P0-4; the full list before R-1 | Format: [../contracts/teachers-csv.md](../contracts/teachers-csv.md) |
+| O-3 | The teacher list. **Now taken from library-pipeline's `authors.csv`** (D-22, read-only); the owner only accepts or corrects the proposed dates and Wikidata ids (IN-13) | P0-4; before R-1 | Format: [../contracts/teachers-csv.md](../contracts/teachers-csv.md) |
 | O-4 | The tool's own OpenRouter key, set as an environment variable in WSL. It is the only AI key (D-19). Never in chat or the repo | F-27 | A key separate from other projects, so spend is easy to see |
 | O-5 | The delivery folder: create `portraits/` in Drive and give its path (or its id, if Q-03 goes the API way) | F-27 | |
 | O-6 | The Claude GitHub App installed on this repo (Q-20) | **now** | **Done 2026-10-19** |
@@ -124,4 +124,6 @@ Fixture recording uses free public APIs, with a polite client (SRC-09).
 | R-7 | This is the harness's first project, so the harness itself is immature | Small features with offline checks; owner inputs listed up front so the build doesn't stall mid-way; clear parking rules |
 | R-8 | Drive sync order, or WSL mount quirks | Write order plus atomic manifest (OUT-03); the library waits for late files; `doctor` checks the folder is writable |
 | R-9 | Wikimedia or LoC rate limits or blocks | A polite client with caching (SRC-09); tests use recorded fixtures, so the build doesn't hit the APIs repeatedly |
-| R-10 | The AI-enhanced copy (PIP-13) quietly changes a face | A 50% blend; alignment required; likeness checked against the original; the trial compares with and without; the admin's approval is the final gate |
+| R-10 | The AI-enhanced copy (PIP-13) quietly changes a face | A 50% blend; alignment required; the local drift check (face details moved by more than 0.7 of a dot cell refuse the copy); likeness checked against the original; the trial compares with and without; the admin's approval is the final gate |
+| R-11 | A book plate shows someone other than its book's author (a founder, a patron) | R4 needs both the book's author or subject and a caption naming the teacher; uncaptioned plates are only reported (Q-24); the admin's approval |
+| R-12 | Most active authors have no dates, so R3 and the Wikidata lookup can't run | Book plates (R4) don't need dates; enrichment (IN-13) fills dates from two agreeing sources |

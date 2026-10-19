@@ -1,8 +1,8 @@
-# Style prototype (P0-3): results, 2026-10-19 (recipe 0.3.0)
+# Style prototype (P0-3): results, 2026-10-19 (recipe 0.3.1)
 
 This folder answers one question before the harness builds anything: can code reproduce the owner's three hand-made portraits? It holds reference code and reference outputs, **not the product**. The harness builds the real modules (F-12..F-16) from what's learned here.
 
-**Result:** recipe **0.3.0** reproduces the style closely on all three examples. The halftone, tone, line and crop are done entirely by code. The only model inputs are a cut-out and the face landmarks. See `out/board.png`, which is waiting for the owner's look.
+**Result:** recipe **0.3.1** reproduces the style closely on all three examples. The halftone, tone, line and crop are done entirely by code. The only model inputs are a cut-out and the face landmarks. See `out/board.png`, which is waiting for the owner's look.
 
 ## What was measured on the owner's portraits
 
@@ -13,6 +13,17 @@ This folder answers one question before the harness builds anything: can code re
 | Framing | Each original registered onto its target (eye landmarks, refined by image alignment; correlation 0.91–0.99) | Eye-to-mouth distance **0.237 of the side** (0.223–0.246; this measure doesn't change when the head turns). Eye line at **0.443** of the height (0.40–0.51). Face centred (0.46–0.56). Fillmore and Cady are exactly 2× their originals, so their framing mostly came from the originals |
 | Tone | Dot coverage vs. original brightness, over the registered figure | A levels-and-gamma curve. The white point sits at the face's own brightest tones (p98), and shadows drop out to transparent well above black |
 | Line | Coverage profile inward from the figure's edge | About **3 px wide with a ~1 px gap** at 500 px, i.e. **6 px and 2 px** on the 1,000 px master (Fillmore, Holmes). Cady's is thicker (about 4.5 px at 500). The dots are clipped to a smoothed silhouette, and the line follows that same silhouette |
+
+## Changes in 0.3.1 (2026-10-19)
+
+**How the larger AI copy is lined up with the original** (`align_enhanced`; see `out/alignment-explainer.png`):
+
+1. **Resize to compare.** The copy is shrunk to the original's size, *only to measure*. The green background is ignored, so only the person is compared.
+2. **Find the best overlay.** Image correlation (OpenCV's ECC) searches for the small shift, scale and tilt that make the copy best match the original. The result is a match score from 0 to 1. Below 0.90, the copy is thrown away.
+3. **Check locally.** Overall alignment can't undo an AI moving one feature, such as an eye or the mouth. Dense optical flow measures how far details inside the face still sit apart. If they're more than 0.7 of a dot cell apart (95th percentile), the copy is thrown away.
+   - Test: good copies measure 0.32–0.46 cells.
+   - Copies with the eyes and mouth moved by about 1.2 cells measure 0.90–1.09 and are refused.
+4. **Blend at full size.** The measured shift, together with the copy's real size, is applied when the copy is drawn straight into the 1,000 px portrait frame. It is never shrunk, so its extra detail survives. It then gets the same edge-preserving blur as the original (D-23) and is blended 50/50.
 
 ## Changes in 0.3.0 (owner's decisions D-18 to D-20, 2026-10-19)
 
@@ -45,7 +56,8 @@ These are the settings in `recipe.py`. They become the `[recipe]` block of `sett
 ```
 descreen: edge-preserving blur on every original, 0.30 cell (0.6 with a screen) · colour sigma 0.08
           screen = compact spectral peaks ≥ 1.6 log units above surroundings in ≥ 2 directions, notch-filtered
-enhance:  (when a copy is supplied) align by image correlation over the figure (≥ 0.90), blend 0.5 in the frame;
+enhance:  (when a copy is supplied) align by image correlation over the figure (≥ 0.90), local face drift ≤ 0.7 cell,
+          edge-preserving blur on the copy, blend 0.5 in the frame;
           cut-out from the copy's green background (greenness 0.15–0.45 soft edge)
 size_px 1000 · dots_across 110 (side ÷ cell pitch along the 45° grid) · grid_angle_deg 45 · supersample 4
 crop:    eye_mouth_frac 0.237 · eye_y_frac 0.443 · face_centre_x_frac 0.50 · min_face_px 90
@@ -104,7 +116,8 @@ F-16 also checks that the recipe re-creates `out/*.png` from `fixtures/` within 
 | `register.py`, `measure_dots.py`, `tune_tone.py` | How the owner's portraits were measured and the tone fitted |
 | `make_fixtures.py` | Saves the model-dependent inputs (cut-outs, landmarks, registrations) to `fixtures/` |
 | `run_examples.py` | Re-runs the recipe from `fixtures/` alone and writes `out/` |
-| `test_enhance_mechanics.py` | Checks alignment, blending and the keyed cut-out with synthetic copies; writes `out/enhance-mechanics.json` |
+| `test_enhance_mechanics.py` | Checks alignment, the local drift check, blending and the keyed cut-out with synthetic copies; writes `out/enhance-mechanics.json` |
+| `out/alignment-explainer.png` | How a larger, shifted AI copy is lined up with the original |
 | `prompts/` | Proposed prompts for every model step (D-20) |
 | `out/board.png` | Original · owner's portrait · prototype at the owner's framing · prototype with automatic crop |
 | `out/zoom.png` | Close-ups: owner's (left) vs prototype (right) |

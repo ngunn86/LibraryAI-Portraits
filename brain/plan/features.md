@@ -25,15 +25,20 @@ Status: **proposed** (Claude, 2026-10-19). The harness builds these one at a tim
 |---|---|---|---|---|---|---|
 | F-01 | Project skeleton, settings and keys | 1 | none | none | none | no |
 | F-02 | Teacher list loader and validator | 1 | F-01 | none | none | no |
+| F-31 | Teacher list from the pipeline's authors (IN-12) | 1 | F-02 | none | none | no |
 | F-03 | Contracts and manifest validator | 1 | F-01 | O-1 | none | no |
 | F-04 | State store and step cache | 1 | F-01 | none | none | no |
 | F-05 | Receiver stub | 1 | F-03 | none | none | no |
 | F-06 | Network client (allowlist, polite, cached, replayable) | 2 | F-01 | none | none | no |
 | F-07 | Licence classifier | 2 | F-06 | none | network | no |
+| F-32 | Rights log (SRC-12) | 2 | F-04, F-07 | none | none | no |
 | F-08 | Wikidata: fetch, sanity check, find ids | 2 | F-06 | none | network | no |
 | F-09 | Commons: P18 file and P180 depicts search | 2 | F-07, F-08 | none | network | no |
 | F-10 | Library of Congress: name and dates match | 2 | F-07 | none | network | yes |
-| F-11 | Candidates: assemble, order, de-duplicate, download | 2 | F-04, F-08, F-09, F-10* | none | network | no |
+| F-33 | Internet Archive book plates (R4, SRC-13) | 2 | F-06, F-07, F-32 | none | network | yes |
+| F-34 | Wellcome Collection | 2 | F-06, F-07, F-32, F-33 | none | network | yes |
+| F-35 | Finding missing dates and Wikidata ids (IN-13) | 2 | F-08, F-31, F-33 | none | network | yes |
+| F-11 | Candidates: assemble, order, de-duplicate, download | 2 | F-04, F-08, F-09, F-10*, F-32, F-33*, F-34* | none | network | no |
 | F-12 | Crop | 3 | F-01 | none | none | no |
 | F-13 | Descreen and edge-preserving blur | 3 | F-01 | none | none | no |
 | F-14 | Halftone | 3 | F-01 | none | none | no |
@@ -54,7 +59,7 @@ Status: **proposed** (Claude, 2026-10-19). The harness builds these one at a tim
 | F-28 | Trial, board and defaults | 6 | F-27 | O-2, O-3, O-4 | paid ≤ $40 | no |
 | F-29 | Examples reproduced | 6 | F-16, F-28 | O-2 | paid ≤ $5 | yes |
 
-\* If F-10 is parked, F-11 is built without rule 3, and the digest says so.
+\* If F-10, F-33 or F-34 is parked, F-11 is built without that source, and the digest says so.
 
 SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-06 is also enforced by F-06's allowlist test.
 
@@ -96,6 +101,24 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
   - Changing a row's `notes` doesn't change anything the loader returns except `notes` itself.
   - `teachers check` exits non-zero when any row is refused, and prints the refusals.
 - **Test data:** about eight small CSV fixtures.
+- **Live calls:** none
+- **Parkable:** no
+- **Size:** S
+
+### F-31 · Teacher list from the pipeline's authors
+*(Added after numbering; built here, after F-02.)*
+- **Phase:** 1
+- **Goal:** Build and update `data/teachers.csv` from library-pipeline's `collection/authors.csv` (read-only), with stable ids.
+- **Covers:** IN-01, IN-12
+- **Depends on:** F-02
+- **Owner input:** none (D-22; Q-26 decides which statuses; `active` is built)
+- **Build:** `portraits/teachers_sync.py`; the `teachers sync` command; `data/teacher-ids.csv`.
+- **Checks:**
+  - A fixture `authors.csv` (a copy of the real one's header with 8 rows: active, proposed, excluded, with and without dates, with `;` aliases) syncs to the expected `teachers.csv`, which passes F-02's loader.
+  - Renaming an author keeps their `teacher_id`. An author who is no longer active is flagged in the report, not deleted.
+  - A second sync with no changes writes nothing.
+  - The authors file is opened read-only, and the tool never writes to that folder.
+- **Test data:** a fixture authors file.
 - **Live calls:** none
 - **Parkable:** no
 - **Size:** S
@@ -192,6 +215,24 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Parkable:** no
 - **Size:** S
 
+### F-32 · Rights log
+*(Added after numbering; built here, after F-07.)*
+- **Phase:** 2
+- **Goal:** Keep one permanent row for every original considered, refusals included, with its rights evidence, rule, verdict, match and credit; export it as CSV.
+- **Covers:** SRC-12, SRC-08, D-14
+- **Depends on:** F-04, F-07
+- **Owner input:** none
+- **Build:** `portraits/sources/rights_log.py`
+- **Checks:**
+  - Recording the same original twice keeps one row (keyed by source and source id, and SHA-256 once downloaded) and updates its verdict history.
+  - A refused original keeps its reason, and later runs don't research it again.
+  - The CSV export has every field listed in SRC-12, and the raw source record is stored next to it.
+  - Credit lines are built for each source type (licence, rights advisory, book plate).
+- **Test data:** records from F-07's fixtures.
+- **Live calls:** none
+- **Parkable:** no
+- **Size:** S
+
 ### F-08 · Wikidata: fetch, sanity check, find ids
 - **Phase:** 2
 - **Goal:** Read a teacher's Wikidata item (P18 image, birth and death years, labels and aliases, P31), check a given id, and find a missing one under SRC-06.
@@ -245,11 +286,64 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Parkable:** yes (rules 1 and 2 still work without it)
 - **Size:** M
 
+### F-33 · Internet Archive book plates
+*(Added after numbering; built here, after F-10.)*
+- **Phase:** 2
+- **Goal:** Find portraits printed in teachers' own books (and books about them) published before 1931, and pick the pages that look like photographs, ready for the pre-check to confirm and read their captions (R4).
+- **Covers:** SRC-03 (R4), SRC-13, SRC-02 (publication rule)
+- **Depends on:** F-06, F-07, F-32
+- **Owner input:** none (Q-23 decides adoption; built because it's proposed to adopt now)
+- **Build:** `portraits/sources/internet_archive.py`, `portraits/sources/plates.py`
+- **Checks:**
+  - Author search (name and aliases) over recorded responses returns only books catalogued before 1931. Decade dates are read as the pipeline reads them ("192-" counts as 1929), and borrow-only items are excluded.
+  - On recorded IIIF thumbnails of three books (one with a captioned frontispiece, one uncaptioned, one with none), code picks the plate pages and never a text page.
+  - Each candidate carries the book's record (identifier, title, author, year, publisher) and the page number for the rights log.
+  - Only Archive hosts are contacted (allowlist).
+- **Test data:** recorded search and IIIF responses.
+- **Live calls:** network (free; fixture recording)
+- **Parkable:** yes (the other sources still work)
+- **Size:** M
+
+### F-34 · Wellcome Collection
+*(Added after numbering; built here, after F-33.)*
+- **Phase:** 2
+- **Goal:** Picture records and book plates from Wellcome Collection with open licences (pdm, CC0, CC BY), matched by R3 or R4.
+- **Covers:** SRC-03 (R3, R4), SRC-02
+- **Depends on:** F-06, F-07, F-32, F-33
+- **Owner input:** none (Q-23)
+- **Build:** `portraits/sources/wellcome.py`
+- **Checks:**
+  - Over recorded responses, a record with a matching name heading and dates is returned with its licence classified; a closed or restricted item is refused.
+  - Book plates reuse F-33's page picker.
+- **Test data:** recorded responses.
+- **Live calls:** network (free; fixture recording)
+- **Parkable:** yes
+- **Size:** S
+
+### F-35 · Finding missing dates and Wikidata ids
+*(Added after numbering; built here, after F-34.)*
+- **Phase:** 2
+- **Goal:** Propose life dates and Wikidata ids for teachers without them, and accept them only when two independent sources agree.
+- **Covers:** IN-13, SRC-06
+- **Depends on:** F-08, F-31, F-33
+- **Owner input:** the owner accepts or corrects `data/teachers-proposed.csv` when convenient; nothing waits for it
+- **Build:** in `portraits/teachers_sync.py`; the `teachers enrich` command.
+- **Checks:**
+  - These cases are tested with fixtures:
+    - Wikidata and a catalogue author heading agree on the person and both years → accepted into `teachers.csv`.
+    - They disagree → proposed only, with both pieces of evidence.
+    - Only one source has data → proposed only.
+  - Accepted values are marked as found by the tool, so the report can list them.
+- **Test data:** recorded Wikidata and catalogue responses.
+- **Live calls:** network (free; fixture recording)
+- **Parkable:** yes (book plates don't need dates)
+- **Size:** S
+
 ### F-11 · Candidates: assemble, order, de-duplicate, download
 - **Phase:** 2
 - **Goal:** For one teacher, gather every allowed candidate from all rules, order them, drop duplicates and set-asides, and download originals with checksums.
 - **Covers:** SRC-04, SRC-07, SRC-08, IN-04, PIP-01, PIP-12
-- **Depends on:** F-04, F-08, F-09, F-10 (optional)
+- **Depends on:** F-04, F-08, F-09, F-10, F-32, F-33, F-34 (F-10, F-33 and F-34 optional)
 - **Owner input:** none
 - **Build:** `portraits/sources/candidates.py`
 - **Checks:**
@@ -388,6 +482,7 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Build:** `portraits/models/precheck.py`; `prompts/precheck.md`
 - **Checks:**
   - A stubbed pass and a stubbed fail parse into a verdict with reasons, a face box and the medium.
+  - For a book plate, the caption text and the person it names are parsed. A plate whose caption names someone else, or has no caption, does not pass as an R4 match (Q-24).
   - A face smaller than `min_face_px` is failed by code, even if the model says pass.
   - Malformed model output is retried once. If it's still malformed, the step reports an error: the teacher's job pauses, and the original is not set aside.
   - Results are cached by original SHA-256 and model.
@@ -407,8 +502,10 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Checks:**
   - A stubbed keyed copy (2.8× the original's size, sharpened, rescaled by 2%, shifted, background pure green) is aligned (correlation ≥ 0.90) and blended in the frame. Edge agreement with the unblended result is ≥ 0.97 (the prototype gets 0.98–1.00).
   - A stubbed copy that can't be aligned (a different face, or a big crop change) is refused. The original is used alone, and the refusal is recorded.
+  - A stubbed copy whose eyes and mouth have been moved by about 1.2 dot cells is refused by the local drift check (> 0.7 cells). Good copies measure under 0.5 (prototype: 0.32–0.46 good, 0.90–1.09 moved).
+  - The copy gets the edge-preserving blur before blending (D-23).
   - The second try on the same original is a cache hit, with no call.
-  - The blend share, alignment score, model and prompt version are recorded with the attempt.
+  - The blend share, alignment score, drift, model and prompt version are recorded with the attempt.
   - Turning `enhance.enabled` off skips the step entirely.
 - **Test data:** synthetic copies made in tests.
 - **Live calls:** none
@@ -552,7 +649,7 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Owner input:** none
 - **Build:** `tests/test_f26_end_to_end.py`; refreshes the sample run in `tests/fixtures/sample-run/`.
 - **Checks:**
-  - Run 1, over 6 fixture teachers covering: a pass; a pre-check refusal then a pass; a set-aside then a pass; no candidates; a wrong Wikidata id; a refused row. The receiver stub accepts the folder.
+  - Run 1, over 7 fixture teachers covering: a pass; a pre-check refusal then a pass; a set-aside then a pass; a book-plate (R4) pass; no candidates; a wrong Wikidata id; a refused row. The receiver stub accepts the folder, and the rights log has a row for every original considered.
   - Then `requests.json` (one of each kind) and `status.json` (one approved, one turned down) are written with the stub's helpers.
   - Run 2: requests are handled first; the approved teacher is skipped; the turned-down original is set aside and another is tried; the stub accepts run 2.
   - The sample run in the repo is regenerated from run 1 and still validates (OUT-10).
