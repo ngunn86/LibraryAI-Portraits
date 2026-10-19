@@ -1,0 +1,33 @@
+# Keys and local settings: never commit
+.env
+*.env
+keys.*
+settings.local.toml
+secrets/
+
+# Tool state, caches and run output (they live outside the repo by default; this is a safety net)
+.state/
+state/
+runs/
+cache/
+*.db
+*.sqlite
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# OS and editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

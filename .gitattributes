@@ -1,0 +1,11 @@
+# Same line endings on Windows and in WSL, where the harness runs
+* text=auto eol=lf
+
+# Images and archives are binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.tif binary
+*.tiff binary
+*.webp binary
+*.zip binary
