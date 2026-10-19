@@ -23,7 +23,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q-06 | What does "remake" mean when most steps are deterministic? | build | Re-run only the steps that can change; otherwise set aside | open |
 | Q-07 | Do pre-check rejections count toward the three originals? | build | No, but cap pre-checks at 8 per teacher per run | open |
 | Q-08 | What can a Try-again note change? | build | It guides a fresh attempt and the check; it never changes recipe settings | open |
-| Q-09 | Who defines `requests.json` and `status.json`? | **now** | Rev1 if PORT-060/061 already does; otherwise this repo's draft, offered to Rev1 | open |
+| Q-09 | Who defines `requests.json` and `status.json`? | — | — | superseded by D-37 (decisions come back through this project's API, defined in its OpenAPI file) |
 | Q-10 | Where did the owner's three originals come from, and are those teachers delivered? | — | Use them as style targets only | resolved → D-13 (source unknown; never delivered) |
 | Q-11 | Are engravings and drawings acceptable originals? | trial | Yes, if they pass the pre-check, with the medium recorded; the trial shows how they look | open |
 | Q-12 | How are dates validated? | build | Year, year-month or full date; reject circa dates, future dates, death before birth and lifespans over 120 years | open |
@@ -112,7 +112,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
   - If the code outline wins the trial, a Try-again on the same original can only re-cut. In that case the tool says so in the report and suggests "Find another original".
 - **Alternative.** Allow a small, recorded set of per-teacher adjustments, such as crop offset. That would break "one set of settings for every teacher", so it's the owner's call.
 
-### Q-09 · Who defines `requests.json` and `status.json` · now
+### Q-09 · Who defines `requests.json` and `status.json` · superseded by D-37
 - **Background.** Rev1's PORT-060/061 may already define them.
 - **Proposal.** If they do, copy the definitions here unchanged. If not, this repo's draft ([contracts/requests-and-status.md](contracts/requests-and-status.md)) is offered to Rev1. Resolved when O-1 arrives.
 

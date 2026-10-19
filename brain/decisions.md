@@ -207,3 +207,27 @@ All AI still goes through OpenRouter (D-19). Other services (GitHub, data source
 "I am also not opposed to having to deploy myself from Replit. I can access it from my phone if necessary, and the harness is going to keep me updated remotely."
 A deploy may be a one-tap step by the owner, announced in the harness digest. Deploys without clicking are a nice-to-have, not a requirement for choosing the host.
 
+## From the library's planning (relayed by the owner, 2026-10-19, 18:10)
+
+**D-36 · 2026-10-19 · Host: Railway** · owner · *closes T-01*
+"Take the host decision to Railway and skip the Replit spike; brain/reference/hosting-railway-review.md in Rev1 is written for both projects."
+- The app is hosted on Railway. No Replit spike is run.
+- Rev1's `brain/reference/hosting-railway-review.md` applies to both projects. It is copied here unchanged, with its commit, once it reaches GitHub.
+- The harness's throwaway test (`handoffs/harness-throwaway-test.md`) stays the harness's own test, now on Railway for certain.
+
+→ T-01, T-23, T-27
+
+**D-37 · 2026-10-19 · The library adopts this project's API** · owner (library planning) · *settles T-09's direction*
+"The library has adopted its D-28/D-31 API design and the three-portrait scope; the library expects to pull, to send decisions back, and to adopt its OpenAPI file."
+- This project defines the API and publishes an OpenAPI file. The library adopts it, pulls records and files, and sends its decisions back.
+- The library's earlier plan (a Drive door, and one manifest per run with one portrait per teacher) is replaced on its side.
+
+→ T-08, T-09, OUT-*, Q-09
+
+**D-38 · 2026-10-19 · Approval and the main portrait are decided in the library** · owner (library planning) · *closes T-05*
+"Its T-05 (approval, main portrait) is answered on the library's side: approval happens in the library's queue and is reported back."
+- Every portrait waits in the library's approval queue. The library reports each decision back to the tool through the API: approved, turned down, chosen as the teacher's main portrait, and requests such as Try again.
+- The tool proposes; the library decides.
+
+→ T-05, T-08, T-19, IN-06, IN-07
+

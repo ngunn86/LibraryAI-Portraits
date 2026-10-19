@@ -1,5 +1,7 @@
 # Architecture (proposed)
 
+> **Superseded in part (2026-10-19).** The app is now fully hosted on Railway (D-31, D-36), with a two-way API the library adopts (D-37). The layout is a web service (API and admin pages), a worker, a cron job, Postgres and a storage bucket. This page still describes the earlier PC-run CLI with SQLite. It will be rewritten at tracker topic T-23. Until then, the module list and the image steps below still apply; the state store, settings paths and the delivery folder don't.
+
 Status: **proposed** by Claude (2026-10-19), waiting for owner review and for the reviewing agents. The stack choice is Q-15.
 
 The aim is the simplest structure that meets the requirements:

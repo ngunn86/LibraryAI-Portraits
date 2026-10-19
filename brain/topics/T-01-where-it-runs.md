@@ -1,6 +1,6 @@
 # T-01 · Where the app runs and how the library reaches it
 
-**Status:** mostly decided (2026-10-19).
+**Status: decided (2026-10-19). Host: Railway** (D-36), from the library's planning, which wrote one hosting review for both projects (Rev1 `brain/reference/hosting-railway-review.md`, to be copied to `brain/reference/rev1/`). The Replit spike is skipped.
 
 - **Decided:**
   - Fully hosted, with a two-way API (D-31).
@@ -8,7 +8,7 @@
   - An admin page to browse (D-33).
   - Extra keys are fine when needed, kept to a minimum (D-34).
   - The owner can deploy by hand from Replit (D-35).
-- **Still open:** which host. See "Hosts that meet our requirements" at the end.
+- **Host:** Railway (D-36). The comparison below is kept for the record.
 
 *History:* the owner leaned towards fully hosted "simply for the goal of testing everything we need to test with the harness" and asked for a feasibility review. The review follows.
 

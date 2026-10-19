@@ -22,15 +22,15 @@
 
 | T | Topic | Stage | Depends on | Status |
 |---|---|---|---|---|
-| T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **mostly decided** (D-31..D-35): fully hosted, two-way API; **the host still to pick** ([notes](topics/T-01-where-it-runs.md)) |
-| T-02 | The three versions of a portrait, exactly | 1 Shape | none | open (D-26 sets the three) |
+| T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **decided** (D-31..D-36): fully hosted on **Railway**, two-way API ([notes](topics/T-01-where-it-runs.md)) |
+| T-02 | The three versions of a portrait, exactly | 1 Shape | none | **next** (D-26 sets the three) |
 | T-03 | How many portraits per teacher, and what counts as different | 1 Shape | none | open (D-25 sets up to 3) |
 | T-04 | Categories for each portrait | 1 Shape | T-03 | open |
-| T-05 | Approval: what the library approves, and the main portrait | 1 Shape | T-01, T-03 | open |
+| T-05 | Approval: what the library approves, and the main portrait | 1 Shape | T-01, T-03 | **decided** (D-38): in the library's queue, reported back |
 | T-06 | Storage and organisation by teacher | 2 Data | T-01, T-02, T-03 | open (D-27 sets "by teacher") |
 | T-07 | The records: what we keep about teachers, portraits, versions and sources | 2 Data | T-02 – T-05 | open |
 | T-08 | The library API | 2 Data | T-01, T-06, T-07 | open (D-28 sets "an API") |
-| T-09 | The contract with Library-AI (Rev1) | 2 Data | T-08 | open |
+| T-09 | The contract with Library-AI (Rev1) | 2 Data | T-08 | **mostly decided** (D-37): this project owns the API and its OpenAPI file; the library adopts it |
 | T-10 | The teacher list (from the pipeline's authors) | 3 Finding | none | mostly decided (D-22) |
 | T-11 | Picture sources | 3 Finding | T-07 | open (D-24, D-29) |
 | T-12 | Match rules: when a picture certainly shows the teacher | 3 Finding | T-10, T-11 | mostly decided |
@@ -63,7 +63,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
 ## Stage 1: The shape of the app
 
-### T-01 · Where the app runs and how the library reaches it · **in discussion**
+### T-01 · Where the app runs and how the library reaches it · **decided**
 - **Notes:** [topics/T-01-where-it-runs.md](topics/T-01-where-it-runs.md) (feasibility review, hosts, deploy spike, recommendation).
 - **Decided (2026-10-19):**
   - fully hosted, with a two-way API (D-31);
@@ -71,7 +71,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - an admin page (D-33);
   - extra keys are fine when needed (D-34);
   - deploying by hand from Replit is fine (D-35).
-- **Still open:** which host. Replit and alternatives are compared in the notes. The owner asked for suggestions beyond Replit.
+- **Host: Railway** (D-36), from the library's planning, so the two projects share one hosting review. The Replit spike is skipped. Rev1's `brain/reference/hosting-railway-review.md` will be copied into `brain/reference/rev1/` once it's on GitHub.
 - **Depends on:** nothing. It comes first because storage (T-06), the API (T-08), runs (T-19), security (T-21) and the stack (T-23) all follow from it.
 - **To decide:**
   1. Where processing runs: your PC (as planned so far), or a hosted service.
@@ -83,7 +83,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Decided so far:** the library pulls records from the tool (D-28). All AI goes through OpenRouter with one key (D-19).
 - **Affects:** SCOPE-02, OUT-01..OUT-10, RUN-01, the architecture, and the Drive hand-off of B2.
 
-### T-02 · The three versions of a portrait, exactly · open
+### T-02 · The three versions of a portrait, exactly · **next**
 - **Depends on:** nothing.
 - **To decide:**
   1. **Original:** the file exactly as downloaded, at full size? Or also a smaller copy for viewing?
@@ -118,14 +118,20 @@ Topics within a stage can move in parallel when they don't depend on each other.
   3. **Used for what:** choosing which 3 to keep (T-03), the library's display (T-05), search?
 - **Decided so far:** "categorize" is part of the job (D-25).
 
-### T-05 · Approval: what the library approves, and the main portrait · open
+### T-05 · Approval: what the library approves, and the main portrait · **decided**
 - **Depends on:** T-01, T-03.
 - **To decide:**
   1. Does the admin approve each portrait, or each version?
   2. **Main portrait:** which one the library shows by default. Chosen by the admin, or proposed by the tool?
   3. **Turn-downs and requests:** Try again, find another, a pasted link. How do they reach the tool now that there's an API (T-08)?
   4. What the tool does with a turned-down portrait: set it aside, and fill the slot from the next candidate?
-- **Decided so far:** nothing goes live from the tool; every portrait waits for an admin (SCOPE-03).
+- **Decided (D-38):**
+  - Approval happens in the library's queue, and so does the choice of a teacher's main portrait.
+  - The library reports every decision back to the tool through the API: approved, turned down, main portrait, and requests.
+  - Nothing goes live from the tool (SCOPE-03).
+- **Left for later topics:**
+  - what the tool does with a turned-down portrait (T-03 and T-19: set it aside, and fill the slot from the next candidate);
+  - the API's shape for decisions (T-08).
 - **Linked:** Q-02 (re-runs), Q-08 (Try-again notes), IN-06, IN-07.
 
 ## Stage 2: Data, storage and the library contract
@@ -162,10 +168,10 @@ Topics within a stage can move in parallel when they don't depend on each other.
   4. Versioning of the API, and its documentation (an OpenAPI file).
 - **Decided so far:** an API, for the library to pull records (D-28).
 
-### T-09 · The contract with Library-AI (Rev1) · open
+### T-09 · The contract with Library-AI (Rev1) · **mostly decided**
 - **Depends on:** T-08.
 - **To decide:**
-  1. **Who owns the contract now.** Proposed: this project defines the API and the records, and Rev1 adopts them. Rev1's design (a Drive door and one manifest per run, with one portrait per teacher) needs changing in your Rev1 planning.
+  1. ~~Who owns the contract now~~. **Decided (D-37):** this project defines the API and the records and publishes an OpenAPI file. The library adopts it, pulls, and sends its decisions back. The library has also adopted the three-portrait scope.
   2. What to tell the Rev1 planning: a short hand-off note from here.
   3. **Whether we still need Rev1's portrait files (O-1).** Probably only to see which of the PORT requirements still apply.
 - **Linked:** Q-09, Q-16, O-1, OUT-10, AC-02, AC-03.
@@ -385,4 +391,10 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
   Recommendation: Railway (Hobby), after a one-hour spike.
 - **2026-10-19 12:43.** At the owner's request, Claude wrote `handoffs/harness-throwaway-test.md` (HT-01..HT-29): what a throwaway hosted app must prove before feature work. The owner plans the test separately and is checking Railway hosting in the other chat. Claude keeps the file updated. T-01's host stays open until then.
+- **2026-10-19 18:10.** Relayed from the library's planning:
+  - **T-01 closed:** host Railway (D-36), Replit spike skipped. Rev1's `hosting-railway-review.md` is written for both projects, to be copied here once it's on GitHub; its latest commit there is still 2026-10-18.
+  - **T-05 closed:** approval and the main portrait are decided in the library's queue and reported back (D-38).
+  - **T-09 mostly decided:** this project owns the API and its OpenAPI file; the library adopts it, pulls, and sends decisions back; three-portrait scope adopted (D-37).
+
+  Next: T-02.
 

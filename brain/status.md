@@ -2,7 +2,7 @@
 
 **Phase 0: planning.** There is no code yet. Last updated 2026-10-19 by Claude.
 
-**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **Now: T-01**, mostly decided: fully hosted, two-way API, authors list through GitHub, an admin page (D-31..D-35). **Host: Railway is recommended.** The owner is confirming it in the harness chat (`topics/T-01-where-it-runs.md`). Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated). Next: T-02.
+**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **T-01 decided:** fully hosted on Railway, two-way API (D-31..D-36). **T-05 decided** in the library (D-38). **T-09 mostly decided:** this project owns the OpenAPI contract (D-37). **Now: T-02, the three versions of a portrait.** Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated).
 
 ## Where things stand
 
@@ -12,11 +12,11 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 |---|---|
 | Briefs | v1 (2026-10-17) and v2 (2026-10-19), in `brief/`. v2 is current |
 | Requirements | Drafted with IDs from B2 plus Claude's review. **Not yet reconciled with Rev1's PORT lines** (needs O-1) |
-| Architecture | Proposed (Python 3.12, uv, SQLite, one CLI) |
+| Architecture | Being rewritten: hosted on Railway (web, worker, cron, Postgres, bucket); the old CLI and SQLite proposal is superseded in part (rewrite at T-23) |
 | Contracts | Teacher list (now generated from library-pipeline's `authors.csv`, D-22), requests and status, and the delivery folder are drafted. The manifest schema waits for O-1 |
 | Sources | Planned (D-29): Wikidata/Commons, LoC, Wellcome, Smithsonian, NYPL, DPLA leads. Internet Archive omitted (D-24). Details at the formal review (tracker T-11) |
 | Build plan and features | 35 feature cards across phases 1–6, with checks, dependencies, live/stub, parkable |
-| Decisions | D-01..D-35 |
+| Decisions | D-01..D-38 |
 | Open questions | Q-01..Q-26. Still open and marked *now*: Q-09, Q-16 (both need O-1), **Q-23 (which image sources)**. Resolved: Q-04, Q-10, Q-17, Q-18, Q-20, Q-21, Q-22 |
 | Examples | The three targets and their originals are in `design/portraits/`. Test use only (D-13) |
 | Style prototype | Recipe 0.3.1 (local drift check, blur on the AI copy): descreen (D-17), AI-enhanced blend with the cut-out from its green background (D-18, D-19), and prompts for every model step (D-20). Real AI copies are first tried in F-27 and F-28 |
@@ -92,3 +92,9 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 
   Host options beyond Replit compared against ten requirements (Railway, Render, DigitalOcean, Cloud Run). Recommendation: Replit (the Rev1 rehearsal), or Railway for automatic deploys and staging.
 - **2026-10-19 (later):** Railway explored in depth (notes in T-01). The owner may move Library-AI there too. Claude wrote `handoffs/harness-throwaway-test.md` (HT-01..HT-29), the throwaway hosted app the harness must build, deploy, test and tear down before feature work, and will keep it updated. The owner is checking Railway in the other chat.
+- **2026-10-19 (evening):** Relayed from the library's planning:
+  - host Railway, Replit spike skipped (D-36);
+  - the library adopts this project's API, OpenAPI file and three-portrait scope (D-37);
+  - approval and the main portrait are decided in the library and reported back (D-38).
+
+  T-01 and T-05 closed, T-09 mostly decided, Q-09 superseded. Rev1's shared hosting review isn't on GitHub yet (latest Rev1 commit 2026-10-18), so it's copied once pushed. Next: T-02.

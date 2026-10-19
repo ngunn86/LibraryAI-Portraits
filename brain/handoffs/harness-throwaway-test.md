@@ -6,7 +6,8 @@
 
 **Status:** draft v1, 2026-10-19.
 
-- **Host:** Railway is assumed (tracker T-01). The owner is confirming Railway hosting in the other chat.
+- **Host: Railway, decided** (D-36, 2026-10-19). The Replit spike is skipped, so this test is the harness's own proof on Railway, not a way of choosing a host.
+- Rev1's `brain/reference/hosting-railway-review.md` is written for both projects. Where it sets plan, region or layout, this test follows it.
 - Requirements marked *(Railway)* name Railway features; the rest apply to any host.
 
 **Linked:** tracker T-01 and T-27 · [topics/T-01-where-it-runs.md](../topics/T-01-where-it-runs.md) · decisions D-31..D-35
@@ -117,8 +118,8 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 
 ## What the result decides
 
-- **All of B, C, E and G pass:** the host is confirmed (tracker T-01), and the portraits build uses the same setup.
-- **HT-03, HT-04, HT-22 or HT-26 fails:** the harness can't deploy and test by itself on this host. Fix it, or try the fallback host (Render).
+- **All of B, C, E and G pass:** the portraits build uses the same setup on Railway.
+- **HT-03, HT-04, HT-22 or HT-26 fails:** the harness can't yet deploy and test by itself. Fix the harness side first. Only if Railway itself can't do it is the host reopened (T-01).
 - **Anything else fails:** note a workaround in this file, and carry it into the portraits plan.
 
 ---
@@ -126,3 +127,5 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 ## Change log
 
 - **2026-10-19:** v1 created from tracker T-01 (fully hosted, D-31), D-32 (GitHub token), D-33 (admin page), D-35 (owner can deploy by hand) and the Railway review. Railway is assumed, pending the owner's confirmation in the harness chat.
+- **2026-10-19 (evening):** Host decided: Railway (D-36). The Replit spike is skipped. The test no longer picks a host; it proves the harness on Railway. It follows Rev1's shared hosting review once that's copied here.
+
