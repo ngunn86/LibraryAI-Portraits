@@ -183,3 +183,27 @@ This replaces or extends the file hand-off of B2. Where it runs and what it offe
 "Build a detailed plan for all the things we need to review and plan to make this app. We should be making those decisions first that later ones may depend on. Create a tracker that logs everything and tracks it as we go."
 `brain/tracker.md` is the planning tracker. Topics are taken in its order.
 
+## T-01: where the app runs (2026-10-19, 12:26)
+
+**D-31 · 2026-10-19 · Fully hosted, with a two-way API** · owner · *T-01*
+"Fully hosted yes."
+- Processing, the API, the worker, the schedule, the database and file storage all run on a host, not on the owner's PC. The harness still builds on the owner's PC.
+- The API serves records and files to the library, and takes the library's approvals and requests back ("you can build the API as you suggest").
+- Supersedes the PC-run, Drive-delivered design of B2 (RUN-01, OUT-01..OUT-10, SCOPE-02).
+
+**D-32 · 2026-10-19 · The authors list comes through GitHub** · owner
+"Integration with GitHub is best for the authors list." "You can add GitHub integration to the scope."
+The hosted app reads `collection/authors.csv` from the private library-pipeline repo through the GitHub API, with a read-only token limited to that repo. → IN-12, T-10, T-21
+
+**D-33 · 2026-10-19 · An admin page to browse** · owner
+"Yes, I want an admin page interface to browse."
+The app has admin pages for browsing portraits by teacher; what else they show is decided at T-06. → T-06
+
+**D-34 · 2026-10-19 · Extra keys are fine when needed; keep complexity low** · owner · *resolves Q-25*
+"I am not opposed to adding other API keys as needed, just trying to keep the complexity to a minimum."
+All AI still goes through OpenRouter (D-19). Other services (GitHub, data sources, the host) may have their own keys where needed, kept to a minimum.
+
+**D-35 · 2026-10-19 · The owner can deploy by hand** · owner · *T-27*
+"I am also not opposed to having to deploy myself from Replit. I can access it from my phone if necessary, and the harness is going to keep me updated remotely."
+A deploy may be a one-tap step by the owner, announced in the harness digest. Deploys without clicking are a nice-to-have, not a requirement for choosing the host.
+

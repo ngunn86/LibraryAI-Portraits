@@ -22,7 +22,7 @@
 
 | T | Topic | Stage | Depends on | Status |
 |---|---|---|---|---|
-| T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **in discussion**: leaning fully hosted ([notes](topics/T-01-where-it-runs.md)) |
+| T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **mostly decided** (D-31..D-35): fully hosted, two-way API; **the host still to pick** ([notes](topics/T-01-where-it-runs.md)) |
 | T-02 | The three versions of a portrait, exactly | 1 Shape | none | open (D-26 sets the three) |
 | T-03 | How many portraits per teacher, and what counts as different | 1 Shape | none | open (D-25 sets up to 3) |
 | T-04 | Categories for each portrait | 1 Shape | T-03 | open |
@@ -65,10 +65,13 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
 ### T-01 · Where the app runs and how the library reaches it · **in discussion**
 - **Notes:** [topics/T-01-where-it-runs.md](topics/T-01-where-it-runs.md) (feasibility review, hosts, deploy spike, recommendation).
-- **Where it stands (2026-10-19):**
-  - The owner leans towards **fully hosted**, to test everything the harness needs to test.
-  - If hosted, the API both serves records and takes approvals and requests back (owner: "you can build the API as you suggest").
-  - Claude's review: feasible. Build in layers. Choose the host with a deploy spike: Replit first (Rev1's platform), Railway or Render as the fallback.
+- **Decided (2026-10-19):**
+  - fully hosted, with a two-way API (D-31);
+  - the authors list through GitHub (D-32);
+  - an admin page (D-33);
+  - extra keys are fine when needed (D-34);
+  - deploying by hand from Replit is fine (D-35).
+- **Still open:** which host. Replit and alternatives are compared in the notes. The owner asked for suggestions beyond Replit.
 - **Depends on:** nothing. It comes first because storage (T-06), the API (T-08), runs (T-19), security (T-21) and the stack (T-23) all follow from it.
 - **To decide:**
   1. Where processing runs: your PC (as planned so far), or a hosted service.
@@ -134,7 +137,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   2. **The layout by teacher** (D-27), for example `teachers/<teacher_id>/<portrait_id>/original.*, white.png, bw.png, record.json`.
   3. What happens to a replaced portrait: kept as history, or removed?
   4. Full-size originals: kept for every candidate, or only for kept portraits? Backups?
-  5. **Your view:** how you browse results. A folder by teacher? A simple gallery page per teacher? Only in the library?
+  5. **Your view:** an admin page (D-33). What it shows: portraits by teacher, run status, the trial board, approvals?
 - **Decided so far:** organised by teacher (D-27).
 - **Linked:** Q-03 (synced folder vs Drive API), OUT-01..OUT-08 (the run-based layout, now under review).
 
@@ -347,6 +350,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - wait for the owner's veto, then promote staging to production;
   - roll back a bad deploy;
   - keep live AI spend under the app's cap.
+- **Relaxed by D-35:** a deploy may be the owner's one-tap step, announced in the digest. Deploying without clicking is a nice-to-have.
 - **Output:** a short hand-off note (`brain/handoffs/harness.md`) for the other chat.
 
 ---
@@ -366,4 +370,12 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **2026-10-19.** The run-based delivery layout (OUT-01..OUT-10) and the Rev1 manifest hand-off are under review (T-06, T-08, T-09).
 - **2026-10-19.** Next: T-01.
 - **2026-10-19 12:08.** T-01 in discussion. The owner leans towards fully hosted, to test the harness on everything an app build needs. If hosted, the API is two-way. Claude's feasibility review is in `topics/T-01-where-it-runs.md`: feasible, build in layers, deploy spike to pick the host (Replit first). New topic T-27 added: what the harness must do for a hosted app.
+- **2026-10-19 12:26.** T-01 mostly decided (D-31..D-35):
+  - fully hosted, with a two-way API;
+  - the authors list through GitHub (read-only token);
+  - an admin page to browse;
+  - extra keys are fine but kept to a minimum;
+  - the owner can deploy by hand from Replit.
+
+  Q-03 superseded, Q-25 resolved. Still open in T-01: which host (options beyond Replit in the notes).
 

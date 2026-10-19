@@ -1,6 +1,16 @@
 # T-01 · Where the app runs and how the library reaches it
 
-**Status:** in discussion (2026-10-19). The owner is leaning towards **fully hosted**, "simply for the goal of testing everything we need to test with the harness". The owner asked for a feasibility review. If hosted, Claude builds the API as proposed: the library both pulls records and sends approvals and requests back.
+**Status:** mostly decided (2026-10-19).
+
+- **Decided:**
+  - Fully hosted, with a two-way API (D-31).
+  - The authors list through GitHub (D-32).
+  - An admin page to browse (D-33).
+  - Extra keys are fine when needed, kept to a minimum (D-34).
+  - The owner can deploy by hand from Replit (D-35).
+- **Still open:** which host. See "Hosts that meet our requirements" at the end.
+
+*History:* the owner leaned towards fully hosted "simply for the goal of testing everything we need to test with the harness" and asked for a feasibility review. The review follows.
 
 ## The options (as put to the owner)
 
@@ -112,9 +122,66 @@ If Replit passes all seven, the decision is Replit. If it fails on 1 or 6, the h
 3. Is a read-only GitHub token for `authors.csv` acceptable, or would you rather upload the file?
 4. Include a small admin page for browsing portraits by teacher? (Recommended; it also tests UI work.)
 
+## Hosts that meet our requirements (owner asked for options beyond Replit, 2026-10-19)
+
+### What the host must do
+
+| # | Requirement | From |
+|---|---|---|
+| H1 | Run a Python web app (the API and admin pages) that the library and the owner can reach at any time. A few seconds' wake-up is acceptable | D-28, D-33 |
+| H2 | Run a long background job (hours) and a schedule | D-31, T-19 |
+| H3 | Postgres | T-07 |
+| H4 | Durable file storage, a few GB | D-26, D-27 |
+| H5 | Secrets: OpenRouter, GitHub (read-only), the library's API key | D-19, D-32, D-34 |
+| H6 | Deploy from GitHub, automatically or with one tap from a phone | D-35 |
+| H7 | A staging copy beside the live one | T-27 |
+| H8 | Logs and a dashboard usable from a phone; ideally a CLI the harness can read | D-35, T-27 |
+| H9 | Low cost (aim: about $25/month or less) and low complexity (one platform for everything, if possible) | D-34 |
+| H10 | Bonus: the same platform as Library-AI and Rev1, so this build rehearses Rev1's deployment | goal of the harness test |
+
+### The candidates
+
+| | **Replit** | **Railway** | **Render** | **DigitalOcean App Platform** | **Google Cloud Run** |
+|---|---|---|---|---|---|
+| H1 web app | Autoscale ($2/month plus usage; idles after 15 min) or Reserved VM (shared 0.5 vCPU / 2 GB, $15/month) | A service, billed by usage | A web service (paid Starter tier; free services sleep after 15 min) | A web service from $5/month (512 MiB) | A service that scales to zero |
+| H2 long job and schedule | A Reserved VM runs a worker; Scheduled deployments ($2/month plus compute) | A worker service plus cron schedules | A background worker (paid) plus cron jobs ($1/month minimum, per minute) | Workers and jobs | Cloud Run Jobs plus Cloud Scheduler |
+| H3 Postgres | Built in | Postgres service | Render Postgres (storage $0.30/GB/month) | Managed Postgres from $15/month | Cloud SQL, or an outside Postgres (for example Neon) |
+| H4 files | Object Storage, built in | Volumes ($0.15/GB/month; a volume attaches to one service) | Disks ($0.25/GB/month; a disk attaches to one service) | Spaces from $5/month (250 GB) | Cloud Storage |
+| H6 deploy | Deploy button (phone OK); GitHub sync | Automatic from GitHub branches | Automatic on push; one Blueprint file describes the app | Automatic from GitHub | Through the gcloud CLI or CI; more setup |
+| H7 staging | A second deployment, set up by hand | Built-in environments, plus temporary copies for pull requests | Preview environments (check the plan) | A second app | A second service |
+| H8 logs, phone | Dashboard and mobile app | Dashboard and CLI | Dashboard and CLI | Dashboard and `doctl` CLI | Console and `gcloud` |
+| H9 rough monthly cost | About $15–20 (Reserved VM, plus database and storage usage) | About $5–20 (Hobby $5 includes $5 of usage; then about $10 per GB of RAM and $20 per vCPU per month) | Hobby workspace $0, plus paid web, worker, Postgres and disk (check current rates) | About $30 ($5 web + $5 worker + $15 Postgres + $5 Spaces) | Near $0 when idle, billed by use; plus the database |
+| H10 same as Library-AI | **yes** | no | no | no | no |
+| Complexity for the owner | **lowest**: already known | low | low to medium | medium | highest (cloud console, permissions) |
+
+**Notes:**
+- On Railway and Render a disk or volume attaches to one service. So either the API and the worker run as one service, or files go to a shared object store such as Cloudflare R2 (free up to 10 GB, S3-compatible, one more key).
+- On Replit, Object Storage is shared by the app's deployments.
+
+### Recommendation
+
+- **Replit**, if rehearsing Rev1's platform matters most. That is the purpose of this build, and the owner is fine deploying from a phone (D-35).
+  - Everything is built in: a Reserved VM running the API and the worker together, Postgres, Object Storage, Secrets and Scheduled jobs.
+  - It's the platform the owner already uses.
+- **Railway**, if the harness should also exercise fully automatic deploys and staging. Railway has environments, temporary copies per pull request and GitHub deploys, and it's cheap.
+- Render and DigitalOcean meet the requirements, but don't beat those two on anything that matters here.
+- Cloud Run is the cheapest when idle, but the most setup for a beginner.
+
+**Suggested next step:** a short check on the chosen host before feature work. Confirm:
+
+- a background job runs for over 30 minutes;
+- Postgres and file storage are reachable from the app;
+- secrets work;
+- logs can be read from a phone;
+- a staging copy can sit beside the live one.
+
 ## Sources (checked 2026-10-19)
 
 - Replit deployment pricing: https://docs.replit.com/billing/deployment-pricing.md
 - Railway plans: https://docs.railway.com/reference/pricing/plans
 - Render Blueprint spec: https://render.com/docs/yaml-spec
 - Replit and GitHub deploys (third-party, unverified): https://cdn.jsdelivr.net/npm/@intentsolutionsio/replit-pack@1.0.3/skills/replit-ci-integration/SKILL.md
+- Render costs and free-tier limits: https://render.com/articles/how-much-does-cloud-application-hosting-cost-for-small-businesses
+- Railway environments: https://docs.railway.com/reference/environments
+- DigitalOcean pricing summary (third-party): https://kuberns.com/blogs/digitalocean-pricing/
+

@@ -17,7 +17,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 |---|---|---|---|---|
 | Q-01 | What is an "authority match"? | build | With both years, the tool may find the Wikidata id itself (one unique human match); with neither id nor both years, skip and report | open |
 | Q-02 | Re-runs: skip teachers whose draft is already waiting? | build | Yes, using the tool's own delivery record until `status.json` exists | open |
-| Q-03 | Deliver through a synced folder or the Drive API? | build | Synced folder; the API stays a later option | open |
+| Q-03 | Deliver through a synced folder or the Drive API? | — | — | superseded by D-31 (hosted app; the library pulls through the API; storage is T-06) |
 | Q-04 | Prove the style in planning, before the harness builds? | — | Yes: prototype the recipe here against the three examples | resolved → D-16 |
 | Q-05 | Add a code-drawn outline as a fourth trial contender? | build | Yes, and make it the default: the prototype shows it reproduces the owner's line | open |
 | Q-06 | What does "remake" mean when most steps are deterministic? | build | Re-run only the steps that can change; otherwise set aside | open |
@@ -39,7 +39,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q-22 | Which AI tools and prompts did the owner use, and are the in-between files still available? | — | Claude proposes them | resolved → D-20 (no files; prompts in `prototype/prompts/`) |
 | Q-23 | Which image sources to adopt? | — | — | resolved → D-24 (no Internet Archive) and D-29 (plan the others; details at the formal review, tracker T-11) |
 | Q-24 | Accept uncaptioned portraits at the front of a teacher's own book? | — | — | withdrawn (D-24: no book plates) |
-| Q-25 | Free data keys (Smithsonian, NYPL, DPLA) later, if coverage is low? | later | Yes, only after the first run shows the gap; they're not AI keys | open |
+| Q-25 | Free data keys (Smithsonian, NYPL, DPLA) later, if coverage is low? | — | — | resolved → D-34 (keys are fine where needed, kept to a minimum) |
 | Q-26 | Which authors become teachers: `active` only, or `proposed` too? | build | `active` only, as the pipeline does | open |
 
 ---
@@ -61,7 +61,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 - **Background.** Until the library writes `status.json`, nothing counts as approved. Read literally, a second run would remake and pay again for every teacher it already delivered.
 - **Proposal.** The tool keeps its own delivery record and skips any teacher with a draft waiting, unless a request names them. Once `status.json` exists, its `waiting` status takes over.
 
-### Q-03 · Synced folder or Drive API · build
+### Q-03 · Synced folder or Drive API · superseded by D-31
 - **Background.** B2 gives a Drive folder id plus a Drive credential. But Google Drive for desktop is already installed on the owner's PC.
 - **Proposal.** The delivery target is a folder path that Drive for desktop syncs:
   - no credential and no Drive code;
@@ -211,7 +211,7 @@ The owner installed the Claude GitHub App on this repo, and Claude's push works.
 - **Proposal.** Don't use them automatically. List them in the report as "likely" candidates with their links; the owner can accept one with a `try_link` request.
 - **Alternative.** Accept them when the book is by the teacher and was published in their lifetime, marked as a weaker match. The trial would show how often that's wrong.
 
-### Q-25 · Free data keys later · later
+### Q-25 · Free data keys later · resolved → D-34
 - **Proposal.** Don't add Smithsonian, NYPL or DPLA until the first run's report shows how many teachers stay blank. Each key is a free registration and is kept outside the repo like the OpenRouter key.
 
 ### Q-26 · Which authors become teachers · build

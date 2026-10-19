@@ -142,7 +142,7 @@ An invalid setting stops the tool with a message naming the setting. The layout 
 *Verify:* unit tests.
 
 **IN-12 · Teacher list from the pipeline's authors** *proposed* · D-22
-- `portraits teachers sync` reads `authors.csv` from the path in settings. It is never written to.
+- `portraits teachers sync` reads `authors.csv` from the private library-pipeline repo through the GitHub API (D-32), with a read-only token limited to that repo. It is never written to.
 - **Which authors:** only `active` rows (182 on 2026-10-19, the same rule the pipeline uses; Q-26).
 - **How it builds or updates `data/teachers.csv`:**
   - `name` comes from `name`.

@@ -2,7 +2,7 @@
 
 **Phase 0: planning.** There is no code yet. Last updated 2026-10-19 by Claude.
 
-**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **Now: T-01, where the app runs and how the library reaches it** (in discussion; leaning fully hosted, see `topics/T-01-where-it-runs.md`).
+**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **Now: T-01**, mostly decided: fully hosted, two-way API, authors list through GitHub, an admin page (D-31..D-35). **Picking the host** (`topics/T-01-where-it-runs.md`). Next: T-02.
 
 ## Where things stand
 
@@ -16,7 +16,7 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 | Contracts | Teacher list (now generated from library-pipeline's `authors.csv`, D-22), requests and status, and the delivery folder are drafted. The manifest schema waits for O-1 |
 | Sources | Planned (D-29): Wikidata/Commons, LoC, Wellcome, Smithsonian, NYPL, DPLA leads. Internet Archive omitted (D-24). Details at the formal review (tracker T-11) |
 | Build plan and features | 35 feature cards across phases 1–6, with checks, dependencies, live/stub, parkable |
-| Decisions | D-01..D-30 |
+| Decisions | D-01..D-35 |
 | Open questions | Q-01..Q-26. Still open and marked *now*: Q-09, Q-16 (both need O-1), **Q-23 (which image sources)**. Resolved: Q-04, Q-10, Q-17, Q-18, Q-20, Q-21, Q-22 |
 | Examples | The three targets and their originals are in `design/portraits/`. Test use only (D-13) |
 | Style prototype | Recipe 0.3.1 (local drift check, blur on the AI copy): descreen (D-17), AI-enhanced blend with the cut-out from its green background (D-18, D-19), and prompts for every model step (D-20). Real AI copies are first tried in F-27 and F-28 |
@@ -83,3 +83,11 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
   - plan in dependency order with a tracker.
   Claude created `brain/tracker.md` (T-01..T-26), withdrew R4, SRC-13, F-33 and Q-24, and marked the run-based delivery as under rework. Next: T-01.
 - **2026-10-19 (later):** T-01 discussion. The owner leans towards fully hosted, for the harness test. Claude's feasibility review is in `topics/T-01-where-it-runs.md`: feasible, since the AI runs at OpenRouter and the code steps need a small instance; build in layers; a deploy spike picks the host (Replit first, Railway or Render as the fallback). Tracker T-27 added (the harness's deploy duties).
+- **2026-10-19 (later):** T-01 decisions D-31..D-35:
+  - fully hosted, with a two-way API;
+  - the authors list through GitHub (read-only token);
+  - an admin page;
+  - extra keys are fine, kept to a minimum;
+  - the owner can deploy by hand from Replit (phone).
+
+  Host options beyond Replit compared against ten requirements (Railway, Render, DigitalOcean, Cloud Run). Recommendation: Replit (the Rev1 rehearsal), or Railway for automatic deploys and staging.
