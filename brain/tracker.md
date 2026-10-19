@@ -23,7 +23,7 @@
 | T | Topic | Stage | Depends on | Status |
 |---|---|---|---|---|
 | T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **decided** (D-31..D-36): fully hosted on **Railway**, two-way API ([notes](topics/T-01-where-it-runs.md)) |
-| T-02 | The three versions of a portrait, exactly | 1 Shape | none | **next** (D-26 sets the three) |
+| T-02 | The three versions of a portrait, exactly | 1 Shape | none | **in discussion** (D-26 sets the three; [notes](topics/T-02-three-versions.md)) |
 | T-03 | How many portraits per teacher, and what counts as different | 1 Shape | none | open (D-25 sets up to 3) |
 | T-04 | Categories for each portrait | 1 Shape | T-03 | open |
 | T-05 | Approval: what the library approves, and the main portrait | 1 Shape | T-01, T-03 | **decided** (D-38): in the library's queue, reported back |
@@ -83,14 +83,21 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Decided so far:** the library pulls records from the tool (D-28). All AI goes through OpenRouter with one key (D-19).
 - **Affects:** SCOPE-02, OUT-01..OUT-10, RUN-01, the architecture, and the Drive hand-off of B2.
 
-### T-02 · The three versions of a portrait, exactly · **next**
+### T-02 · The three versions of a portrait, exactly · **in discussion**
 - **Depends on:** nothing.
 - **To decide:**
   1. **Original:** the file exactly as downloaded, at full size? Or also a smaller copy for viewing?
   2. **White version:** as designed (1,000 × 1,000 PNG, white dots and line on transparency). Any other sizes?
   3. **Black-and-white version** (style details in T-15): black dots on white, or the reverse? Is the outline drawn, and in which colour? Same crop and size as the white version? Same file format?
   4. File naming and formats for all three.
+  5. Whether working files (the AI-enhanced copy, the cut-out mask) are kept. *(Added 2026-10-19.)*
 - **Decided so far:** the three versions (D-26).
+- **Proposed** ([notes](topics/T-02-three-versions.md), mock-ups in `prototype/out/versions-board.png`):
+  - the original kept byte for byte, plus a JPEG viewing copy;
+  - the white version as designed, 1,000 px only;
+  - the black-and-white version as option A (the white version on black, cut at the outline, white line kept), same crop and size;
+  - version names `original.*`, `original-view.jpg`, `white.png`, `bw.png`;
+  - the working files kept, internal.
 - **Affects:** STY-01..STY-07, OUT-*, T-06, T-13 (each version's licence), T-15.
 
 ### T-03 · How many portraits per teacher, and what counts as different · open
@@ -397,4 +404,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - **T-09 mostly decided:** this project owns the API and its OpenAPI file; the library adopts it, pulls, and sends decisions back; three-portrait scope adopted (D-37).
 
   Next: T-02.
+- **2026-10-19 18:40.** T-02 opened. Mock-ups of the black-and-white version (A white line, B no line, C black edge) on light, dark and coloured pages (`prototype/versions.py`). Finding: inside the outline there is only one possible picture, so the choice is the edge. Proposals in `topics/T-02-three-versions.md`. Item 5 (working files) added. Waiting for the owner.
 

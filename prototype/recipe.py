@@ -259,8 +259,10 @@ def local_drift(L, Eg, A, face_box, cell_px, s=SETTINGS):
     return float(np.percentile(mag, 95)) / max(cell_px, 1e-6)
 
 
-def make_master(rgb, cutout_mask, face, s=SETTINGS, warp=None, enhanced=None):
-    """Return (RGBA uint8 N x N master, info dict). `warp` overrides the crop (used to compare at the owner's framing)."""
+def make_master(rgb, cutout_mask, face, s=SETTINGS, warp=None, enhanced=None, layers=False):
+    """Return (RGBA uint8 N x N master, info dict). `warp` overrides the crop (used to compare at the owner's framing).
+    With layers=True, info["layers"] holds the pieces the other versions are built from (versions.py, T-02):
+    dots, figure, ring (all N x N, 0..1) and dist (distance outside the figure, px)."""
     N, ss = s["size_px"], s["supersample"]
     W = crop_transform(face, s) if warp is None else warp
     L = rgb @ np.array([0.299, 0.587, 0.114], np.float32) if rgb.ndim == 3 else rgb
@@ -323,6 +325,9 @@ def make_master(rgb, cutout_mask, face, s=SETTINGS, warp=None, enhanced=None):
     out[..., 3] = np.round(alpha * 255).astype(np.uint8)
     out[out[..., 3] == 0, :3] = 0  # fully transparent pixels carry no colour
     info = dict(recipe_version=RECIPE_VERSION, levels=levels, crop_scale=scale, descreen=ds, enhance_blend=bl)
+    if layers:
+        dist = cv2.resize(d_ss.astype(np.float32), (N, N), interpolation=cv2.INTER_AREA)
+        info["layers"] = dict(dots=dots, figure=fig_soft, ring=ring, dist=dist)
     return out, info
 
 

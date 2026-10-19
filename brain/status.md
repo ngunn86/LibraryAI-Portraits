@@ -2,7 +2,7 @@
 
 **Phase 0: planning.** There is no code yet. Last updated 2026-10-19 by Claude.
 
-**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **T-01 decided:** fully hosted on Railway, two-way API (D-31..D-36). **T-05 decided** in the library (D-38). **T-09 mostly decided:** this project owns the OpenAPI contract (D-37). **Now: T-02, the three versions of a portrait.** Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated).
+**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **T-01 decided:** fully hosted on Railway, two-way API (D-31..D-36). **T-05 decided** in the library (D-38). **T-09 mostly decided:** this project owns the OpenAPI contract (D-37). **Now: T-02, the three versions of a portrait** (in discussion: [notes](topics/T-02-three-versions.md)). Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated).
 
 ## Where things stand
 
@@ -17,15 +17,15 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 | Sources | Planned (D-29): Wikidata/Commons, LoC, Wellcome, Smithsonian, NYPL, DPLA leads. Internet Archive omitted (D-24). Details at the formal review (tracker T-11) |
 | Build plan and features | 35 feature cards across phases 1–6, with checks, dependencies, live/stub, parkable |
 | Decisions | D-01..D-38 |
-| Open questions | Q-01..Q-26. Still open and marked *now*: Q-09, Q-16 (both need O-1), **Q-23 (which image sources)**. Resolved: Q-04, Q-10, Q-17, Q-18, Q-20, Q-21, Q-22 |
+| Open questions | Q-01..Q-26. Still open and marked *now*: Q-16 (needs O-1). Resolved: Q-04, Q-10, Q-17, Q-18, Q-20, Q-21, Q-22, Q-23, Q-25. Superseded: Q-03, Q-09 |
 | Examples | The three targets and their originals are in `design/portraits/`. Test use only (D-13) |
 | Style prototype | Recipe 0.3.1 (local drift check, blur on the AI copy): descreen (D-17), AI-enhanced blend with the cut-out from its green background (D-18, D-19), and prompts for every model step (D-20). Real AI copies are first tried in F-27 and F-28 |
 | Reviews | Format ready (`reviews/README.md`). No reviews yet |
 
 ## Waiting on the owner (*now*)
 
-1. **O-1:** copy Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py` into `brain/reference/rev1/`, and note the Rev1 commit.
-2. **Tracker topic T-01** (next), then the rest of the tracker in order.
+1. **O-1:** copy Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py` into `brain/reference/rev1/`, and note the Rev1 commit. Rev1 is now readable here through GitHub, so Claude can copy them once the latest Rev1 work is pushed, including `brain/reference/hosting-railway-review.md`.
+2. **Tracker topic T-02** (now), then the rest of the tracker in order.
 3. The *build* questions, in one pass (each is linked from its tracker topic): Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
 
 ## Next planning steps, in order
@@ -98,3 +98,5 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
   - approval and the main portrait are decided in the library and reported back (D-38).
 
   T-01 and T-05 closed, T-09 mostly decided, Q-09 superseded. Rev1's shared hosting review isn't on GitHub yet (latest Rev1 commit 2026-10-18), so it's copied once pushed. Next: T-02.
+- **2026-10-19 (evening):** T-02 opened. Mock-ups of the black-and-white version's edge (A white line, B no line, C black edge) on light, dark and coloured pages. Proposals in `topics/T-02-three-versions.md`: original byte for byte plus a viewing copy; the white version at 1,000 px only; the black-and-white version as option A; version names; working files kept internally.
+
