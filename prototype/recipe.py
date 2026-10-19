@@ -1,0 +1,179 @@
+"""The portrait recipe, prototype version (P0-3). Reference code for the harness, not the product.
+
+Steps (code only; the cut-out and the face landmarks are inputs):
+  crop -> tone (levels from the face) -> halftone (45° round dots, white on transparency)
+  -> smoothed figure mask -> code-drawn outline -> composite -> 1000 x 1000 RGBA master.
+"""
+import numpy as np, cv2
+
+RECIPE_VERSION = "0.1.0"
+
+SETTINGS = {
+    "size_px": 1000,
+    # crop (measured on the owner's three examples; see prototype/RESULTS.md)
+    "eye_mouth_frac": 0.237,      # eye-midpoint to mouth-midpoint distance / side
+    "eye_y_frac": 0.443,          # eye midpoint height / side
+    "face_centre_x_frac": 0.50,   # face box centre / side
+    "min_face_px": 90,            # pre-check: smallest face-box width accepted in the original (the owner's own are 108-183)
+    # tone: levels taken from the face's own tones, then a gamma
+    "white_from_face_p98": 0.02,  # white point = face p98 + this
+    "black_k": 0.2,               # black point = face p5 - k * (face p98 - face p5)
+    "gamma": 1.8,                 # coverage = ramp ** gamma (lifts contrast, keeps shadows transparent)
+    "tone_blur_cells": 0.05,      # blur of the tone map before screening, in dot cells
+    "sharpen_amount": 0.6,        # unsharp mask before screening (0 = off)
+    "sharpen_radius_cells": 1.0,
+    # halftone
+    "dots_across": 110,           # side / dot-cell pitch, measured along the 45° grid
+    "grid_angle_deg": 45,
+    "supersample": 4,
+    # figure mask and outline
+    "mask_smooth_px": 9,          # Gaussian sigma that rounds off stray hair before the line follows it
+    "body_smooth_px": 28,         # stronger smoothing below the chin: shoulders become clean curves
+    "body_blend_px": 120,         # height over which head smoothing blends into body smoothing
+    "outline_gap_px": 2,          # transparent gap between the figure and the line
+    "outline_width_px": 6,        # line width
+}
+
+
+def crop_transform(face, s=SETTINGS):
+    """Similarity transform (2x3) from original pixels to the square frame, from the face landmarks."""
+    N = s["size_px"]
+    k = np.asarray(face["kps"], np.float64)
+    eye = (k[0] + k[1]) / 2
+    mouth = (k[3] + k[4]) / 2
+    em = np.linalg.norm(mouth - eye)
+    scale = s["eye_mouth_frac"] * N / em
+    bx = face["box"]
+    cx = (bx[0] + bx[2]) / 2
+    tx = s["face_centre_x_frac"] * N - scale * cx
+    ty = s["eye_y_frac"] * N - scale * eye[1]
+    return np.array([[scale, 0, tx], [0, scale, ty]], np.float32)
+
+
+def tone_to_coverage(L, mask, face_box_frame, pitch, s=SETTINGS):
+    """Map luminance (0..1) to white-dot coverage (0..1) using levels taken from the face.
+
+    The face's tones are read at the scale of one dot cell (blurred), inside the face box and well
+    inside the figure, so single dark pixels (pupils, nostrils) don't move the levels.
+    """
+    N = L.shape[0]
+    Lb = cv2.GaussianBlur(L, (0, 0), 0.9 * pitch)
+    inner = cv2.erode((mask > 0.5).astype(np.uint8), np.ones((int(3.3 * pitch) | 1,) * 2, np.uint8)) > 0
+    x0, y0, x1, y1 = [int(round(v)) for v in face_box_frame]
+    x0, y0, x1, y1 = max(x0, 0), max(y0, 0), min(x1, N), min(y1, N)
+    sel = np.zeros_like(inner); sel[y0:y1, x0:x1] = True
+    fv = Lb[sel & inner]
+    if fv.size < 100:
+        fv = Lb[mask > 0.5]
+    p5, p98 = np.percentile(fv, [5, 98])
+    white = p98 + s["white_from_face_p98"]
+    black = p5 - s["black_k"] * (p98 - p5)
+    src = L
+    if s.get("sharpen_amount", 0) > 0:
+        blur = cv2.GaussianBlur(L, (0, 0), s["sharpen_radius_cells"] * pitch)
+        src = L + s["sharpen_amount"] * (L - blur)
+    ramp = np.clip((src - black) / max(white - black, 1e-3), 0, 1)
+    return ramp ** s["gamma"], dict(black=float(black), white=float(white), face_p5=float(p5), face_p98=float(p98))
+
+
+def _threshold_map(N, ss, pitch, angle_deg):
+    """Euclidean round-dot screen: per (super)pixel threshold in 0..1 (low = turns white first)."""
+    M = N * ss
+    y, x = np.mgrid[:M, :M].astype(np.float32)
+    x = (x + 0.5) / ss; y = (y + 0.5) / ss
+    a = np.radians(angle_deg)
+    u = (x * np.cos(a) + y * np.sin(a)) / pitch
+    v = (-x * np.sin(a) + y * np.cos(a)) / pitch
+    u = 2 * (u - np.floor(u)) - 1          # -1..1 within the cell
+    v = 2 * (v - np.floor(v)) - 1
+    au, av = np.abs(u), np.abs(v)
+    centre = (au + av) <= 1
+    key = np.where(centre, 2 - (au ** 2 + av ** 2), (1 - au) ** 2 + (1 - av) ** 2)
+    # rank-normalise the key over one cell so coverage maps to area exactly
+    g = np.linspace(-1, 1, 401, dtype=np.float32)
+    gu, gv = np.meshgrid(g, g)
+    gau, gav = np.abs(gu), np.abs(gv)
+    gk = np.sort(np.where(gau + gav <= 1, 2 - (gau ** 2 + gav ** 2), (1 - gau) ** 2 + (1 - gav) ** 2).ravel())
+    rank = np.searchsorted(gk, key.ravel()).reshape(key.shape) / gk.size
+    return (1 - rank).astype(np.float32)
+
+
+def smooth_mask(mask, s=SETTINGS, chin_y=None):
+    """Binary figure mask with stray hair and small bumps rounded off; holes filled; largest piece only.
+
+    The head keeps more of its shape (hair) than the shoulders: below the chin the mask is smoothed
+    harder, so the line runs down the shoulders as a clean curve even when the cut-out is ragged there.
+    """
+    b = (mask > 0.5).astype(np.uint8)
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(b, 8)
+    if n > 1:
+        keep = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
+        b = (lab == keep).astype(np.uint8)
+    bf = b.astype(np.float32)
+    head = cv2.GaussianBlur(bf, (0, 0), s["mask_smooth_px"])
+    if chin_y is not None and s.get("body_smooth_px", 0) > s["mask_smooth_px"]:
+        body = cv2.GaussianBlur(bf, (0, 0), s["body_smooth_px"])
+        H = b.shape[0]
+        ramp = np.clip((np.arange(H) - chin_y) / max(s["body_blend_px"], 1), 0, 1).astype(np.float32)[:, None]
+        sm = head * (1 - ramp) + body * ramp
+    else:
+        sm = head
+    out = (sm > 0.5).astype(np.uint8)
+    # fill holes: anything not connected to the border through background
+    n, lab = cv2.connectedComponents((out == 0).astype(np.uint8), connectivity=4)
+    border = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+    out = np.where((out == 0) & ~np.isin(lab, list(border)), 1, out).astype(np.uint8)
+    return out
+
+
+def make_master(rgb, cutout_mask, face, s=SETTINGS, warp=None):
+    """Return (RGBA uint8 N x N master, info dict). `warp` overrides the crop (used to compare at the owner's framing)."""
+    N, ss = s["size_px"], s["supersample"]
+    W = crop_transform(face, s) if warp is None else warp
+    L = rgb @ np.array([0.299, 0.587, 0.114], np.float32) if rgb.ndim == 3 else rgb
+    Lc = cv2.warpAffine(L.astype(np.float32), W, (N, N), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+    Mc = cv2.warpAffine(cutout_mask.astype(np.float32), W, (N, N), flags=cv2.INTER_LINEAR, borderValue=0)
+    bx = np.array(face["box"], np.float64).reshape(2, 2)
+    bxf = np.hstack([bx, np.ones((2, 1))]) @ W.T
+    pitch = N / s["dots_across"]
+    cov, levels = tone_to_coverage(Lc, Mc, bxf.ravel(), pitch, s)
+    cov = cv2.GaussianBlur(cov, (0, 0), max(pitch * s["tone_blur_cells"], 0.1))
+    kf = np.hstack([np.asarray(face["kps"], np.float64), np.ones((5, 1))]) @ W.T
+    eye_y, mouth_y = (kf[0, 1] + kf[1, 1]) / 2, (kf[3, 1] + kf[4, 1]) / 2
+    chin_y = mouth_y + 0.8 * (mouth_y - eye_y)
+    fig = smooth_mask(Mc, s, chin_y=chin_y)
+    # halftone at supersampled resolution
+    thr = _threshold_map(N, ss, pitch, s["grid_angle_deg"])
+    cov_ss = cv2.resize(cov, (N * ss, N * ss), interpolation=cv2.INTER_LINEAR)
+    dots_ss = (cov_ss > thr).astype(np.float32)
+    dots = cv2.resize(dots_ss, (N, N), interpolation=cv2.INTER_AREA)
+    # clip dots to the figure (soft edge from the supersampled mask)
+    fig_ss = cv2.resize(fig.astype(np.float32), (N * ss, N * ss), interpolation=cv2.INTER_LINEAR)
+    fig_soft = cv2.resize((fig_ss > 0.5).astype(np.float32), (N, N), interpolation=cv2.INTER_AREA)
+    dots *= fig_soft
+    # outline: band at distance (gap, gap + width] outside the figure, anti-aliased, from the supersampled mask
+    outside_ss = (fig_ss <= 0.5).astype(np.uint8)
+    d_ss = cv2.distanceTransform(outside_ss, cv2.DIST_L2, 5) / ss
+    g, w = s["outline_gap_px"], s["outline_width_px"]
+    ring_ss = ((d_ss > g) & (d_ss <= g + w)).astype(np.float32)
+    ring = cv2.resize(ring_ss, (N, N), interpolation=cv2.INTER_AREA)
+    alpha = np.clip(np.maximum(dots, ring), 0, 1)
+    out = np.zeros((N, N, 4), np.uint8)
+    out[..., :3] = 255
+    out[..., 3] = np.round(alpha * 255).astype(np.uint8)
+    out[out[..., 3] == 0, :3] = 0  # fully transparent pixels carry no colour
+    info = dict(recipe_version=RECIPE_VERSION, levels=levels, crop_scale=float(np.sqrt(abs(np.linalg.det(W[:, :2])))))
+    return out, info
+
+
+def check_master(rgba, N=1000):
+    """STY-06: N x N, RGBA, every visible pixel pure white, corners transparent."""
+    problems = []
+    if rgba.shape != (N, N, 4):
+        problems.append(f"size {rgba.shape}")
+    vis = rgba[..., 3] > 0
+    if (rgba[..., :3][vis] != 255).any():
+        problems.append("non-white visible pixels")
+    if any(rgba[y, x, 3] for y, x in [(0, 0), (0, N - 1)]):
+        problems.append("top corners not transparent")
+    return problems

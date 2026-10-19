@@ -16,12 +16,14 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 | Decisions | D-01..D-16 |
 | Open questions | Q-01..Q-20. Still open and marked *now*: Q-09, Q-16 (both need O-1). Resolved: Q-04, Q-10, Q-17, Q-20 |
 | Examples | The three targets and their originals are in `design/portraits/`. Test use only (D-13) |
+| Style prototype | Recipe 0.1.0 reproduces the three examples (`prototype/README.md`, `prototype/out/board.png`). **Waiting for the owner's look** |
 | Reviews | Format ready (`reviews/README.md`). No reviews yet |
 
 ## Waiting on the owner (*now*)
 
 1. **O-1:** copy Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py` into `brain/reference/rev1/`, and note the Rev1 commit.
-2. The *build* questions, in one pass: Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
+2. **A look at the style prototype's board** (`prototype/out/board.png`): is it close enough, or what should change?
+3. The *build* questions, in one pass: Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
 
 ## Next planning steps, in order
 
@@ -48,3 +50,9 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
   - credit metadata must be complete (D-14);
   - the harness is designed in a separate chat (D-15).
   The examples are to be used to evaluate the processing steps, so the style prototype goes ahead (D-16). Claude started the prototype (P0-3).
+- **2026-10-19 (later):** Style prototype (P0-3), recipe 0.1.0.
+  - Measured the owner's portraits: 45° grid, 110 cells across, line 6 px with a 2 px gap at 1,000 px, crop by eye-to-mouth distance.
+  - Built the recipe in code and reproduced all three: figure overlap 0.88–0.97, tone error 0.05–0.07.
+  - The code-drawn line matches the owner's, which supports Q-05.
+  - Known gap: the stand-in cut-out is weak on a dark suit against a dark background (Holmes).
+  - Fixtures and reference outputs saved for F-16.

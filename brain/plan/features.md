@@ -268,13 +268,14 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 
 ### F-12 · Crop
 - **Phase:** 3
-- **Goal:** Crop a cut-out to the house framing: square, head near the top, face filling most of the width, shoulders off the bottom.
+- **Goal:** Crop a cut-out to the house framing from five face landmarks: square, head near the top, face filling most of the width, shoulders off the bottom.
 - **Covers:** PIP-04, STY-03
 - **Depends on:** F-01
-- **Owner input:** none (geometry numbers come from P0-3; placeholders until then)
-- **Build:** `portraits/imaging/crop.py`; the local face detector (model file committed).
+- **Owner input:** none (geometry from recipe 0.1.0; reference code in `prototype/recipe.py`, `crop_transform`)
+- **Build:** `portraits/imaging/crop.py`; the YuNet face detector (model file committed).
 - **Checks:**
-  - On synthetic figures, the face box and head top land inside the setting ranges.
+  - With the landmarks in `prototype/fixtures/*.json`, the crop transform matches `prototype/recipe.py` to within 0.5 px.
+  - On synthetic figures, the eye line, eye-to-mouth distance and face centre land inside the setting ranges.
   - On 3 real public-domain photos with fixture masks, the face is detected and the crop meets the ranges.
   - With no detectable face, a supplied box is used instead (the pre-check's).
   - The output is square, at the master size.
@@ -342,14 +343,14 @@ SCOPE-01..04 are boundaries rather than features. Reviewers check them, and AC-0
 - **Goal:** Lock in the prototype's recipe: the code steps on the owner's three originals reproduce the prototype's reference outputs.
 - **Covers:** IN-09, STY-07, TRI-08 (code measures)
 - **Depends on:** F-12, F-13, F-14, F-15
-- **Owner input:** O-2 and the P0-3 outputs (references, fixture cut-outs, thresholds)
-- **Build:** `tests/test_f16_recipe.py`; fixtures under `tests/fixtures/examples/`.
+- **Owner input:** none. O-2 is done, and the P0-3 outputs are in `prototype/` (recipe 0.1.0, waiting for the owner's look)
+- **Build:** `tests/test_f16_recipe.py`, using `prototype/fixtures/` (cut-outs, landmarks, registrations) and `prototype/out/` (reference masters).
 - **Checks:**
-  - For each example, the pipeline's code steps on the fixture cut-out match the prototype reference within a set pixel tolerance.
-  - The code measures against the hand-made target (figure-mask overlap, face-box position, dot pitch) meet the thresholds from P0-3.
-- **Test data:** P0-3 outputs.
+  - For each example and both framings (`owner-framing`, `auto-crop`), the product's code steps on the fixture cut-out reproduce `prototype/out/<tid>.<framing>.png`. The alpha may differ by at most 2/255 in mean, with at most 1% of pixels differing by more than 64/255.
+  - The code measures at the owner's framing meet TRI-08's thresholds: figure overlap ≥ 0.85, tone error ≤ 0.08, dots across 110 ± 2, and no STY-06 problems.
+- **Test data:** `prototype/fixtures/`, `prototype/out/`, `design/portraits/`.
 - **Live calls:** none
-- **Parkable:** yes (waits for O-2 and P0-3)
+- **Parkable:** yes (raised in the digest)
 - **Size:** S
 
 ---

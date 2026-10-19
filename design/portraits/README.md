@@ -41,4 +41,4 @@ The owner supplied these originals so the processing steps can be worked out and
   - **Crop:** a tight crop, with the head close to the top edge and the face filling roughly half to two-thirds of the width.
   - **Dots:** highlights merge into near-solid white, and the dark clothing is almost entirely transparent.
   - **Outline:** a thin line a few pixels outside the hair. It follows the hair's overall shape, including Cady's curls as bumps rather than single strands, and runs down the shoulders and off the bottom edge.
-- The prototype measures all of this properly (crop geometry, dot pitch, outline width and offset) and records the numbers as recipe settings.
+- The prototype has now measured all of this (2026-10-19). The numbers and results are in `prototype/README.md`.

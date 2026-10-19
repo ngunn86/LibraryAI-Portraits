@@ -18,7 +18,7 @@ Nothing runs as a server.
 | Language | Python 3.12, run in WSL Ubuntu on the owner's PC | The image work (NumPy, OpenCV, Pillow) is native to Python, and all three coding models are strongest in it |
 | Environment | `uv`, with a `pyproject.toml` and a lock file | One command to set up; the same setup on any machine |
 | Images | Pillow, NumPy, OpenCV (headless), scikit-image where it saves code | Halftone, descreen (FFT), contours, masks |
-| Face box | OpenCV's built-in face detector (YuNet; a small model file of a few hundred KB, committed) | Free, local and the same every time. Falls back to the pre-check's box (PIP-04) |
+| Face box and landmarks | OpenCV's YuNet face detector (box plus five landmarks; a small model file, committed) | Free, local and the same every time. The crop needs the eye and mouth landmarks (PIP-04). Falls back to the pre-check's box |
 | HTTP | `httpx`, with an on-disk response cache and record/replay for tests | Retries, timeouts, an allowlist (SRC-01) |
 | Data and contracts | `pydantic` for settings and records; `jsonschema` for the manifest | Settings errors name the field; the schema check is the same one the library uses |
 | CLI | `typer` | Small and typed |
@@ -138,16 +138,30 @@ outline       = { method = "model", id = "…", family = "google", est_cost_usd 
 challengers   = [ { id = "…", family = "openai" }, { id = "…", family = "bfl" } ]
 draft_check   = { id = "…", family = "…", est_cost_usd = 0.0 }
 
-[recipe]                            # starting numbers come from the style prototype (STY-07)
+[recipe]                            # recipe 0.1.0 from the style prototype (prototype/README.md)
 size_px = 1000
+# crop (PIP-04)
+eye_mouth_frac = 0.237
+eye_y_frac = 0.443
+face_centre_x_frac = 0.50
+min_face_px = 90
+# tone (STY-01)
+white_from_face_p98 = 0.02
+black_k = 0.2
+gamma = 1.8
+sharpen_amount = 0.6
+sharpen_radius_cells = 1.0
+tone_blur_cells = 0.05
+# halftone (STY-01)
 dots_across = 110
 grid_angle_deg = 45
-contrast_lift = 0.0
-outline_width_px = 0
-outline_offset_px = 0
-head_top_frac = 0.0
-face_width_frac = 0.0
-min_face_px = 0
+supersample = 4
+# figure mask and outline (STY-02)
+mask_smooth_px = 9
+body_smooth_px = 28
+body_blend_px = 120
+outline_gap_px = 2
+outline_width_px = 6
 ```
 
 ## Keys

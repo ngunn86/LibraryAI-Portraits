@@ -19,7 +19,7 @@ Each question waits for the owner and carries Claude's proposal. When one is set
 | Q-02 | Re-runs: skip teachers whose draft is already waiting? | build | Yes, using the tool's own delivery record until `status.json` exists | open |
 | Q-03 | Deliver through a synced folder or the Drive API? | build | Synced folder; the API stays a later option | open |
 | Q-04 | Prove the style in planning, before the harness builds? | — | Yes: prototype the recipe here against the three examples | resolved → D-16 |
-| Q-05 | Add a code-drawn outline as a fourth trial contender? | build | Yes | open |
+| Q-05 | Add a code-drawn outline as a fourth trial contender? | build | Yes, and make it the default: the prototype shows it reproduces the owner's line | open |
 | Q-06 | What does "remake" mean when most steps are deterministic? | build | Re-run only the steps that can change; otherwise set aside | open |
 | Q-07 | Do pre-check rejections count toward the three originals? | build | No, but cap pre-checks at 8 per teacher per run | open |
 | Q-08 | What can a Try-again note change? | build | It guides a fresh attempt and the check; it never changes recipe settings | open |
@@ -85,6 +85,8 @@ Each question waits for the owner and carries Claude's proposal. When one is set
 - **Proposal.** Add the code method as a fourth contender (PIP-07, TRI-03). Nothing in the style changes; only the drawing method could. The trial rule decides: the best wins, the cheaper when close.
   - If code wins, most of the roughly 17 cents per attempt goes away.
   - If code wins, the "different family" rule for the checker becomes moot.
+- **Evidence from the prototype (2026-10-19).** The owner's line is exactly what code produces: a 6 px band 2 px outside a smoothed silhouette, with the dots clipped to the same silhouette. The code line reproduces it on all three examples (`prototype/out/board.png`).
+- **Updated proposal.** Make the code line the default (recipe 0.1.0). Keep the three image-model lines as trial contenders, to confirm or overturn that.
 
 ### Q-06 · What "remake" means · build
 - **Background.** If code draws the outline, every step except the cut-out and the checks is deterministic. Remaking a failed draft with the same inputs gives the same draft, and asking the checker again until it says yes would just be gaming it.

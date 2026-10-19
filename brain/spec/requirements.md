@@ -261,15 +261,16 @@ The tool has no setting, path or code that reads Library-AI's scans or the owner
 
 **STY-01 · Halftone** *fixed* · B2
 - A one-colour halftone of the photo: round white dots on a 45° grid.
-- About 110 dots across the square. The exact count, and how it's measured, are set by the style prototype.
+- About 110 dots across the square. *Measured* (prototype, recipe 0.1.0): `dots_across` = side ÷ dot-cell pitch along the 45° grid = 110 (the owner's Fillmore 109, Holmes 111).
 - Dot size follows tone. Dark tones are left transparent, so the page's colour shows through as the shadows.
-- Contrast is lifted a little, so the face reads in dots.
+- Contrast is lifted a little, so the face reads in dots. *Prototype rule:* levels from the face's own tones (white point at the face's p98, shadows dropping out well above black), then a gamma and a light unsharp mask. The numbers are in `prototype/README.md`.
 
 *Verify:* a synthetic-gradient test checks the dot pitch and the 45° angle by frequency analysis, and that dots grow with brightness.
 
 **STY-02 · Outline** *fixed* · B2; bottom edge *proposed* · C
 - One thin, smooth white line just outside the head and shoulders, following the hair's overall shape rather than single strands.
 - Where the shoulders run off the bottom of the square, the line runs off with them. It doesn't trace along the bottom edge.
+- *Measured* (prototype): 6 px wide, 2 px outside a smoothed silhouette, on the 1,000 px master. The dots are clipped to the same silhouette. The head is smoothed gently (hair keeps its overall shape) and the shoulders harder.
 
 *Verify:* on fixtures, the line is one connected piece, its width stays within settings, and it sits a set distance outside the figure.
 
@@ -278,8 +279,8 @@ The tool has no setting, path or code that reads Library-AI's scans or the owner
 - The face fills most of the width, and the shoulders run off the bottom.
 - No background at all.
 
-The geometry settings come from the style prototype.
-*Verify:* on fixtures, the face box and head top fall inside the setting ranges.
+The geometry settings come from the style prototype. *Measured* (recipe 0.1.0): eye-to-mouth distance 0.237 of the side, eye line at 0.443 of the height, face centred.
+*Verify:* on fixtures, the eye line, eye-to-mouth distance and face centre fall inside the setting ranges.
 
 **STY-04 · The likeness is the photo's own** *fixed* · B2
 - The dots are made by code from the photo's tones.
@@ -303,11 +304,11 @@ The master is a 1,000 × 1,000 PNG with an alpha channel:
 
 *Verify:* a checker function, run on every master in every test and inside the tool before delivery.
 
-**STY-07 · The target** *fixed* · B2; numbers *open* until the prototype (Q-04)
+**STY-07 · The target** *fixed* · B2, D-16; numbers *proposed* (recipe 0.1.0, waiting for the owner's look)
 The owner's three hand-made portraits are the target.
 
-- The recipe's starting numbers are set by matching them. That covers dot count, contrast, outline width and offset, and crop geometry.
-- Proposal: this happens in Phase 0, before the build (Q-04).
+- The recipe's starting numbers were set by matching them in Phase 0 (D-16). See `prototype/README.md` and `prototype/out/board.png`.
+- The harness builds the real modules to reproduce `prototype/out/` from `prototype/fixtures/` (F-16).
 
 ---
 
@@ -320,7 +321,7 @@ Take the best candidate that hasn't been set aside (SRC-07).
 - A vision model confirms all of these:
   - exactly one person;
   - the face fully in view;
-  - the face large enough (a minimum face width in source pixels, set in settings, low enough to accept the owner's own originals, whose faces are only about 100–150 px across);
+  - the face large enough: a face-box width of at least `min_face_px` = 90 source pixels. The owner's own originals measure 108–183 px;
   - not badly damaged.
 - It returns a structured verdict: pass or fail, reasons, an approximate face box, and whether the original is a photograph or another medium (Q-11).
 - A failing original is set aside with its reason. Nothing else is spent on it.
@@ -334,10 +335,11 @@ Take the best candidate that hasn't been set aside (SRC-07).
 *Verify:* a stub test proves the second try doesn't call the model again.
 
 **PIP-04 · Crop, by code** *fixed* · B2; method *proposed* · C
-Code crops to STY-03 using the cut-out's mask and a face box.
+Code crops to STY-03 with a similarity transform from five face landmarks (eyes, nose, mouth corners):
 
-- The face box comes from a local face detector.
-- If the detector finds no face, as can happen with engravings, the pre-check's box is used.
+- Scale comes from the eye-to-mouth distance, which holds steady when the head turns. The eye line sits at a set height, and the face box is centred.
+- The landmarks come from a local face detector. YuNet is proposed; it is permissively licensed and gives a box plus five landmarks.
+- If the detector finds no face, as can happen with engravings, the pre-check's box is used and the eye line is estimated from it.
 
 *Verify:* synthetic and fixture images.
 
@@ -583,7 +585,7 @@ The estimate is about $30, inside the first run's cap. *Proposed:* a trial sub-c
 
 **TRI-08 · The examples are reproduced** *fixed* · B2; metrics *proposed* · C
 - The pipeline's output for the owner's three originals passes the check when compared against the hand-made targets, in the check's "compare with target" mode.
-- *Proposed:* simple code measures sit alongside the check: overlap of the figure masks, the face box's position, and dot pitch, with thresholds set by the prototype.
+- *Proposed:* simple code measures sit alongside the check. At the owner's framing, compared at 500 px, they need: figure overlap ≥ 0.85, mean tone error ≤ 0.08, dots across 110 ± 2, and no STY-06 problems. The prototype scores 0.88–0.97, 0.053–0.071 and 110.5.
 
 ---
 
