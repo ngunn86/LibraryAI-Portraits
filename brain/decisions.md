@@ -476,3 +476,20 @@ Claude's choices carried with this decision (RUN-10):
 
 → T-21, RUN-10, IN-11, OUT-13, OUT-14
 
+**D-56 · 2026-10-20 · The trial** · owner · *closes T-22; resolves Q-19*
+1. **The checker's scores pick the winning image model, and the owner can veto** (as B2). The run doesn't wait for the owner.
+2. **The board also shows each portrait without the AI blend** (the same layers at 0%), so the owner can see what the blend adds. It costs nothing.
+
+Claude's proposals carried with this decision:
+- **The trial set:**
+  - the owner's three originals, test only (D-13);
+  - about 20 originals picked from the coverage survey (SRC-14): dot-screened book prints, a tiny original, a group photo, an engraving and a damaged print;
+  - teachers with several photographs, including copies of one photograph and two sittings of one teacher. These set PIP-20's thresholds on real pairs.
+- **The contenders** are the three enhance models: Nano Banana Pro, Nano Banana 2 and GPT Image 2.
+- **"Close"** means a total score within 5% of the best; the cheaper model then wins.
+- **The board** goes on the admin page, and the harness digest links to it for the veto. There is no Drive copy (D-42).
+- **Engravings** are turned off by the owner's veto if they look bad on the board (D-47).
+- **Cost:** about $11 of the $30 budget (D-54).
+
+→ T-22, TRI-02..TRI-06, PIP-20, Q-19
+

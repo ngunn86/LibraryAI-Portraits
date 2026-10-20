@@ -43,8 +43,8 @@
 | T-19 | How runs work | 5 Running | T-01, T-05, T-08 | **decided** (D-53): nightly, requests at once, monthly re-search, library email + admin page |
 | T-20 | Spend | 5 Running | T-03, T-18, T-19 | **decided** (D-54): first run $100; then $10 a night, $30 a month; trial $30 |
 | T-21 | Security | 5 Running | T-01, T-08 | **decided** (D-55): one admin password; the same AI key everywhere, with low caps off production |
-| T-22 | The trial | 5 Running | T-14 – T-18, T-20 | **next** |
-| T-23 | Stack and architecture | 6 Build | T-01, T-06, T-08 | open |
+| T-22 | The trial | 5 Running | T-14 – T-18, T-20 | **decided** (D-56): three enhance models; the checker picks, the owner can veto; no-blend shown beside |
+| T-23 | Stack and architecture | 6 Build | T-01, T-06, T-08 | **next** |
 | T-24 | Testing approach | 6 Build | T-23 | mostly decided (D-09) |
 | T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | open |
 | T-26 | Outside reviews and plan freeze | 6 Build | T-25 | open |
@@ -428,18 +428,22 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - the rest is Claude's (RUN-10): hashed keys, HTTPS, a private bucket, signed links, rate limits, outbound allowlist, no PC exposure;
   - backups as D-42.
 
-### T-22 · The trial · **next**
+### T-22 · The trial · **decided**
 - **Depends on:** T-14 – T-18, T-20.
 - **To decide:**
   - the trial set, now including teachers with several portraits and known copies of the same photograph (to test T-16);
   - contenders (enhance models, with and without the blend);
   - the board;
   - "close" (Q-19).
+- **Decided (D-56):**
+  - the checker's scores pick the winning enhance model, and the owner can veto;
+  - the board shows each result without the blend too;
+  - the trial set, contenders, "close" (within 5%) and the board on the admin page are Claude's.
 - **Linked:** TRI-01..TRI-08, P0-4.
 
 ## Stage 6: Building it with the harness
 
-### T-23 · Stack and architecture · open
+### T-23 · Stack and architecture · **next**
 - **Depends on:** T-01, T-06, T-08.
 - **To decide:**
   - the language (Q-15, Python proposed);
@@ -582,4 +586,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **2026-10-19 23:25.** **T-19 decided** (D-53): nightly runs with requests at once; monthly re-search; updates through the library's daily email, the admin page and Railway alerts; Try-again notes guide a fresh AI copy. Q-02 and Q-08 resolved. Next: T-20.
 - **2026-10-20 00:05.** **T-20 decided** (D-54): $100 first run; $10 a night and $30 a month after; trial $30. The owner-input list is updated for the hosted app: O-4 is now a Railway variable with a credit limit; O-5 is withdrawn; O-8..O-11 added (Railway account, GitHub token, User-Agent contact, the library's key). Next: T-21.
 - **2026-10-20 00:15.** **T-21 decided** (D-55): one admin password; the same OpenRouter key everywhere, with low caps for staging and pull-request copies. RUN-10 added. Next: T-22.
+- **2026-10-20 00:25.** **T-22 decided** (D-56): the three enhance models compete; the checker picks the winner and the owner can veto; no-blend versions are shown beside each result. Q-19 resolved. Next: T-23, the stack and architecture rewrite for the hosted app.
 

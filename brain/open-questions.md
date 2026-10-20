@@ -33,7 +33,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q-16 | Does the manifest carry the portrait's own licence (CC BY-SA share-alike)? | — | — | resolved → D-48 (each file's licence, link and credit are in this project's API; the Rev1 manifest is no longer used, D-37) |
 | Q-17 | Where is the harness planned and built, and what format does it read? | — | Its own repo; this repo supplies feature cards in a fixed format | resolved → D-15 (a separate chat; format provisional) |
 | Q-18 | Which cut-out provider? | — | An OpenRouter image model, with the cut-out from the enhanced copy's keyed background | resolved → D-19 (method proposed in PIP-03) |
-| Q-19 | In the trial, what counts as "close"? | trial | Total score within 5% of the best | open |
+| Q-19 | In the trial, what counts as "close"? | — | — | resolved → D-56 (within 5% of the best; the cheaper wins) |
 | Q-20 | Can Claude push to this repo? | — | Install the Claude GitHub App on this repo | resolved 2026-10-19 (app installed; push works) |
 | Q-21 | Adopt the owner's AI-enhanced blend, which changes STY-04's "no image model on the likeness"? | — | Yes, with safeguards | resolved → D-18 |
 | Q-22 | Which AI tools and prompts did the owner use, and are the in-between files still available? | — | Claude proposes them | resolved → D-20 (no files; prompts in `prototype/prompts/`) |
@@ -166,7 +166,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 - **Option.** A free local model (for example BiRefNet, MIT licence) could run on the owner's PC with no key and no cost.
 - **Proposal.** The trial compares the owner's tool (once named, Q-22) with Bria. The free local model is an optional extra. The best cut-out wins, and the cheaper one when they're close.
 
-### Q-19 · "Close" in the trial's winner rule · trial
+### Q-19 · "Close" in the trial's winner rule · resolved → D-56
 - **Proposal.** A contender is close when its total check score is within 5% of the best. Among close contenders, the cheapest per attempt wins.
 
 ### Q-20 · Claude pushing to this repo · resolved 2026-10-19
