@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -224,7 +224,7 @@ A file counts as showing the teacher only by one of these rules, tried in this o
 
 1. **R1:** the image on the teacher's Wikidata item (property P18).
 2. **R2:** Commons files whose structured data says they depict the teacher's Wikidata item (property P180).
-3. **R3:** picture records (LoC Prints and Photographs, and other adopted picture sources) that name the teacher with matching dates (SRC-05).
+3. **R3:** picture records (LoC Prints and Photographs, and other adopted picture sources) that name the teacher with matching dates (SRC-05), or that carry the teacher's LoC name id (D-47).
 4. ~~**R4 (book plate)**~~: *withdrawn* by D-24. Portraits are not extracted from books unless that proves absolutely necessary.
 
 These never count:
@@ -236,9 +236,9 @@ These never count:
 
 *Verify:* recorded-response fixtures for each rule, plus negative fixtures: a category-only file, a name-only LoC record, and a record with the wrong dates.
 
-**SRC-04 · An owner's link is the owner's match** *fixed* · B2; limits *proposed* · C
+**SRC-04 · An owner's link is the owner's match** *fixed* · B2; limits *proposed* · C, widened by D-47
 - A link pasted in a `try_link` request is accepted as the owner's own match, recorded as `matched_by: owner_link`.
-- It must still point to a Commons file or a Library of Congress item, and its licence must pass SRC-02.
+- It must still point to an adopted source (a Commons file, a Library of Congress item or a Wellcome work, D-46), and its licence must pass SRC-02.
 - A link to anywhere else, or one that fails the licence check, is refused and named in the report.
 
 *Verify:* fixtures.
@@ -250,9 +250,13 @@ A Library of Congress record matches when **both** of these hold:
 - the heading's dates equal the teacher's birth and death years.
 
 A heading without dates never matches.
+
+*Since D-47:*
+- **The id alone is enough.** When the record's name heading carries a LoC name id, and that id is the teacher's (recorded under D-45, IN-13), the id matches without comparing names or dates.
+- **The same rule applies to every adopted picture source.** Wellcome's contributor and subject entries often carry LoC name ids.
 *Verify:* fixtures with matching, near-miss and undated headings.
 
-**SRC-06 · Checking and finding Wikidata ids** *proposed* · C (Q-01)
+**SRC-06 · Checking and finding Wikidata ids** *fixed* · D-45; checks *proposed* · C
 - **(a) Sanity check of a given id.** The item must be a human (instance of Q5). Where the list gives years, the item's birth and death years must equal them.
   - On a mismatch the teacher is skipped and named in the report ("the Wikidata id may be wrong").
   - This guards against a typo producing a confident wrong portrait.
@@ -261,7 +265,8 @@ A heading without dates never matches.
   - birth and death years equal to the list's.
 
   The resolved id is recorded as `resolved_by_tool`, and the report lists it so the owner can add it to the list.
-- **(c) No match.** With no id and fewer than two years, the teacher is skipped and named in the report.
+  - *Since D-45:* it is accepted only when the LoC name authority agrees on the person and both years (IN-13).
+- **(c) No match.** With no id and fewer than two years, the teacher is skipped and listed on the admin page (D-45).
 
 *Verify:* fixtures for a good id, a wrong-years id, a non-human id, one candidate, two candidates and no candidates.
 

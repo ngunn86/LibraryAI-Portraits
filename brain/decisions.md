@@ -342,3 +342,13 @@ Claude's proposals carried with this decision:
 
 → T-11, T-12, T-13, T-22, SRC-01, SRC-09, SRC-14, sources.md
 
+**D-47 · 2026-10-19 · Match rules settled; any medium, the trial decides** · owner · *closes T-12; resolves Q-11*
+- **Engravings, drawings and paintings** are accepted when they pass the pre-check, with the medium recorded. If engravings halftone badly in the trial, one setting (`allowed_media`) turns them off.
+
+Claude's refinements carried with this decision:
+- **R3 by catalogue id.** When a LoC or Wellcome record carries the person's LoC name id, and that id is the teacher's (found under D-45), the id alone is the match. Otherwise the name-and-dates rule applies (SRC-05).
+- **Pasted links** (`try_link`) may point to any adopted source: Commons, the LoC or Wellcome.
+- **SRC-06** follows D-45. A missing Wikidata id is accepted only when Wikidata and the LoC name authority agree; otherwise the teacher is skipped and listed.
+
+→ T-12, SRC-03..SRC-06, PIP-02, Q-11
+

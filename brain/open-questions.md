@@ -25,7 +25,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q-08 | What can a Try-again note change? | build | It guides a fresh attempt and the check; it never changes recipe settings | open |
 | Q-09 | Who defines `requests.json` and `status.json`? | — | — | superseded by D-37 (decisions come back through this project's API, defined in its OpenAPI file) |
 | Q-10 | Where did the owner's three originals come from, and are those teachers delivered? | — | Use them as style targets only | resolved → D-13 (source unknown; never delivered) |
-| Q-11 | Are engravings and drawings acceptable originals? | trial | Yes, if they pass the pre-check, with the medium recorded; the trial shows how they look | open |
+| Q-11 | Are engravings and drawings acceptable originals? | — | — | resolved → D-47 (yes; the trial decides, and a setting can turn them off) |
 | Q-12 | How are dates validated? | — | — | resolved → D-45 (the `authors.csv` forms; anything else is unknown and reported) |
 | Q-13 | What happens to duplicate `teacher_id`s? | — | — | resolved → D-45 (a clashing slug gets `-2` and is reported) |
 | Q-14 | Where does `teachers.csv` live? | — | — | superseded by D-31, D-45 (teachers live in the app's database, synced from `authors.csv`) |
@@ -123,7 +123,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
   - If an original meets SRC-01..03, its teacher is delivered normally.
   - If not, it's used only as a style target, and the teacher goes through normal sourcing.
 
-### Q-11 · Engravings and drawings · trial
+### Q-11 · Engravings and drawings · resolved → D-47
 - **Background.** B2 says "photograph", but the trial set includes an engraving on purpose.
 - **Proposal.** Accept any medium that passes the pre-check, and record the medium. The trial shows whether engravings halftone well. If they don't, a setting turns them off.
 

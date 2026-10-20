@@ -33,8 +33,8 @@
 | T-09 | The contract with Library-AI (Rev1) | 2 Data | T-08 | **mostly decided** (D-37): this project owns the API and its OpenAPI file; the library adopts it |
 | T-10 | The teacher list (from the pipeline's authors) | 3 Finding | none | **decided** (D-22, D-45): active only; two sources must agree; unknowns skipped and listed |
 | T-11 | Picture sources | 3 Finding | T-07 | **decided** (D-46): Commons, LoC, Wellcome; Smithsonian only if the survey shows gaps; NYPL and DPLA dropped ([notes](topics/T-11-picture-sources.md)) |
-| T-12 | Match rules: when a picture certainly shows the teacher | 3 Finding | T-10, T-11 | mostly decided · **next** |
-| T-13 | Rights, licences and credits | 3 Finding | T-02, T-07, T-11 | mostly decided |
+| T-12 | Match rules: when a picture certainly shows the teacher | 3 Finding | T-10, T-11 | **decided** (D-47): three rules, LoC name ids, any medium (trial decides) |
+| T-13 | Rights, licences and credits | 3 Finding | T-02, T-07, T-11 | mostly decided · **next** |
 | T-14 | The white-dot version: processing recipe | 4 Processing | T-02 | mostly decided (recipe 0.3.1) |
 | T-15 | The black-and-white version: style and recipe | 4 Processing | T-02, T-14 | **mostly decided** (D-39: option C, made from the master's layers) |
 | T-16 | Telling portraits apart (same photo or a different one) | 4 Processing | T-03, T-14 | open |
@@ -274,7 +274,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Written into:** SRC-01, SRC-09, SRC-14 (coverage survey); `spec/sources.md` updated.
 - **Linked:** [spec/sources.md](spec/sources.md), SRC-01, SRC-02, Q-23, Q-25.
 
-### T-12 · Match rules · mostly decided
+### T-12 · Match rules · **decided**
 - **Depends on:** T-10, T-11.
 - **Decided so far:**
   - Certain matches only (D-03): R1 Wikidata image, R2 Commons depicts, R3 a picture record with name and dates.
@@ -284,6 +284,11 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - checking and finding Wikidata ids (SRC-06, Q-01);
   - the R3 details for each new source;
   - engravings and drawings (Q-11).
+- **Decided (D-47):**
+  - any medium that passes the pre-check, with the trial deciding about engravings;
+  - R3 also matches on the teacher's LoC name id;
+  - pasted links may point to any adopted source;
+  - SRC-06 follows D-45.
 
 ### T-13 · Rights, licences and credits · mostly decided
 - **Depends on:** T-02, T-07, T-11.
@@ -523,4 +528,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - DPLA not used.
 
   SRC-01 and SRC-09 updated, SRC-14 (coverage survey) added, `spec/sources.md` revised. Next: T-12.
+- **2026-10-19 22:15.** **T-12 decided** (D-47): any medium, with the trial deciding (Q-11 resolved). Claude's refinements: R3 by LoC name id, Wellcome links accepted, SRC-06 aligned with D-45. Next: T-13.
 

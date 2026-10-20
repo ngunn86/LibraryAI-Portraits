@@ -33,14 +33,15 @@ A file counts only by one of these rules. Name-only, category-only and search-ra
 
 - **R1 (Wikidata image).** The image on the teacher's Wikidata item (P18).
 - **R2 (Commons depicts).** A Commons file whose structured data says it depicts the teacher's Wikidata item (P180).
-- **R3 (picture record with name and dates).** A picture record (LoC, Wellcome; Smithsonian if added) whose subject or name heading equals the teacher's name or an alias, with life dates equal to the teacher's (SRC-05). A heading without dates never matches.
+- **R3 (picture record with name and dates, or the teacher's LoC name id; D-47).** A picture record (LoC, Wellcome; Smithsonian if added) whose subject or name heading equals the teacher's name or an alias, with life dates equal to the teacher's (SRC-05). A heading without dates never matches.
 - ~~**R4 (book plate)**~~, *withdrawn* by D-24. Kept for reference only. All three conditions had to hold:
   - **(a) the book.** It was published before 1931, by the catalogue year, judged as the pipeline judges years: a decade date like "192-" counts as 1929 and an uploader's placeholder date doesn't count.
   - **(b) the people.** Either the book's catalogue author is the teacher (name or alias; dates must agree where both sides give them), or the book is a history or biography whose record names the teacher as a subject.
   - **(c) the plate.** The plate's printed caption or facsimile signature names the teacher (name or alias). The vision pre-check reads the caption and quotes it in the record.
 
   An uncaptioned portrait at the front of the teacher's own book is very likely them, but it isn't certain. It's reported as a "likely" candidate for the owner, not used (Q-24).
-- **Owner's link** (SRC-04): a pasted link to any adopted source, recorded as the owner's match.
+- **Owner's link** (SRC-04): a pasted link to any adopted source (Commons, the LoC, Wellcome), recorded as the owner's match.
+- **Any medium** (D-47): photographs, paintings, drawings and engravings that pass the pre-check, with the medium recorded. A setting (`allowed_media`) can turn engravings off after the trial.
 
 Order of preference among candidates (SRC-07): licence tier (public domain first), then match strength (R1 > R2 > R3), then the pre-check's quality, then size.
 
