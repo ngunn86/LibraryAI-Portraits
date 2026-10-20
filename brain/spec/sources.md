@@ -1,10 +1,11 @@
-# Image sources (proposed, 2026-10-19; revised by D-24 and D-29)
+# Image sources (decided for the first build by D-46, 2026-10-19)
 
 The owner asked for more sources than Wikimedia Commons and the Library of Congress: ones the tool can pull from automatically, with their metadata and rights tracked (D-21). This page proposes which sources to use, how each one proves a match, and what is kept.
 
-> **Status after D-24 and D-29 (2026-10-19):**
-> - The Internet Archive and all book plates are omitted.
-> - The other repositories are to be built in. Each one's details are settled at the formal planning review (tracker topic T-11).
+> **Status after the formal review (T-11, D-46, 2026-10-19).** The review, with each source's access checked against its own documentation, is [../topics/T-11-picture-sources.md](../topics/T-11-picture-sources.md).
+> - **First build:** Wikidata/Commons, the Library of Congress and Wellcome (no keys), plus the LoC name authority for identifying teachers.
+> - **Smithsonian:** only if the coverage survey (SRC-14) shows gaps.
+> - **Dropped:** NYPL (API retired 1 August 2026) and DPLA (D-46); the Internet Archive and book plates (D-24).
 
 The list follows the owner's library-pipeline (`SPEC.md` §3), which already uses most of these repositories for books, so both projects treat a source the same way.
 
@@ -12,19 +13,19 @@ The list follows the owner's library-pipeline (`SPEC.md` §3), which already use
 
 | # | Source | What it gives portraits | Key? | Rights come from | Match rule | Proposal |
 |---|---|---|---|---|---|---|
-| 1 | **Wikidata + Wikimedia Commons** | The teacher's Wikidata image; Commons files tagged as depicting the teacher | none | The file's licence template (Commons metadata) | R1, R2 | **planned** (in the brief) |
-| 2 | **Library of Congress**: Prints & Photographs | Portrait photographs and prints | none | The item's rights advisory ("No known restrictions…") | R3 | **planned** (in the brief) |
+| 1 | **Wikidata + Wikimedia Commons** | The teacher's Wikidata image; Commons files tagged as depicting the teacher (found by Commons search, `haswbstatement:P180=Q…`; the Commons Query Service needs a login) | none (an identifying User-Agent is required by the 2026 limits) | The file's licence template (Commons metadata) | R1, R2 | **adopted** (D-46) |
+| 2 | **Library of Congress**: Prints & Photographs | Portrait photographs and prints | none (20 searches a minute) | The item's rights advisory ("No known restrictions…") | R3 | **adopted** (D-46). The LoC name authority (id.loc.gov) is adopted too, for identifying teachers (D-45) |
 | 3 | ~~Internet Archive books (plates)~~ | — | — | — | — | **omitted** (D-24): extracting pictures from books is too much hassle unless absolutely necessary |
-| 4 | **Wellcome Collection** (picture records) | Some healers and mind-cure figures; clean licences | none | The record's licence (pdm, CC0, CC BY) | R3 | **planned**: small, but keyless and clean |
-| 5 | Smithsonian Open Access (incl. the National Portrait Gallery) | A few nationally known figures, CC0 | free api.data.gov key | CC0 flag on the record | R3 | **planned** (D-29); key at the review (Q-25) |
-| 6 | NYPL Digital Collections | Portrait files | free token | The record's "public domain" flag | R3 | **planned** (D-29); token at the review (Q-25) |
-| 7 | DPLA | Finds items held by many US libraries and historical societies | free key | rightsstatements.org URI on the record | leads only | **planned** (D-29), as leads only (like the pipeline) |
+| 4 | **Wellcome Collection** (picture records) | Some healers and mind-cure figures; clean licences | none | The record's licence (pdm, CC0, CC BY) | R3 | **adopted** (D-46): small, but keyless and clean |
+| 5 | Smithsonian Open Access (incl. the National Portrait Gallery) | A few nationally known figures, CC0 (files are given only for CC0 items) | free api.data.gov key | CC0 flag on the record | R3 | **later, only if the coverage survey shows gaps** (D-46) |
+| 6 | ~~NYPL Digital Collections~~ | — | — | — | — | **dropped** (D-46): its API was retired on 1 August 2026, with no replacement |
+| 7 | ~~DPLA~~ | — | — | — | — | **dropped** (D-46): it hosts no files, and leads to sites the tool may not fetch from |
 | — | HathiTrust | — | — | — | — | **no**: its reading site blocks automated clients (the pipeline found this), and access controls are never worked around |
 | — | Google Books | — | — | — | — | **no**: needs a key, and its terms ask for no automated querying |
 | — | IAPSOP | — | — | — | — | **no**: its scans are CC BY-NC, and NC is never allowed (SRC-02) |
 | — | Openverse, Flickr | — | — | — | — | **no**: uploaders' licence claims on old photos are often unreliable |
 
-**Keys:** sources 1, 2 and 4 need none. That fits the owner's wish for one key, which is the OpenRouter key for AI (D-19). Sources 5–7 need free data keys, which are not AI keys. They're worth adding only if the trial and first run show many teachers still blank (Q-25).
+**Keys:** the adopted sources need none, so the only AI key stays OpenRouter's (D-19). Smithsonian would add a free data key, and only if the coverage survey shows gaps (D-46, SRC-14).
 
 ## Match rules (certain matches only; SRC-03)
 
@@ -32,7 +33,7 @@ A file counts only by one of these rules. Name-only, category-only and search-ra
 
 - **R1 (Wikidata image).** The image on the teacher's Wikidata item (P18).
 - **R2 (Commons depicts).** A Commons file whose structured data says it depicts the teacher's Wikidata item (P180).
-- **R3 (picture record with name and dates).** A picture record (LoC, Wellcome, Smithsonian, NYPL) whose subject or name heading equals the teacher's name or an alias, with life dates equal to the teacher's (SRC-05). A heading without dates never matches.
+- **R3 (picture record with name and dates).** A picture record (LoC, Wellcome; Smithsonian if added) whose subject or name heading equals the teacher's name or an alias, with life dates equal to the teacher's (SRC-05). A heading without dates never matches.
 - ~~**R4 (book plate)**~~, *withdrawn* by D-24. Kept for reference only. All three conditions had to hold:
   - **(a) the book.** It was published before 1931, by the catalogue year, judged as the pipeline judges years: a decade date like "192-" counts as 1929 and an uploader's placeholder date doesn't count.
   - **(b) the people.** Either the book's catalogue author is the teacher (name or alias; dates must agree where both sides give them), or the book is a history or biography whose record names the teacher as a subject.
@@ -47,9 +48,9 @@ Order of preference among candidates (SRC-07): licence tier (public domain first
 
 | Evidence | Sources | What decides | Allowed |
 |---|---|---|---|
-| A licence on the file | Commons, Wellcome, Smithsonian, NYPL | The licence string or flag, mapped by SRC-02 | Public domain marks, CC0, NoC-US, "no known restrictions", then CC BY and CC BY-SA. Nothing else |
+| A licence on the file | Commons, Wellcome (Smithsonian if added) | The licence string or flag, mapped by SRC-02 | Public domain marks, CC0, NoC-US, "no known restrictions", then CC BY and CC BY-SA. Nothing else |
 | A rights advisory | LoC | The advisory text | "No known restrictions on publication" and public domain statements. Anything else is refused |
-| A rightsstatements.org URI | DPLA providers | The URI | `NoC-US`, `NKC`, PDM, CC0. Refused: `InC*`, `UND`, `CNE`, `NoC-CR`, `NoC-NC`, `NoC-OKLR` |
+| ~~A rightsstatements.org URI~~ | ~~DPLA providers~~ | *Withdrawn with DPLA* (D-46) | — |
 | ~~Publication of the book~~ | — | *Withdrawn with R4* (D-24) | — |
 
 ## What is kept for every original (SRC-08, SRC-12)
@@ -63,7 +64,17 @@ Every original that is considered, including the ones refused, gets a permanent 
 - **Credit:** the credit line, built per source (for example "Photograph: unknown, Library of Congress Prints and Photographs, no known restrictions").
 - **The file and the check:** file size, pixel size and SHA-256, the date retrieved, and a saved copy of the raw source record (JSON) in the state store.
 
-The log lives in the state store. Each run also exports it to `portraits/rights-log.csv` in the delivery folder, so the owner and the library can audit it (OUT-01, proposed).
+The log lives in the app's database (T-07). The admin page offers it as a CSV download, and each portrait's API record carries its own original's rights (OUT-14). The delivery folder is withdrawn (D-42).
+
+## Being a polite client (SRC-09, D-46)
+
+- **Official APIs only.** No bulk scraping, and access controls are never worked around.
+- **An identifying User-Agent on every request:** the app's name, version and a contact address. Wikimedia has limited unidentified clients much more tightly since March 2026.
+- **Paced to each source's published limit:**
+  - the LoC: 20 search or item requests a minute, and 150 a minute for images, with a 1-hour block above that;
+  - Wikimedia and Wellcome: one request at a time.
+- **Back off** on 429, 5xx, or an HTML CAPTCHA page. Use timeouts and a few retries.
+- **The network client refuses every other host** (SRC-01, CLAUDE.md rule 5).
 
 ## Finding plates in a book (R4): *withdrawn* by D-24, kept for reference only
 

@@ -320,3 +320,25 @@ Claude's choices carried with this decision:
 
 → T-10, T-12, IN-12, IN-13, SRC-06, Q-01, Q-12, Q-13, Q-14, Q-26
 
+**D-46 · 2026-10-19 · Picture sources for the first build** · owner · *closes T-11*
+After the formal review (`topics/T-11-picture-sources.md`):
+1. **First build: the three keyless sources.**
+   - Wikidata with Wikimedia Commons;
+   - the Library of Congress (Prints & Photographs);
+   - Wellcome Collection;
+   - plus the LoC name authority, which identifies teachers (D-45).
+
+   No new keys.
+2. **Smithsonian Open Access only if the coverage survey shows gaps.** It needs a free api.data.gov key.
+3. **NYPL is dropped.** Its API was retired on 1 August 2026.
+4. **DPLA is not used at all.** One less key and one less thing to build.
+
+Claude's proposals carried with this decision:
+- a coverage survey early in the build: a live run that searches, downloads nothing and spends nothing on AI;
+- polite clients:
+  - an identifying User-Agent, which Wikimedia's 2026 limits require;
+  - pacing to each source's published limits (the LoC: 20 searches a minute);
+  - backing off on 429 or a CAPTCHA page.
+
+→ T-11, T-12, T-13, T-22, SRC-01, SRC-09, SRC-14, sources.md
+

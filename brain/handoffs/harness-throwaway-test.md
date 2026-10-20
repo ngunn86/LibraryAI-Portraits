@@ -138,4 +138,5 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
   - one bearer key, which HT-20 already covers (401 without it, 200 with it, rotation without a deploy);
   - the library's requests are queued for the worker at once, which HT-15 covers (queued jobs survive a redeploy);
   - pull only, so the app makes no outbound call to the library. The test needs no new requirement.
+- **2026-10-19 (night):** D-46 (picture sources). The real app calls Wikimedia, the Library of Congress and Wellcome, with no keys, through an allowlist of hosts. The throwaway test already proves outbound calls (HT-18, HT-19), so no new requirement. For the real build, the coverage survey (SRC-14) is a cron or one-off job like HT-16's.
 

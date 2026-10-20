@@ -32,8 +32,8 @@
 | T-08 | The library API | 2 Data | T-01, T-06, T-07 | **decided** (D-44): one key, pull only, requests at once; [OpenAPI draft 1](contracts/portraits-api.openapi.json) |
 | T-09 | The contract with Library-AI (Rev1) | 2 Data | T-08 | **mostly decided** (D-37): this project owns the API and its OpenAPI file; the library adopts it |
 | T-10 | The teacher list (from the pipeline's authors) | 3 Finding | none | **decided** (D-22, D-45): active only; two sources must agree; unknowns skipped and listed |
-| T-11 | Picture sources | 3 Finding | T-07 | **in discussion**: the formal review ([notes](topics/T-11-picture-sources.md)) |
-| T-12 | Match rules: when a picture certainly shows the teacher | 3 Finding | T-10, T-11 | mostly decided |
+| T-11 | Picture sources | 3 Finding | T-07 | **decided** (D-46): Commons, LoC, Wellcome; Smithsonian only if the survey shows gaps; NYPL and DPLA dropped ([notes](topics/T-11-picture-sources.md)) |
+| T-12 | Match rules: when a picture certainly shows the teacher | 3 Finding | T-10, T-11 | mostly decided · **next** |
 | T-13 | Rights, licences and credits | 3 Finding | T-02, T-07, T-11 | mostly decided |
 | T-14 | The white-dot version: processing recipe | 4 Processing | T-02 | mostly decided (recipe 0.3.1) |
 | T-15 | The black-and-white version: style and recipe | 4 Processing | T-02, T-14 | **mostly decided** (D-39: option C, made from the master's layers) |
@@ -244,7 +244,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - teachers live in the app's database (Claude's choice). Date forms and id clashes are Claude's choices too.
 - **Resolved:** Q-01, Q-12, Q-13, Q-26; Q-14 superseded. **Written into:** IN-12, IN-13.
 
-### T-11 · Picture sources · **in discussion**
+### T-11 · Picture sources · **decided**
 - **Depends on:** T-07 (what each source must supply).
 - **Decided so far:**
   - The Internet Archive and book plates are omitted (D-24).
@@ -266,6 +266,12 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - first build on the three keyless sources plus the LoC name authority;
   - DPLA as listed leads later;
   - a coverage survey early in the build to decide the keyed sources.
+- **Decided (D-46):**
+  - first build: Wikidata/Commons, the Library of Congress and Wellcome, with no keys, plus the LoC name authority;
+  - Smithsonian only if the coverage survey shows gaps;
+  - NYPL dropped (API retired);
+  - DPLA not used at all.
+- **Written into:** SRC-01, SRC-09, SRC-14 (coverage survey); `spec/sources.md` updated.
 - **Linked:** [spec/sources.md](spec/sources.md), SRC-01, SRC-02, Q-23, Q-25.
 
 ### T-12 · Match rules · mostly decided
@@ -510,4 +516,11 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - Wellcome is keyless; Smithsonian and DPLA need free keys.
 
   Waiting for the owner.
+- **2026-10-19 22:05.** **T-11 decided** (D-46):
+  - the three keyless sources;
+  - Smithsonian only if the survey shows gaps;
+  - NYPL dropped;
+  - DPLA not used.
+
+  SRC-01 and SRC-09 updated, SRC-14 (coverage survey) added, `spec/sources.md` revised. Next: T-12.
 

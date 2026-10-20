@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -186,8 +186,15 @@ An invalid setting stops the tool with a message naming the setting. The layout 
 
 ## 3. Sources, rights and matching
 
-**SRC-01 · Adopted sources only, enforced in code** *fixed* · B2, widened by D-21; which sources *open (Q-23)*
-- Originals come only from the sources marked adopted in [sources.md](sources.md). Planned (D-29): Wikidata with Wikimedia Commons, the Library of Congress, Wellcome Collection, Smithsonian Open Access, NYPL Digital Collections and DPLA (leads). The Internet Archive is omitted (D-24). The brief named only Commons and LoC; the owner asked for more (D-21). The per-source details are tracker topic T-11.
+**SRC-01 · Adopted sources only, enforced in code** *fixed* · B2, widened by D-21; which sources *fixed* · D-46
+- Originals come only from the sources marked adopted in [sources.md](sources.md).
+- **Adopted for the first build (D-46):**
+  - Wikidata with Wikimedia Commons;
+  - the Library of Congress (Prints & Photographs);
+  - Wellcome Collection;
+  - plus the LoC name authority (id.loc.gov), which identifies teachers and supplies no pictures.
+- Smithsonian Open Access is added only if the coverage survey (SRC-14) shows gaps.
+- **Not used:** NYPL (its API was retired on 1 August 2026), DPLA (D-46), and the Internet Archive and book plates (D-24).
 - The tool's source client may contact only the hosts of the adopted sources (listed in settings).
 - The model client may contact only the configured model API hosts.
 - Any other host is refused. This is also how SRC-10 is enforced.
@@ -284,11 +291,18 @@ The manifest carries the fields its schema asks for (OUT-02).
 The author may be recorded as unknown when the source says so. The source, page link, licence, licence link and credit line are **never blank**; a candidate without them is refused, not delivered (*proposed* · C, from D-14).
 *Verify:* every manifest record in the end-to-end fixture run is complete, and a candidate with no credit line is refused.
 
-**SRC-09 · Polite access** *proposed* · C
-- Every request to Wikimedia and loc.gov carries a descriptive User-Agent with the contact line from settings.
-- Requests are rate-limited, retried with backoff on 429 and 5xx responses, and cached on disk so a resumed run doesn't fetch twice.
+**SRC-09 · Polite access** *proposed* · C; User-Agent and limits *fixed* · D-46
+- Every request to every source carries a descriptive User-Agent: the app's name, version and a contact address from settings.
+  - Wikimedia's 2026 limits give unidentified clients far less.
+  - The contact is an address set for the app, never a personal one in the repo.
+- Each source is paced to its published limit:
+  - the LoC JSON API: 20 requests a minute (a 1-hour block above that); 150 a minute for images and media;
+  - Wikimedia: one request at a time, well under the identified limit;
+  - Wellcome: one request at a time.
+- Requests are retried with backoff on 429 and 5xx responses. An HTML CAPTCHA page counts as a 429.
+- Responses are cached, so a resumed run doesn't fetch twice.
 
-*Verify:* unit test of the client's headers and retry behaviour.
+*Verify:* unit tests of the client's headers, pacing (a burst of 30 LoC calls takes at least a minute) and retry behaviour (429 and a CAPTCHA page both back off).
 
 **SRC-10 · Never the library's own scans or the reference shelf** *fixed* · B2
 The tool has no setting, path or code that reads Library-AI's scans or the owner's reference shelf. This is enforced by SRC-01.
@@ -326,6 +340,17 @@ The tool has no setting, path or code that reads Library-AI's scans or the owner
 
 *Verify:* recorded fixtures for one book with a captioned author frontispiece, one with an uncaptioned one and one with no plates. Code picks the plate page; a text-only page is never picked.
 
+
+**SRC-14 · Coverage survey** *proposed* · C (D-46) · *live*
+- Early in the build, a survey run searches every active teacher on every adopted source, and reports what each would find:
+  - candidates by match rule;
+  - their licence tier;
+  - their size.
+- It downloads no files, makes no AI calls, and creates no portraits.
+- Its report shows how many teachers each source covers, and which have nothing. That decides whether Smithsonian Open Access is worth its key (D-46).
+- The same run later serves as a dry run (`--dry-run`) before a real run.
+
+*Verify:* offline, on recorded source responses, the report counts match the fixtures; live, it completes for all active teachers within the sources' limits.
 ---
 
 ## 4. The style
