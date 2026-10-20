@@ -237,7 +237,7 @@
    }
   ],
   "enhanced_used": true,
-  "recipe_version": "0.4.0",
+  "recipe_version": "0.5.0",
   "created": "2026-11-01T03:12:44Z",
   "updated": "2026-11-02T14:06:10Z"
  },
@@ -271,7 +271,7 @@
     "by": "tool",
     "what": "made",
     "detail": {
-     "recipe_version": "0.4.0"
+     "recipe_version": "0.5.0"
     }
    },
    {
@@ -413,7 +413,7 @@
   "at": "2026-11-02T14:10:00Z",
   "status": "done",
   "refused_reason": null,
-  "result_portrait_id": "charles-fillmore-2",
+  "result_portrait_id": "charles-fillmore-4",
   "updated": "2026-11-02T14:14:20Z",
   "record_version": 3
  },

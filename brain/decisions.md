@@ -529,3 +529,18 @@ Claude's architecture carried with this decision (`spec/architecture.md` v2, pro
 
 → RUN-02, RUN-04, RUN-08, PIP-17, F-17, F-25, F-47
 
+## From the first outside review (Argon, 2026-10-20)
+
+**D-60 · 2026-10-20 · Optional id columns in the authors list** · owner · *from argon-5*
+- The tool reads two optional columns in library-pipeline's `collection/authors.csv`: `wikidata_qid` and `lcnaf_id`.
+- The owner adds the ids the tool suggests (IN-13) there; dates go in the existing `dates` column.
+- Claude checked that this is safe for library-pipeline: it reads `authors.csv` by column name and rewrites it keeping every existing column (`pipeline/collection.py`, `pipeline/propose.py`).
+
+→ IN-01, IN-02, IN-12, IN-13, F-02, F-31
+
+**D-61 · 2026-10-20 · A full teacher can be offered a higher-ranked different photograph** · owner · *from argon-13; confirms D-59*
+- When a teacher's three slots are full and a clearly higher-ranked **different** photograph turns up (for example their best-known image), it is offered with `replaces` set to the portrait it would displace. The library decides.
+- So `replaced` now means **"superseded by the portrait in `replaced_by`"**: a better copy or a higher-ranked photograph the library approved in its place, or a newer draft that replaced a waiting one.
+
+→ PIP-16, PIP-17, OUT-07, IN-07, the API contract, F-48
+

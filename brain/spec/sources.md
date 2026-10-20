@@ -40,16 +40,19 @@ A file counts only by one of these rules. Name-only, category-only and search-ra
   - **(c) the plate.** The plate's printed caption or facsimile signature names the teacher (name or alias). The vision pre-check reads the caption and quotes it in the record.
 
   An uncaptioned portrait at the front of the teacher's own book is very likely them, but it isn't certain. It's reported as a "likely" candidate for the owner, not used (Q-24).
-- **Owner's link** (SRC-04): a pasted link to any adopted source (Commons, the LoC, Wellcome), recorded as the owner's match.
+- **Owner's link** (SRC-04): a pasted link to any adopted source (Commons, the LoC, Wellcome), recorded as the owner's match. The link is read without fetching its page. Accepted forms:
+  - Commons: `commons.wikimedia.org/wiki/File:<title>`, or a file link on `upload.wikimedia.org`;
+  - LoC: `(www.)loc.gov/item/<id>`, `loc.gov/pictures/item/<id>` or `loc.gov/resource/<id>`;
+  - Wellcome: `wellcomecollection.org/works/<id>`, or `api.wellcomecollection.org/catalogue/v2/works/<id>`.
 - **Any medium** (D-47): photographs, paintings, drawings and engravings that pass the pre-check, with the medium recorded. A setting (`allowed_media`) can turn engravings off after the trial.
 
-Order of preference among the copies of one photograph (SRC-07): licence tier (public domain first), then size, then the pre-check's damage rating. Which photographs fill a teacher's three slots is PIP-16: the best-known image first, then a spread across the teacher's life.
+Order of preference among the copies of one photograph (SRC-07): licence tier (public domain first), then size, then the pre-check's damage rating. Which photographs fill a teacher's three slots is PIP-16: the best-known image first, then a spread across the teacher's life. The order of these steps, and the small previews used to group copies before any full download, are PIP-21.
 
 ## Rights, per kind of evidence
 
 | Evidence | Sources | What decides | Allowed |
 |---|---|---|---|
-| A licence on the file | Commons, Wellcome (Smithsonian if added) | The licence string or flag, mapped by SRC-02 | Public domain marks, CC0, then CC BY and CC BY-SA. Nothing else |
+| A licence on the file | Commons, Wellcome (Smithsonian if added) | The licence string or flag, mapped by SRC-02 | Public domain marks, CC0, then CC BY and CC BY-SA 2.0 or later. CC BY-SA 1.0 is held for the owner before anything is spent (SRC-02, SRC-11). Nothing else |
 | A rights advisory | LoC | The advisory text | "No known restrictions on publication" and public domain statements. Anything else is refused |
 | ~~A rightsstatements.org URI~~ | ~~DPLA providers~~ | *Withdrawn with DPLA* (D-46) | — |
 | ~~Publication of the book~~ | — | *Withdrawn with R4* (D-24) | — |
@@ -58,7 +61,7 @@ Order of preference among the copies of one photograph (SRC-07): licence tier (p
 
 Every original that is considered, including the ones refused, gets a permanent row in the **rights log**, so nothing is researched twice and every portrait's credit can be traced. The row holds:
 
-- **Source and location:** source, source id, record page link, file or IIIF link.
+- **Source and location:** source, source id, record page link, file or IIIF link, and the preview link (about 800 px) used to group copies (PIP-21).
 - **Description as given:** title, creator or photographer, date, publisher and place.
 - **Rights:** the rights evidence as given (licence string and URL, or the LoC rights advisory, quoted raw), the verdict (tier 1, tier 2, or refused with the reason), and the licences of the portrait's files (SRC-11).
 - **Match:** `matched_by` (`wikidata_p18`, `commons_p180`, `name_dates`, `lcnaf_id` or `owner_link`), `matched_to` (the Wikidata id, LoC name id or name heading) and the evidence.
@@ -75,7 +78,16 @@ The log lives in the app's database (T-07). The admin page offers it as a CSV do
   - the LoC: 20 search or item requests a minute, and 150 a minute for images, with a 1-hour block above that;
   - Wikimedia and Wellcome: one request at a time.
 - **Back off** on 429, 5xx, or an HTML CAPTCHA page. Use timeouts and a few retries.
-- **The network client refuses every other host** (SRC-01, CLAUDE.md rule 5).
+- **The network client refuses every other host** (SRC-01, CLAUDE.md rule 5). The sources' own hosts are:
+
+  | Source | Hosts |
+  |---|---|
+  | Wikidata and Commons | `www.wikidata.org`, `commons.wikimedia.org`, `upload.wikimedia.org` (files and thumbnails) |
+  | Library of Congress | `www.loc.gov`, `loc.gov`, `tile.loc.gov` (images), `id.loc.gov` (the name authority) |
+  | Wellcome | `api.wellcomecollection.org`, `iiif.wellcomecollection.org` (images) |
+
+  Redirects are followed by hand, and each target is checked against the same list.
+- **Previews before downloads** (PIP-21): copies are grouped on small images from each source's own sized-image service (Commons thumbnails, LoC derivatives, Wellcome IIIF at `!800,800`). Only the chosen copies' full files are downloaded.
 
 ## Finding plates in a book (R4): *withdrawn* by D-24, kept for reference only
 

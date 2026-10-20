@@ -1,9 +1,9 @@
 {
- "recipe_version": "0.4.0",
+ "recipe_version": "0.5.0",
  "settings": {
   "size_px": 1000,
-  "eye_mouth_frac": 0.237,
-  "eye_y_frac": 0.443,
+  "eye_mouth_frac": 0.221,
+  "eye_y_frac": 0.449,
   "face_centre_x_frac": 0.5,
   "min_face_px": 90,
   "edge_blur_cells": 0.3,
@@ -22,6 +22,7 @@
   "enhance_blend": 0.5,
   "enhance_min_align": 0.9,
   "enhance_max_drift_cells": 0.7,
+  "drift_box_inset": 0.15,
   "key_lo": 0.15,
   "key_hi": 0.45,
   "dots_across": 110,
@@ -38,47 +39,47 @@
  "examples": {
   "charles-fillmore": {
    "figure_iou": 0.97,
-   "tone_mae": 0.071,
+   "tone_mae": 0.073,
    "tone_corr": 0.987,
-   "coverage_ours": 0.263,
+   "coverage_ours": 0.262,
    "coverage_target": 0.291,
    "dots_across_ours": 110.5,
    "sty06_problems": [],
    "levels": {
-    "black": 0.3617527158260345,
-    "white": 0.9444036698341369,
-    "face_p5": 0.45552787482738494,
-    "face_p98": 0.9244036698341369
+    "black": 0.3739810872077942,
+    "white": 0.9423741054534912,
+    "face_p5": 0.465379923582077,
+    "face_p98": 0.9223741054534912
    }
   },
   "emilie-cady": {
-   "figure_iou": 0.897,
-   "tone_mae": 0.053,
-   "tone_corr": 0.967,
-   "coverage_ours": 0.278,
+   "figure_iou": 0.892,
+   "tone_mae": 0.049,
+   "tone_corr": 0.969,
+   "coverage_ours": 0.284,
    "coverage_target": 0.279,
    "dots_across_ours": 110.5,
    "sty06_problems": [],
    "levels": {
-    "black": 0.5173433895111084,
-    "white": 0.9788981890678405,
-    "face_p5": 0.5909358561038971,
-    "face_p98": 0.9588981890678405
+    "black": 0.49826133394241334,
+    "white": 0.9784574031829834,
+    "face_p5": 0.5749606788158417,
+    "face_p98": 0.9584574031829833
    }
   },
   "ernest-holmes": {
-   "figure_iou": 0.921,
-   "tone_mae": 0.058,
+   "figure_iou": 0.922,
+   "tone_mae": 0.059,
    "tone_corr": 0.979,
    "coverage_ours": 0.252,
    "coverage_target": 0.23,
    "dots_across_ours": 110.5,
    "sty06_problems": [],
    "levels": {
-    "black": 0.44106814861297605,
-    "white": 0.9002574872970581,
-    "face_p5": 0.5142663717269897,
-    "face_p98": 0.8802574872970581
+    "black": 0.4365223155021668,
+    "white": 0.9005898141860962,
+    "face_p5": 0.5105335652828217,
+    "face_p98": 0.8805898141860962
    }
   }
  }

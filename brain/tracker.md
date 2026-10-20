@@ -47,7 +47,7 @@
 | T-23 | Stack and architecture | 6 Build | T-01, T-06, T-08 | **decided** (D-57): TypeScript like the library; [architecture v2](spec/architecture.md) proposed |
 | T-24 | Testing approach | 6 Build | T-23 | **proposed in full** (D-09; [build plan §5](plan/build-plan.md)): node:test, PGlite, contract tests, smoke tests on PR copies |
 | T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | **drafted** ([features.md](plan/features.md) draft 2: 45 cards in 6 phases); convert to the harness's format when it exists |
-| T-26 | Outside reviews and plan freeze | 6 Build | T-25 | **next**: review rounds from 2026-10-20 ([reviews/README.md](reviews/README.md)) |
+| T-26 | Outside reviews and plan freeze | 6 Build | T-25 | **in progress**: Argon's round merged 2026-10-20 (D-60, D-61); more rounds to come ([reviews/README.md](reviews/README.md)) |
 | T-27 | What the harness must do for a hosted app (hand-off to the harness chat) | 6 Build | T-01 | in discussion: [throwaway test requirements](handoffs/harness-throwaway-test.md) v1 |
 
 **Why this order:**
@@ -338,7 +338,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Depends on:** T-03, T-14 (it uses the aligned face crop).
 - **To decide:**
   1. **Method.** Proposed, in three layers:
-     - (a) a quick fingerprint of the cropped face (perceptual hash) to catch exact and near-exact copies;
+     - (a) a quick fingerprint of the cropped face (perceptual hash) to catch exact and near-exact copies *(since Argon's review: a difference hash of the whole picture, at most 2 bits apart, because aligned faces of two sittings look alike; PIP-20)*;
      - (b) feature matching between the two pictures, which finds many matching points when they're the same photograph even after a different scan, crop or retouch, and few when they're different sittings;
      - (c) the vision model as tie-break for unclear pairs ("the same photograph, or a different one?").
   2. **Thresholds**, set on known pairs during the prototype.
@@ -471,8 +471,9 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **To decide:** rewrite `plan/features.md` from the decisions. The current 35 cards predate D-24..D-29.
 - **Done (2026-10-20):** draft 2, with 45 cards in six phases for the hosted TypeScript app. Old IDs are kept where the feature continues; F-36..F-48 are new; F-20 and F-33 are withdrawn. Left: conversion to the harness's format (D-15).
 
-### T-26 · Outside reviews and plan freeze · **next**
+### T-26 · Outside reviews and plan freeze · **in progress**
 - **Depends on:** T-25.
+- **Rounds so far:** Gemini 4 Argon, 2026-10-20: 19 points, all accepted ([reviews/2026-10-20-argon-round-2.md](reviews/2026-10-20-argon-round-2.md), with Responses). The owner settled two (D-60, D-61).
 - **To decide:**
   - review rounds by other AI tools (`reviews/`);
   - merge their points;
@@ -622,4 +623,12 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - **Q-28 → D-59:** full teachers are searched monthly for better copies, and the first-run cap is a total for the first pass.
 
   Requirements, cards, build plan and the library hand-off are updated. No open questions remain. Next: the outside reviews (T-26).
+- **2026-10-20 13:00.** **Argon's review merged** (T-26, first round): 19 points (6 blockers, 8 major, 5 minor), all accepted; responses in [reviews/2026-10-20-argon-round-2.md](reviews/2026-10-20-argon-round-2.md). The owner answered its two calls:
+  - **D-60:** the tool reads optional `wikidata_qid` and `lcnaf_id` columns in `authors.csv`;
+  - **D-61:** a full teacher can be offered a higher-ranked different photograph, so `replaced` means "superseded by the portrait in `replaced_by`".
 
+  New: PIP-21 (step order: previews, grouping and pre-checks before any full download), PIP-22 (what models are sent), PIP-23 (working resolution) and TRI-09 (trial kept apart). Contract draft 5; cards draft 3.
+  - While making the porting references, Claude found that the prototype's crop had been measured with a different face detector from the app's. **Recipe 0.5.0** re-measures it with YuNet (now committed in `models/`), and measures the drift check inside the inner face. The look is unchanged.
+  - `prototype/parity/` holds the per-operation references for F-39. They show that OpenCV's 8-bit median isn't precise enough for the screen detector; a 12-bit median is.
+
+  Next: further review rounds, if the owner runs them; then T-09 once Rev1 is pushed.

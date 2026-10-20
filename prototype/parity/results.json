@@ -1,0 +1,691 @@
+{
+ "grey": "L = 0.299 R + 0.587 G + 0.114 B, in float32, from inputs/<tid>.rgb.png / 255",
+ "yunet": {
+  "charles-fillmore": {
+   "raw_xywh_kps_score": [
+    85.017,
+    65.9,
+    103.587,
+    139.41,
+    122.942,
+    123.401,
+    169.019,
+    120.319,
+    156.547,
+    149.006,
+    130.454,
+    171.138,
+    169.924,
+    168.96,
+    0.928
+   ],
+   "box_corners": [
+    85.017,
+    65.9,
+    188.604,
+    205.31
+   ],
+   "kps": [
+    [
+     122.942,
+     123.401
+    ],
+    [
+     169.019,
+     120.319
+    ],
+    [
+     156.547,
+     149.006
+    ],
+    [
+     130.454,
+     171.138
+    ],
+    [
+     169.924,
+     168.96
+    ]
+   ],
+   "score": 0.9285,
+   "model": "models/face_detection_yunet_2023mar.onnx",
+   "input_size": [
+    250,
+    350
+   ],
+   "params": {
+    "score_threshold": 0.6,
+    "nms_threshold": 0.3,
+    "top_k": 5000
+   },
+   "tolerance": {
+    "box_px": 1.0,
+    "kps_px": 1.0,
+    "score": 0.01
+   },
+   "card": "F-39, F-12"
+  },
+  "emilie-cady": {
+   "raw_xywh_kps_score": [
+    61.226,
+    70.145,
+    119.038,
+    162.572,
+    78.107,
+    125.433,
+    131.411,
+    128.263,
+    88.245,
+    155.896,
+    82.032,
+    187.245,
+    123.752,
+    188.864,
+    0.919
+   ],
+   "box_corners": [
+    61.226,
+    70.145,
+    180.264,
+    232.717
+   ],
+   "kps": [
+    [
+     78.107,
+     125.433
+    ],
+    [
+     131.411,
+     128.263
+    ],
+    [
+     88.245,
+     155.896
+    ],
+    [
+     82.032,
+     187.245
+    ],
+    [
+     123.752,
+     188.864
+    ]
+   ],
+   "score": 0.9195,
+   "model": "models/face_detection_yunet_2023mar.onnx",
+   "input_size": [
+    263,
+    378
+   ],
+   "params": {
+    "score_threshold": 0.6,
+    "nms_threshold": 0.3,
+    "top_k": 5000
+   },
+   "tolerance": {
+    "box_px": 1.0,
+    "kps_px": 1.0,
+    "score": 0.01
+   },
+   "card": "F-39, F-12"
+  },
+  "ernest-holmes": {
+   "raw_xywh_kps_score": [
+    91.175,
+    90.65,
+    183.227,
+    241.552,
+    157.881,
+    192.043,
+    237.819,
+    193.505,
+    208.295,
+    237.536,
+    161.313,
+    270.073,
+    230.537,
+    271.641,
+    0.935
+   ],
+   "box_corners": [
+    91.175,
+    90.65,
+    274.402,
+    332.202
+   ],
+   "kps": [
+    [
+     157.881,
+     192.043
+    ],
+    [
+     237.819,
+     193.505
+    ],
+    [
+     208.295,
+     237.536
+    ],
+    [
+     161.313,
+     270.073
+    ],
+    [
+     230.537,
+     271.641
+    ]
+   ],
+   "score": 0.9349,
+   "model": "models/face_detection_yunet_2023mar.onnx",
+   "input_size": [
+    340,
+    496
+   ],
+   "params": {
+    "score_threshold": 0.6,
+    "nms_threshold": 0.3,
+    "top_k": 5000
+   },
+   "tolerance": {
+    "box_px": 1.0,
+    "kps_px": 1.0,
+    "score": 0.01
+   },
+   "card": "F-39, F-12"
+  }
+ },
+ "landmarks_from_box": {
+  "charles-fillmore": {
+   "box": [
+    85.02,
+    65.9,
+    188.6,
+    205.31
+   ],
+   "kps": [
+    [
+     114.022,
+     120.27
+    ],
+    [
+     159.598,
+     120.27
+    ],
+    [
+     136.81,
+     146.758
+    ],
+    [
+     117.13,
+     169.063
+    ],
+    [
+     156.49,
+     169.063
+    ]
+   ],
+   "crop_from_real": [
+    [
+     4.568649768829346,
+     0.0,
+     -125.0374984741211
+    ],
+    [
+     0.0,
+     4.568649768829346,
+     -107.73612976074219
+    ]
+   ],
+   "crop_from_estimate": [
+    [
+     4.529290199279785,
+     0.0,
+     -119.65241241455078
+    ],
+    [
+     0.0,
+     4.529290199279785,
+     -95.73747253417969
+    ]
+   ],
+   "tolerance": {
+    "kps_px": 0.001
+   },
+   "card": "F-12"
+  },
+  "emilie-cady": {
+   "box": [
+    61.23,
+    70.15,
+    180.26,
+    232.72
+   ],
+   "kps": [
+    [
+     94.558,
+     133.552
+    ],
+    [
+     146.932,
+     133.552
+    ],
+    [
+     120.745,
+     164.441
+    ],
+    [
+     98.129,
+     190.452
+    ],
+    [
+     143.361,
+     190.452
+    ]
+   ],
+   "crop_from_real": [
+    [
+     3.608839988708496,
+     0.0,
+     64.25092315673828
+    ],
+    [
+     0.0,
+     3.608839988708496,
+     -8.762980461120605
+    ]
+   ],
+   "crop_from_estimate": [
+    [
+     3.884040117263794,
+     0.0,
+     31.02145004272461
+    ],
+    [
+     0.0,
+     3.884040117263794,
+     -69.72264099121094
+    ]
+   ],
+   "tolerance": {
+    "kps_px": 0.001
+   },
+   "card": "F-12"
+  },
+  "ernest-holmes": {
+   "box": [
+    91.17,
+    90.65,
+    274.4,
+    332.2
+   ],
+   "kps": [
+    [
+     142.474,
+     184.854
+    ],
+    [
+     223.096,
+     184.854
+    ],
+    [
+     182.785,
+     230.749
+    ],
+    [
+     147.971,
+     269.397
+    ],
+    [
+     217.599,
+     269.397
+    ]
+   ],
+   "crop_from_real": [
+    [
+     2.8295700550079346,
+     0.0,
+     -17.203039169311523
+    ],
+    [
+     0.0,
+     2.8295700550079346,
+     -96.47045135498047
+    ]
+   ],
+   "crop_from_estimate": [
+    [
+     2.614069938659668,
+     0.0,
+     22.187240600585938
+    ],
+    [
+     0.0,
+     2.614069938659668,
+     -34.22257995605469
+    ]
+   ],
+   "tolerance": {
+    "kps_px": 0.001
+   },
+   "card": "F-12"
+  }
+ },
+ "detect_screen": {
+  "charles-fillmore": {
+   "peaks": [
+    [
+     0.00857,
+     -0.4
+    ],
+    [
+     0.30857,
+     -0.484
+    ],
+    [
+     0.29714,
+     0.476
+    ],
+    [
+     0.47143,
+     -0.292
+    ],
+    [
+     0.39429,
+     0.008
+    ],
+    [
+     0.03429,
+     -0.3
+    ]
+   ],
+   "screen_found": true,
+   "same_peaks_with_opencv_8bit_median": true,
+   "same_peaks_with_12bit_median": true,
+   "card": "F-13"
+  },
+  "emilie-cady": {
+   "peaks": [
+    [
+     0.24339,
+     -0.41825
+    ],
+    [
+     0.01587,
+     -0.47529
+    ],
+    [
+     0.25132,
+     -0.28517
+    ],
+    [
+     0.43386,
+     0.23574
+    ],
+    [
+     0.28307,
+     0.24715
+    ],
+    [
+     0.3254,
+     -0.24715
+    ],
+    [
+     0.25132,
+     0.32319
+    ],
+    [
+     0.22751,
+     -0.30798
+    ],
+    [
+     0.22751,
+     0.30038
+    ]
+   ],
+   "screen_found": true,
+   "same_peaks_with_opencv_8bit_median": false,
+   "same_peaks_with_12bit_median": true,
+   "card": "F-13"
+  },
+  "ernest-holmes": {
+   "peaks": [],
+   "screen_found": false,
+   "same_peaks_with_opencv_8bit_median": true,
+   "same_peaks_with_12bit_median": true,
+   "card": "F-13"
+  }
+ },
+ "descreen_full": {
+  "charles-fillmore": {
+   "cell_px_in_original": 1.98984,
+   "info": {
+    "screen_found": true,
+    "screen_peaks": [
+     [
+      0.0086,
+      -0.4
+     ],
+     [
+      0.3086,
+      -0.484
+     ],
+     [
+      0.2971,
+      0.476
+     ],
+     [
+      0.4714,
+      -0.292
+     ],
+     [
+      0.3943,
+      0.008
+     ],
+     [
+      0.0343,
+      -0.3
+     ]
+    ],
+    "edge_blur_sigma_px": 1.19
+   },
+   "mean_abs_change": 0.015058,
+   "out_mean": 0.642204,
+   "tolerance": {
+    "mean_abs_change": 0.002,
+    "out_mean": 0.001
+   },
+   "card": "F-13"
+  },
+  "emilie-cady": {
+   "cell_px_in_original": 2.51907,
+   "info": {
+    "screen_found": true,
+    "screen_peaks": [
+     [
+      0.2434,
+      -0.4183
+     ],
+     [
+      0.0159,
+      -0.4753
+     ],
+     [
+      0.2513,
+      -0.2852
+     ],
+     [
+      0.4339,
+      0.2357
+     ],
+     [
+      0.2831,
+      0.2471
+     ],
+     [
+      0.3254,
+      -0.2471
+     ],
+     [
+      0.2513,
+      0.3232
+     ],
+     [
+      0.2275,
+      -0.308
+     ],
+     [
+      0.2275,
+      0.3004
+     ]
+    ],
+    "edge_blur_sigma_px": 1.51
+   },
+   "mean_abs_change": 0.01613,
+   "out_mean": 0.778536,
+   "tolerance": {
+    "mean_abs_change": 0.002,
+    "out_mean": 0.001
+   },
+   "card": "F-13"
+  },
+  "ernest-holmes": {
+   "cell_px_in_original": 3.21282,
+   "info": {
+    "screen_found": false,
+    "screen_peaks": [],
+    "edge_blur_sigma_px": 0.96
+   },
+   "mean_abs_change": 0.003076,
+   "out_mean": 0.476039,
+   "tolerance": {
+    "mean_abs_change": 0.002,
+    "out_mean": 0.001
+   },
+   "card": "F-13"
+  }
+ },
+ "sift_ransac_inliers": {
+  "pairs": {
+   "charles-fillmore / rotated 4 degrees": 452,
+   "charles-fillmore / half size": 236,
+   "emilie-cady / rotated 4 degrees": 1039,
+   "emilie-cady / half size": 291,
+   "ernest-holmes / rotated 4 degrees": 106,
+   "ernest-holmes / half size": 101,
+   "charles-fillmore vs emilie-cady": 2,
+   "charles-fillmore vs ernest-holmes": 12,
+   "emilie-cady vs ernest-holmes": 6
+  },
+  "method": "SIFT 2000 features at 600 px, ratio 0.75, estimateAffinePartial2D RANSAC 4 px",
+  "tolerance": "within 25%, or, if the port uses AKAZE or ORB, same/different on the same side of the thresholds",
+  "card": "F-39, F-42"
+ },
+ "dhash": {
+  "method": "grey, INTER_AREA to 9 x 8, bit = right pixel brighter than left, 64 bits row by row",
+  "values": {
+   "charles-fillmore": {
+    "hash": "1011011011110011111000110110001100100111111000010110100100101000",
+    "bits_differing_half_size": 1,
+    "bits_differing_jpeg60": 1
+   },
+   "emilie-cady": {
+    "hash": "0000011100100111001010110011101100011011000110110111010101110101",
+    "bits_differing_half_size": 0,
+    "bits_differing_jpeg60": 0
+   },
+   "ernest-holmes": {
+    "hash": "0110001101110000111010001110010001110000001100000001100100001100",
+    "bits_differing_half_size": 0,
+    "bits_differing_jpeg60": 0
+   },
+   "between examples": {
+    "charles-fillmore vs emilie-cady": 32,
+    "charles-fillmore vs ernest-holmes": 29,
+    "emilie-cady vs ernest-holmes": 37
+   }
+  },
+  "card": "F-42"
+ },
+ "crops": {
+  "fillmore": {
+   "source": "inputs/charles-fillmore.rgb.png",
+   "rect_xywh": [
+    89,
+    88,
+    96,
+    96
+   ]
+  },
+  "holmes": {
+   "source": "inputs/ernest-holmes.rgb.png",
+   "rect_xywh": [
+    135,
+    163,
+    96,
+    96
+   ]
+  }
+ },
+ "ecc": {
+  "fillmore": {
+   "template": "GaussianBlur(input, 1.5)",
+   "input": "GaussianBlur(warp_linear, 1.5)",
+   "call": "findTransformECC(template, input, eye(2,3), MOTION_AFFINE, (EPS|COUNT, 300, 1e-6), mask=None, gaussFiltSize=1)",
+   "warp": [
+    [
+     1.0169600248336792,
+     0.03203999996185303,
+     1.6294399499893188
+    ],
+    [
+     -0.02944999933242798,
+     1.0200999975204468,
+     -2.0468499660491943
+    ]
+   ],
+   "cc": 0.9885,
+   "tolerance": {
+    "warp_abs": 0.01,
+    "cc": 0.005
+   },
+   "card": "F-39, F-30"
+  },
+  "holmes": {
+   "template": "GaussianBlur(input, 1.5)",
+   "input": "GaussianBlur(warp_linear, 1.5)",
+   "call": "findTransformECC(template, input, eye(2,3), MOTION_AFFINE, (EPS|COUNT, 300, 1e-6), mask=None, gaussFiltSize=1)",
+   "warp": [
+    [
+     1.0168499946594238,
+     0.031209999695420265,
+     1.6018600463867188
+    ],
+    [
+     -0.028030000627040863,
+     1.0174700021743774,
+     -1.9618500471115112
+    ]
+   ],
+   "cc": 0.95987,
+   "tolerance": {
+    "warp_abs": 0.01,
+    "cc": 0.005
+   },
+   "card": "F-39, F-30"
+  }
+ },
+ "connected_components": {
+  "input": "synthetic/blobs.f32",
+  "connectivity": 8,
+  "count_with_background": 5,
+  "areas_sorted": [
+   1,
+   12,
+   317,
+   546
+  ],
+  "largest_share": 0.62329,
+  "tolerance": "exact (label numbering may differ; compare sorted areas)",
+  "card": "F-39, F-15"
+ }
+}

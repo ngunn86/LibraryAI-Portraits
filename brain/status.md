@@ -3,9 +3,10 @@
 **Phase 0: planning.** There is no code yet. Last updated 2026-10-20 by Claude.
 
 **Where planning is:**
-- **The owner's decisions are made** for tracker topics T-01..T-23 (D-31..D-57). The tool is a hosted Railway app in TypeScript, like the library, with an API the library adopts.
+- **The owner's decisions are made** for tracker topics T-01..T-23 (D-31..D-57), plus D-58..D-61. The tool is a hosted Railway app in TypeScript, like the library, with an API the library adopts.
 - **Requirements consolidated** on 2026-10-20 and **feature cards drafted** for the new design.
-- **Next:** outside reviews by other AI tools ([reviews/README.md](reviews/README.md)), starting 2026-10-20.
+- **The first outside review is merged:** Gemini 4 Argon's 19 points, all accepted ([reviews/2026-10-20-argon-round-2.md](reviews/2026-10-20-argon-round-2.md)). Recipe 0.5.0 and the porting references (`prototype/parity/`) came out of it.
+- **Next:** more review rounds if the owner runs them; T-09 once Rev1 is pushed.
 
 ## Where things stand
 
@@ -15,24 +16,24 @@
 | Briefs | v1 (2026-10-17) and v2 (2026-10-19), in `brief/`. v2 is the brief; decisions D-24 onwards extend it |
 | Requirements | [spec/requirements.md](spec/requirements.md), consolidated 2026-10-20: every ID kept, every item current. Open: only the PORT reconciliation (needs O-1) |
 | Architecture | [spec/architecture.md](spec/architecture.md) v2 (proposed): TypeScript on Node 24 (D-57); Railway web, worker and cron; Postgres with a queue table; an S3 bucket; `sharp` and OpenCV.js, with a porting spike. The Python prototype is the reference |
-| API contract | [contracts/portraits-api.openapi.json](contracts/portraits-api.openapi.json), draft 4, with samples and an offline check (`check_api.py`, passing). The library adopts it (D-37); hand-off note in [handoffs/library-api.md](handoffs/library-api.md) |
+| API contract | [contracts/portraits-api.openapi.json](contracts/portraits-api.openapi.json), draft 5, with samples and an offline check (`check_api.py`, passing). The library adopts it (D-37); hand-off note in [handoffs/library-api.md](handoffs/library-api.md) |
 | Sources | [spec/sources.md](spec/sources.md): Wikidata/Commons, the LoC and Wellcome (D-46); Smithsonian only if the survey shows gaps |
-| Build plan and features | [plan/build-plan.md](plan/build-plan.md) (rewritten 2026-10-20) and [plan/features.md](plan/features.md) (cards redrafted 2026-10-20 for the hosted TypeScript app; the format stays provisional until the harness settles its own, D-15) |
-| Decisions | D-01..D-59 |
-| Open questions | None. Q-27 and Q-28 were resolved on 2026-10-20 (D-58, D-59) |
-| Style prototype | Recipe 0.4.0 (`prototype/`), accepted as the starting point (D-49): descreen, AI-enhanced blend with safeguards, code outline, black-and-white and 500 px versions, and the same-photo check prototype. Prompts in `prototype/prompts/` |
+| Build plan and features | [plan/build-plan.md](plan/build-plan.md) (rewritten 2026-10-20) and [plan/features.md](plan/features.md) (draft 3, 2026-10-20, with Argon's review merged; the format stays provisional until the harness settles its own, D-15) |
+| Decisions | D-01..D-61 |
+| Open questions | None. Q-27 and Q-28 were resolved on 2026-10-20 (D-58, D-59); Argon's two calls were answered the same day (D-60, D-61) |
+| Style prototype | Recipe 0.5.0 (`prototype/`): 0.4.0's look, accepted as the starting point (D-49), with the crop measured with YuNet and the drift check inside the inner face. Descreen, AI-enhanced blend with safeguards, code outline, black-and-white and 500 px versions, and the same-photo check prototype. Prompts in `prototype/prompts/`; per-operation references for the port in `prototype/parity/`; the face model in `models/` |
 | Harness | Planned in its own chat (D-15). This project's requirements for its proof run: [handoffs/harness-throwaway-test.md](handoffs/harness-throwaway-test.md) (kept updated) |
-| Reviews | Format and prompt ready ([reviews/README.md](reviews/README.md)). First rounds due 2026-10-20 |
+| Reviews | Format and prompt in [reviews/README.md](reviews/README.md). Round with Gemini 4 Argon merged 2026-10-20 |
 
 ## Waiting on the owner
 
 1. **Pass [handoffs/library-api.md](handoffs/library-api.md) to the library chat** and have Rev1's latest planning pushed to GitHub (O-1). That unblocks T-09 and the PORT reconciliation.
-3. **The outside reviews** (P0-6): point the reviewing tools at `brain/reviews/README.md`.
+3. **Any further outside reviews** (P0-6): point the reviewing tools at `brain/reviews/README.md`. Argon's round is merged.
 4. Later: the harness's card format (D-15) and the throwaway test; then the owner inputs O-4, O-8..O-11 as the build reaches them.
 
 ## Next planning steps, in order
 
-1. Outside review rounds; Claude merges accepted points and records decisions (P0-6, T-26).
+1. Further outside review rounds, if any; Claude merges accepted points and records decisions (P0-6, T-26).
 2. T-09 and the PORT reconciliation, once Rev1 is pushed (P0-1).
 3. Convert the cards to the harness's format when it exists (T-25).
 4. Freeze plan v1 (P0-7).
@@ -198,4 +199,4 @@
   - **Q-28 → D-59:** full teachers are searched monthly for better copies, and the first-run cap is a total for the first pass.
 
   No questions are open. The PORT reconciliation waits for Rev1's push.
-
+- **2026-10-20 (afternoon):** **Argon's review merged** (19 points, all accepted; D-60 and D-61 from the owner). Requirements PIP-21..PIP-23 and TRI-09 added; the contract is draft 5 and the cards draft 3. Making the porting references showed the prototype's crop had been measured with a different face detector, so recipe 0.5.0 re-measures it with YuNet (committed in `models/`). The references are in `prototype/parity/`.

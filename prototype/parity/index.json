@@ -1,0 +1,197 @@
+{
+ "recipe_version": "0.5.0",
+ "made_with": {
+  "python": "3.13.16",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "opencv": "5.0.0"
+ },
+ "format": "raw little-endian float32, row-major, channels last",
+ "files": [
+  {
+   "file": "inputs/charles-fillmore.rgb.png",
+   "card": "F-39, F-12, F-13",
+   "call": "Pillow decode, RGB"
+  },
+  {
+   "file": "inputs/emilie-cady.rgb.png",
+   "card": "F-39, F-12, F-13",
+   "call": "Pillow decode, RGB"
+  },
+  {
+   "file": "inputs/ernest-holmes.rgb.png",
+   "card": "F-39, F-12, F-13",
+   "call": "Pillow decode, RGB"
+  },
+  {
+   "file": "fillmore/input.f32",
+   "card": "F-39",
+   "call": "grey crop [89, 88, 96, 96] of inputs/charles-fillmore.rgb.png"
+  },
+  {
+   "file": "fillmore/gaussian_s3.f32",
+   "card": "F-39",
+   "call": "GaussianBlur(src, ksize=(0,0), sigma=3), default border (REFLECT_101)"
+  },
+  {
+   "file": "fillmore/bilateral_s1.8.f32",
+   "card": "F-39, F-13",
+   "call": "bilateralFilter(src, d=-1, sigmaColor=0.08, sigmaSpace=1.8)"
+  },
+  {
+   "file": "fillmore/bilateral_s6.0.f32",
+   "card": "F-39, F-13",
+   "call": "bilateralFilter(src, d=-1, sigmaColor=0.08, sigmaSpace=6.0)"
+  },
+  {
+   "file": "fillmore/logspec.f32",
+   "card": "F-39, F-13",
+   "call": "log1p(|fftshift(fft2((L - GaussianBlur(L, sigma 3)) * hann(h) x hann(w)))|); numpy.hanning"
+  },
+  {
+   "file": "fillmore/median15.f32",
+   "card": "F-39, F-13",
+   "call": "scipy.ndimage.median_filter(logspec, size=15, mode='reflect')"
+  },
+  {
+   "file": "fillmore/max5.f32",
+   "card": "F-39, F-13",
+   "call": "scipy.ndimage.maximum_filter(logspec - median15, size=5); = cv2.dilate with a 5 x 5 rectangle"
+  },
+  {
+   "file": "fillmore/idft_roundtrip.f32",
+   "card": "F-39",
+   "call": "idft(dft(input, DFT_COMPLEX_OUTPUT), DFT_SCALE | DFT_REAL_OUTPUT); equals input"
+  },
+  {
+   "file": "fillmore/warp_linear.f32",
+   "card": "F-39",
+   "call": "warpAffine(src, M=[[1.0199999809265137, 0.029999999329447746, 1.5], [-0.029999999329447746, 1.0199999809265137, -2.0]], INTER_LINEAR, BORDER_REPLICATE)"
+  },
+  {
+   "file": "fillmore/warp_cubic.f32",
+   "card": "F-39",
+   "call": "warpAffine(src, M=[[1.0199999809265137, 0.029999999329447746, 1.5], [-0.029999999329447746, 1.0199999809265137, -2.0]], INTER_CUBIC, BORDER_REPLICATE)"
+  },
+  {
+   "file": "fillmore/flow_in0.f32",
+   "card": "F-39",
+   "call": "8-bit: GaussianBlur(norm(input), 1.0), norm = clip((a - mean) / std * 40 + 128)"
+  },
+  {
+   "file": "fillmore/flow_in1.f32",
+   "card": "F-39",
+   "call": "8-bit: GaussianBlur(norm(warp_linear), 1.0)"
+  },
+  {
+   "file": "fillmore/flow.f32",
+   "card": "F-39, F-30",
+   "call": "calcOpticalFlowFarneback(flow_in0, flow_in1, None, 0.5, 3, 9, 5, 5, 1.1, 0); channels dx, dy"
+  },
+  {
+   "file": "fillmore/mask.f32",
+   "card": "F-39",
+   "call": "cut-out fixture > 0.5, crop [89, 88, 96, 96]"
+  },
+  {
+   "file": "fillmore/dist_outside.f32",
+   "card": "F-39, F-15",
+   "call": "distanceTransform(mask == 0, DIST_L2, maskSize 5)"
+  },
+  {
+   "file": "holmes/input.f32",
+   "card": "F-39",
+   "call": "grey crop [135, 163, 96, 96] of inputs/ernest-holmes.rgb.png"
+  },
+  {
+   "file": "holmes/gaussian_s3.f32",
+   "card": "F-39",
+   "call": "GaussianBlur(src, ksize=(0,0), sigma=3), default border (REFLECT_101)"
+  },
+  {
+   "file": "holmes/bilateral_s1.8.f32",
+   "card": "F-39, F-13",
+   "call": "bilateralFilter(src, d=-1, sigmaColor=0.08, sigmaSpace=1.8)"
+  },
+  {
+   "file": "holmes/bilateral_s6.0.f32",
+   "card": "F-39, F-13",
+   "call": "bilateralFilter(src, d=-1, sigmaColor=0.08, sigmaSpace=6.0)"
+  },
+  {
+   "file": "holmes/logspec.f32",
+   "card": "F-39, F-13",
+   "call": "log1p(|fftshift(fft2((L - GaussianBlur(L, sigma 3)) * hann(h) x hann(w)))|); numpy.hanning"
+  },
+  {
+   "file": "holmes/median15.f32",
+   "card": "F-39, F-13",
+   "call": "scipy.ndimage.median_filter(logspec, size=15, mode='reflect')"
+  },
+  {
+   "file": "holmes/max5.f32",
+   "card": "F-39, F-13",
+   "call": "scipy.ndimage.maximum_filter(logspec - median15, size=5); = cv2.dilate with a 5 x 5 rectangle"
+  },
+  {
+   "file": "holmes/idft_roundtrip.f32",
+   "card": "F-39",
+   "call": "idft(dft(input, DFT_COMPLEX_OUTPUT), DFT_SCALE | DFT_REAL_OUTPUT); equals input"
+  },
+  {
+   "file": "holmes/warp_linear.f32",
+   "card": "F-39",
+   "call": "warpAffine(src, M=[[1.0199999809265137, 0.029999999329447746, 1.5], [-0.029999999329447746, 1.0199999809265137, -2.0]], INTER_LINEAR, BORDER_REPLICATE)"
+  },
+  {
+   "file": "holmes/warp_cubic.f32",
+   "card": "F-39",
+   "call": "warpAffine(src, M=[[1.0199999809265137, 0.029999999329447746, 1.5], [-0.029999999329447746, 1.0199999809265137, -2.0]], INTER_CUBIC, BORDER_REPLICATE)"
+  },
+  {
+   "file": "holmes/flow_in0.f32",
+   "card": "F-39",
+   "call": "8-bit: GaussianBlur(norm(input), 1.0), norm = clip((a - mean) / std * 40 + 128)"
+  },
+  {
+   "file": "holmes/flow_in1.f32",
+   "card": "F-39",
+   "call": "8-bit: GaussianBlur(norm(warp_linear), 1.0)"
+  },
+  {
+   "file": "holmes/flow.f32",
+   "card": "F-39, F-30",
+   "call": "calcOpticalFlowFarneback(flow_in0, flow_in1, None, 0.5, 3, 9, 5, 5, 1.1, 0); channels dx, dy"
+  },
+  {
+   "file": "holmes/mask.f32",
+   "card": "F-39",
+   "call": "cut-out fixture > 0.5, crop [135, 163, 96, 96]"
+  },
+  {
+   "file": "holmes/dist_outside.f32",
+   "card": "F-39, F-15",
+   "call": "distanceTransform(mask == 0, DIST_L2, maskSize 5)"
+  },
+  {
+   "file": "synthetic/blobs.f32",
+   "card": "F-39, F-15",
+   "call": "circle (20,20) r10; rectangle (45,10)-(70,30); 3 x 4 block at (5,50); one pixel at (60,40)"
+  },
+  {
+   "file": "synthetic/threshold_map.f32",
+   "card": "F-14",
+   "call": "_threshold_map(N=64, ss=2, pitch=64/11, angle_deg=45)"
+  },
+  {
+   "file": "synthetic/key_strip.f32",
+   "card": "F-30",
+   "call": "grey 0.4 blending into pure green, left to right (RGB 0..1)"
+  },
+  {
+   "file": "synthetic/key_mask.f32",
+   "card": "F-30",
+   "call": "key_mask(key_strip), key_lo 0.15, key_hi 0.45"
+  }
+ ]
+}

@@ -1,0 +1,17 @@
+{
+ "op": "gaussian_s3",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "GaussianBlur(src, ksize=(0,0), sigma=3), default border (REFLECT_101)",
+ "tolerance": {
+  "max_abs": 0.0001
+ },
+ "card": "F-39",
+ "stats": {
+  "min": 0.4294353127479553,
+  "max": 0.869425356388092,
+  "mean": 0.7616027593612671
+ }
+}

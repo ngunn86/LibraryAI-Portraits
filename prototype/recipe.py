@@ -10,13 +10,14 @@ copies of both (small; STY-09).
 """
 import numpy as np, cv2
 
-RECIPE_VERSION = "0.4.0"
+RECIPE_VERSION = "0.5.0"
 
 SETTINGS = {
     "size_px": 1000,
-    # crop (measured on the owner's three examples; see prototype/RESULTS.md)
-    "eye_mouth_frac": 0.237,      # eye-midpoint to mouth-midpoint distance / side
-    "eye_y_frac": 0.443,          # eye midpoint height / side
+    # crop (measured on the owner's three examples with YuNet's landmarks, the production detector; see README.
+    # 0.4.0 had 0.237 and 0.443, measured with SCRFD, which places the mouth corners differently)
+    "eye_mouth_frac": 0.221,      # eye-midpoint to mouth-midpoint distance / side
+    "eye_y_frac": 0.449,          # eye midpoint height / side
     "face_centre_x_frac": 0.50,   # face box centre / side
     "min_face_px": 90,            # pre-check: smallest face-box width accepted in the original (the owner's own are 108-183)
     # descreen (PIP-05): blur sizes are in dot cells, converted to original pixels, so they suit any original size
@@ -38,6 +39,8 @@ SETTINGS = {
     "enhance_blend": 0.5,         # share of the aligned enhanced copy in the blend
     "enhance_min_align": 0.90,    # minimum alignment correlation, else the enhanced copy is not used
     "enhance_max_drift_cells": 0.7,  # after alignment, face details may sit at most this far apart (95th pct)
+    "drift_box_inset": 0.15,      # drift is measured inside the face box shrunk by this share on each side (0.5.0),
+                                  # so a box edge on the hair or background can't count as drift
     "key_lo": 0.15,               # keyed background: greenness below this is the person...
     "key_hi": 0.45,               # ...and above this is background (soft edge in between)
     # halftone
@@ -113,6 +116,21 @@ def descreen(L, cell_px_in_original, s=SETTINGS):
     out = cv2.bilateralFilter(np.clip(out, 0, 1), -1, s["edge_blur_color"], sigma_space)
     return out, dict(screen_found=bool(peaks), screen_peaks=[[round(a, 4), round(b, 4)] for a, b in peaks],
                      edge_blur_sigma_px=round(float(sigma_space), 2))
+
+
+# Where YuNet's five landmarks sit inside its own face box, on the owner's three originals (means; PIP-04).
+# Used only when no face is found (engravings, say): the landmarks are estimated from the pre-check's box.
+BOX_LANDMARKS = dict(eye_dx=0.22, eye_y=0.39, nose_y=0.58, mouth_dx=0.19, mouth_y=0.74)
+
+
+def landmarks_from_box(box, p=BOX_LANDMARKS):
+    """Five estimated landmarks (left eye, right eye, nose, left and right mouth corners) from a face box
+    [x0, y0, x1, y1] in pixels, so crop_transform and make_master run unchanged without a detected face."""
+    x0, y0, x1, y1 = [float(v) for v in box]
+    w, h, cx = x1 - x0, y1 - y0, (x0 + x1) / 2
+    return np.array([[cx - p["eye_dx"] * w, y0 + p["eye_y"] * h], [cx + p["eye_dx"] * w, y0 + p["eye_y"] * h],
+                     [cx, y0 + p["nose_y"] * h],
+                     [cx - p["mouth_dx"] * w, y0 + p["mouth_y"] * h], [cx + p["mouth_dx"] * w, y0 + p["mouth_y"] * h]])
 
 
 def crop_transform(face, s=SETTINGS):
@@ -253,7 +271,10 @@ def local_drift(L, Eg, A, face_box, cell_px, s=SETTINGS):
     h, w = L.shape
     Ea = cv2.warpAffine(Eg, A[:2].astype(np.float32), (w, h), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP,
                         borderMode=cv2.BORDER_REPLICATE)
-    x0, y0, x1, y1 = [int(round(v)) for v in face_box]
+    bx0, by0, bx1, by1 = [float(v) for v in face_box]
+    i = s.get("drift_box_inset", 0)
+    dx, dy = i * (bx1 - bx0), i * (by1 - by0)
+    x0, y0, x1, y1 = [int(round(v)) for v in (bx0 + dx, by0 + dy, bx1 - dx, by1 - dy)]
     x0, y0, x1, y1 = max(x0, 0), max(y0, 0), min(x1, w), min(y1, h)
     def norm(a):
         r = a[y0:y1, x0:x1]

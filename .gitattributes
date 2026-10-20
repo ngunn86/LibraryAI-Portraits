@@ -9,3 +9,5 @@
 *.tiff binary
 *.webp binary
 *.zip binary
+*.onnx binary
+*.f32 binary

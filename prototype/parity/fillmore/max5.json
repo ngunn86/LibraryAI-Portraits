@@ -1,0 +1,17 @@
+{
+ "op": "max5",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "scipy.ndimage.maximum_filter(logspec - median15, size=5); = cv2.dilate with a 5 x 5 rectangle",
+ "tolerance": {
+  "max_abs": 1e-06
+ },
+ "card": "F-39, F-13",
+ "stats": {
+  "min": 0.033299028873443604,
+  "max": 1.3757646083831787,
+  "mean": 0.4295957386493683
+ }
+}

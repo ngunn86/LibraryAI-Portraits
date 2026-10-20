@@ -28,7 +28,7 @@ for tid in EXAMPLES:
     bump = np.zeros_like(xx)
     for (px, py) in k[[0, 1, 3, 4]]:
         bump += np.exp(-(((xx - px) ** 2 + (yy - py) ** 2) / (2 * (0.06 * E.shape[1]) ** 2)))
-    cell_e = 2.8 * (1000 / 110) / (0.237 * 1000 / np.linalg.norm((np.array(face["kps"][3]) + face["kps"][4]) / 2 - (np.array(face["kps"][0]) + face["kps"][1]) / 2))
+    cell_e = 2.8 * (1000 / 110) / (SETTINGS["eye_mouth_frac"] * 1000 / np.linalg.norm((np.array(face["kps"][3]) + face["kps"][4]) / 2 - (np.array(face["kps"][0]) + face["kps"][1]) / 2))
     E_moved = cv2.remap(E.astype(np.float32), (xx - bump * 1.2 * cell_e).astype(np.float32), yy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
     _, info_moved = make_master(rgb, mask, face, enhanced=E_moved)
     plain, _ = make_master(rgb, mask, face)

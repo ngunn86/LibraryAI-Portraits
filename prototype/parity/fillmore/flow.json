@@ -1,0 +1,19 @@
+{
+ "op": "flow",
+ "shape": [
+  96,
+  96,
+  2
+ ],
+ "call": "calcOpticalFlowFarneback(flow_in0, flow_in1, None, 0.5, 3, 9, 5, 5, 1.1, 0); channels dx, dy",
+ "tolerance": {
+  "p95_abs_px": 0.05,
+  "why": "the drift check uses the 95th percentile of the magnitude"
+ },
+ "card": "F-39, F-30",
+ "stats": {
+  "min": -4.376171588897705,
+  "max": 5.943915367126465,
+  "mean": 0.439529150724411
+ }
+}

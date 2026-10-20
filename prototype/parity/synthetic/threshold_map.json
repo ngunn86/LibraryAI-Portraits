@@ -1,0 +1,18 @@
+{
+ "op": "threshold_map",
+ "shape": [
+  128,
+  128
+ ],
+ "call": "_threshold_map(N=64, ss=2, pitch=64/11, angle_deg=45)",
+ "tolerance": {
+  "max_abs": 1e-05,
+  "or_share_off_by_one_rank": 0.001
+ },
+ "card": "F-14",
+ "stats": {
+  "min": 5.5969801906030625e-05,
+  "max": 0.9999751448631287,
+  "mean": 0.49921125173568726
+ }
+}

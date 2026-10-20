@@ -1,0 +1,15 @@
+{
+ "op": "mask",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "cut-out fixture > 0.5, crop [135, 163, 96, 96]",
+ "tolerance": "exact",
+ "card": "F-39",
+ "stats": {
+  "min": 1.0,
+  "max": 1.0,
+  "mean": 1.0
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "op": "bilateral_s6.0",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "bilateralFilter(src, d=-1, sigmaColor=0.08, sigmaSpace=6.0)",
+ "tolerance": {
+  "max_abs": 0.002
+ },
+ "card": "F-39, F-13",
+ "stats": {
+  "min": 0.38160088658332825,
+  "max": 0.8683418035507202,
+  "mean": 0.7629672288894653
+ }
+}
