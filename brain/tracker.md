@@ -41,8 +41,8 @@
 | T-17 | Checks and failure rules | 4 Processing | T-02, T-03, T-14, T-15 | **decided** (D-51): one remake with a fresh AI copy; one AI check per draft |
 | T-18 | Models and prompts | 4 Processing | T-14 – T-17 | **decided** (D-52): Haiku pre-checks, Sonnet draft checks and tie-breaks; Nano Banana Pro enhances |
 | T-19 | How runs work | 5 Running | T-01, T-05, T-08 | **decided** (D-53): nightly, requests at once, monthly re-search, library email + admin page |
-| T-20 | Spend | 5 Running | T-03, T-18, T-19 | **next** |
-| T-21 | Security | 5 Running | T-01, T-08 | open |
+| T-20 | Spend | 5 Running | T-03, T-18, T-19 | **decided** (D-54): first run $100; then $10 a night, $30 a month; trial $30 |
+| T-21 | Security | 5 Running | T-01, T-08 | **next** |
 | T-22 | The trial | 5 Running | T-14 – T-18, T-20 | open |
 | T-23 | Stack and architecture | 6 Build | T-01, T-06, T-08 | open |
 | T-24 | Testing approach | 6 Build | T-23 | mostly decided (D-09) |
@@ -401,15 +401,21 @@ Topics within a stage can move in parallel when they don't depend on each other.
   Q-02 and Q-08 resolved. **Written into:** RUN-01, RUN-02, RUN-07, RUN-08, RUN-09, IN-06; and a request in `handoffs/library-api.md`.
 - **Linked:** RUN-01..RUN-07.
 
-### T-20 · Spend · **next**
+### T-20 · Spend · **decided**
 - **Depends on:** T-03, T-18, T-19.
 - **To decide:**
   - the per-run cap ($250 for the first run, D-06);
   - a per-teacher cap, now that there can be 3 portraits;
   - the trial's budget (TRI-07).
 - **Starting estimate:** about 17–25 cents per portrait processed, plus a few cents per candidate checked. With 182 teachers, most having 0–1 portraits, the first run is likely $50–120.
+- **Decided (D-54):**
+  - first full run $100 (estimate $40–80);
+  - then $10 a night and $30 a month;
+  - trial $30 (estimate $5–10);
+  - $2 per teacher per run (Claude's);
+  - a credit limit on the OpenRouter key as the owner's backstop.
 
-### T-21 · Security · open
+### T-21 · Security · **next**
 - **Depends on:** T-01, T-08.
 - **To decide:**
   - the library's API key;
@@ -569,4 +575,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **2026-10-19 23:05.** **T-17 decided** (D-51): one remake with a fresh AI copy; the black-and-white version is checked by code only. Per teacher per run, 6 drafts and 12 pre-checks at most. Q-06 and Q-07 resolved. Next: T-18.
 - **2026-10-19 23:15.** **T-18 decided** (D-52): Haiku 5.5 pre-checks, Sonnet 5.5 draft checks and tie-breaks, all through OpenRouter. Prompts updated. Next: T-19.
 - **2026-10-19 23:25.** **T-19 decided** (D-53): nightly runs with requests at once; monthly re-search; updates through the library's daily email, the admin page and Railway alerts; Try-again notes guide a fresh AI copy. Q-02 and Q-08 resolved. Next: T-20.
+- **2026-10-20 00:05.** **T-20 decided** (D-54): $100 first run; $10 a night and $30 a month after; trial $30. The owner-input list is updated for the hosted app: O-4 is now a Railway variable with a credit limit; O-5 is withdrawn; O-8..O-11 added (Railway account, GitHub token, User-Agent contact, the library's key). Next: T-21.
 

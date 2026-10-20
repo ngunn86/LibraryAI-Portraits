@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11. T-14 is decided (D-49): code outline only (PIP-07), PIP-19, STY-07; TRI-03 amended. T-16 is decided (D-50): PIP-20. T-17 is decided (D-51): PIP-09..PIP-11. T-18 is decided (D-52): checking models in PIP-02, PIP-09. T-19 is decided (D-53): RUN-01, RUN-02, RUN-07..RUN-09.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11. T-14 is decided (D-49): code outline only (PIP-07), PIP-19, STY-07; TRI-03 amended. T-16 is decided (D-50): PIP-20. T-17 is decided (D-51): PIP-09..PIP-11. T-18 is decided (D-52): checking models in PIP-02, PIP-09. T-19 is decided (D-53): RUN-01, RUN-02, RUN-07..RUN-09. T-20 is decided (D-54): RUN-04, TRI-07.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -810,7 +810,13 @@ Teachers are processed one at a time. Requests are queued as they arrive and go 
 
 **RUN-04 · Spend cap and ledger** *fixed* · B2; method *proposed* · C
 - The tool uses its own OpenRouter key. That is the only AI key (D-19).
-- The cap per run comes from settings: $250 for the first run.
+- The caps come from settings (D-54, replacing D-06's $250):
+  - **$100** for the first full run;
+  - then **$10 a night** and **$30 a calendar month**, whichever is reached first;
+  - **$2 per teacher per run** (proposed).
+
+  A request from the library counts towards the night and the month.
+- A credit limit on the OpenRouter key itself is the owner's backstop (O-4).
 - Before each paid call, the client checks that the spend so far plus that call's estimated maximum fits under the cap. If it doesn't, the run stops cleanly, delivers what's finished and says so in the report.
 - The actual cost of every call is logged per attempt, from the provider's usage data where given, otherwise from the estimate in settings, and totalled in the report.
 
@@ -893,8 +899,9 @@ The check (PIP-09) scores every result, and the best contender wins. If two are 
 - The owner's veto reverses it.
 - The full run then reuses every cached paid step from the trial.
 
-**TRI-07 · Trial spend** *fixed* · B2; sub-cap *proposed* · C
-The estimate is about $30, inside the first run's cap. *Proposed:* a trial sub-cap of $40, so the trial can't eat the run.
+**TRI-07 · Trial spend** *fixed* · B2, D-54
+- The trial's budget is **$30** (D-54). It is separate from the run caps.
+- The estimate is $5–10: three image models on about ten originals, with their checks.
 
 **TRI-08 · The examples are reproduced** *fixed* · B2; metrics *proposed* · C
 - The pipeline's output for the owner's three originals passes the check when compared against the hand-made targets, in the check's "compare with target" mode.

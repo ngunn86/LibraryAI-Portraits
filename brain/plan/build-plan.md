@@ -35,11 +35,15 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 |---|---|---|---|
 | O-1 | Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py`, plus the Rev1 commit they're from | P0-1 (**now**) | Copied into `brain/reference/rev1/` unchanged. Rev1 stays read-only for Claude |
 | O-2 | The three hand-made portraits and their originals | P0-3 (**now**) | **Done 2026-10-19** (`design/portraits/`); sources unknown, so test use only (D-13) |
-| O-3 | The teacher list. **Now taken from library-pipeline's `authors.csv`** (D-22, read-only); the owner only accepts or corrects the proposed dates and Wikidata ids (IN-13) | P0-4; before R-1 | Format: [../contracts/teachers-csv.md](../contracts/teachers-csv.md) |
-| O-4 | The tool's own OpenRouter key, set as an environment variable in WSL. It is the only AI key (D-19). Never in chat or the repo | F-27 | A key separate from other projects, so spend is easy to see |
-| O-5 | The delivery folder: create `portraits/` in Drive and give its path (or its id, if Q-03 goes the API way) | F-27 | |
+| O-3 | The teacher list. **Taken from library-pipeline's `authors.csv`** (D-22, D-45, read-only). The owner adds the dates and Wikidata ids the tool suggests (from the admin page's CSV) in `authors.csv` | Ongoing | |
+| O-4 | The tool's own OpenRouter key, set as a Railway variable (per environment). It is the only AI key (D-19). Never in chat or the repo. **Set a credit limit on the key at OpenRouter** as a backstop (D-54) | The first live feature | A key separate from other projects, so spend is easy to see |
+| O-5 | ~~The delivery folder~~ *withdrawn* (D-42: the library pulls through the API) | — | |
 | O-6 | The Claude GitHub App installed on this repo (Q-20) | **now** | **Done 2026-10-19** |
 | O-7 | The harness, ready to run | Phase 1 | Designed in a separate chat (D-15) |
+| O-8 | A Railway account (Hobby to start) with the project created, and the harness given deploy access (D-36) | Phase 1 | After the throwaway test (`handoffs/harness-throwaway-test.md`) |
+| O-9 | A read-only, fine-grained GitHub token for library-pipeline, limited to that repo's contents (D-32), set as a Railway variable | The teacher sync | Never in chat or the repo |
+| O-10 | A contact email address for the tool's User-Agent (D-46), one meant for the app rather than a personal one | The source clients | Wikimedia's 2026 limits require it |
+| O-11 | The library's key for this API, made by the owner once the API is deployed, and handed to the library's settings (D-44) | The library's first pull | |
 
 ## 4. Working with the harness
 

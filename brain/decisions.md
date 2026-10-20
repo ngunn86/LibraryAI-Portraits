@@ -444,3 +444,21 @@ Claude's choices carried with this decision:
 
 → T-19, RUN-01, RUN-02, RUN-08, RUN-09, IN-06, Q-02, Q-08
 
+**D-54 · 2026-10-20 · Spending caps** · owner · *closes T-20; replaces D-06's numbers*
+1. **The first full run is capped at $100.** The estimate is $40–80. At the cap the run stops cleanly and carries on the next night.
+2. **After that: $30 a month and $10 a night.**
+3. **The trial's budget is $30.** The estimate is $5–10, since the trial now compares only the three image models on about ten originals.
+
+Claude's estimate (2026-10-19 prices, AI only; hosting about $8–15 a month on top):
+- about $0.17 per portrait, or up to about $0.35 with a remake:
+  - an AI copy about $0.14;
+  - a Sonnet check about $0.02;
+  - Haiku pre-checks a fraction of a cent each;
+- then a few dollars in a normal month.
+
+Claude's proposals carried with this decision:
+- a per-teacher cap of $2 per run;
+- **the owner sets a credit limit on the OpenRouter key itself** as a backstop (owner input O-4).
+
+→ T-20, RUN-04, TRI-07
+
