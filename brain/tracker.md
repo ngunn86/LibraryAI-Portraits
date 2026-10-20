@@ -32,7 +32,7 @@
 | T-08 | The library API | 2 Data | T-01, T-06, T-07 | **decided** (D-44): one key, pull only, requests at once; [OpenAPI draft 1](contracts/portraits-api.openapi.json) |
 | T-09 | The contract with Library-AI (Rev1) | 2 Data | T-08 | **mostly decided** (D-37): this project owns the API and its OpenAPI file; the library adopts it |
 | T-10 | The teacher list (from the pipeline's authors) | 3 Finding | none | **decided** (D-22, D-45): active only; two sources must agree; unknowns skipped and listed |
-| T-11 | Picture sources | 3 Finding | T-07 | **next**: the formal review (D-24, D-29) |
+| T-11 | Picture sources | 3 Finding | T-07 | **in discussion**: the formal review ([notes](topics/T-11-picture-sources.md)) |
 | T-12 | Match rules: when a picture certainly shows the teacher | 3 Finding | T-10, T-11 | mostly decided |
 | T-13 | Rights, licences and credits | 3 Finding | T-02, T-07, T-11 | mostly decided |
 | T-14 | The white-dot version: processing recipe | 4 Processing | T-02 | mostly decided (recipe 0.3.1) |
@@ -244,7 +244,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - teachers live in the app's database (Claude's choice). Date forms and id clashes are Claude's choices too.
 - **Resolved:** Q-01, Q-12, Q-13, Q-26; Q-14 superseded. **Written into:** IN-12, IN-13.
 
-### T-11 · Picture sources · **next**
+### T-11 · Picture sources · **in discussion**
 - **Depends on:** T-07 (what each source must supply).
 - **Decided so far:**
   - The Internet Archive and book plates are omitted (D-24).
@@ -258,6 +258,14 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - what is recorded;
   - the order of preference;
   - whether it's adopted for the first build or later.
+- **The review:** [topics/T-11-picture-sources.md](topics/T-11-picture-sources.md) (2026-10-19). Findings:
+  - NYPL's API was retired on 1 August 2026;
+  - Wikimedia's 2026 limits require an identifying User-Agent;
+  - the Library of Congress allows 20 searches a minute.
+- **Proposed:**
+  - first build on the three keyless sources plus the LoC name authority;
+  - DPLA as listed leads later;
+  - a coverage survey early in the build to decide the keyed sources.
 - **Linked:** [spec/sources.md](spec/sources.md), SRC-01, SRC-02, Q-23, Q-25.
 
 ### T-12 · Match rules · mostly decided
@@ -495,4 +503,11 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - unknowns skipped and listed, with a CSV of suggestions for `authors.csv`.
 
   Q-01, Q-12, Q-13 and Q-26 resolved; Q-14 superseded. Next: T-11, the formal review of the picture sources.
+- **2026-10-19 21:55.** T-11 review written (`topics/T-11-picture-sources.md`), with each source's access checked against its own documentation:
+  - NYPL's API was retired on 1 August 2026, so it is proposed dropped;
+  - Wikimedia's 2026 limits need a proper User-Agent;
+  - the LoC allows 20 searches a minute;
+  - Wellcome is keyless; Smithsonian and DPLA need free keys.
+
+  Waiting for the owner.
 
