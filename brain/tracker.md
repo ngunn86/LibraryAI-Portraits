@@ -46,8 +46,8 @@
 | T-22 | The trial | 5 Running | T-14 – T-18, T-20 | **decided** (D-56): three enhance models; the checker picks, the owner can veto; no-blend shown beside |
 | T-23 | Stack and architecture | 6 Build | T-01, T-06, T-08 | **decided** (D-57): TypeScript like the library; [architecture v2](spec/architecture.md) proposed |
 | T-24 | Testing approach | 6 Build | T-23 | **proposed in full** (D-09; [build plan §5](plan/build-plan.md)): node:test, PGlite, contract tests, smoke tests on PR copies |
-| T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | **next** |
-| T-26 | Outside reviews and plan freeze | 6 Build | T-25 | open |
+| T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | **drafted** ([features.md](plan/features.md) draft 2: 45 cards in 6 phases); convert to the harness's format when it exists |
+| T-26 | Outside reviews and plan freeze | 6 Build | T-25 | **next**: review rounds from 2026-10-20 ([reviews/README.md](reviews/README.md)) |
 | T-27 | What the harness must do for a hosted app (hand-off to the harness chat) | 6 Build | T-01 | in discussion: [throwaway test requirements](handoffs/harness-throwaway-test.md) v1 |
 
 **Why this order:**
@@ -222,7 +222,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   1. ~~Who owns the contract now~~. **Decided (D-37):** this project defines the API and the records and publishes an OpenAPI file. The library adopts it, pulls, and sends its decisions back. The library has also adopted the three-portrait scope.
   2. ~~What to tell the Rev1 planning~~. **Done:** [handoffs/library-api.md](handoffs/library-api.md), for the owner to pass to the library chat.
   3. **Whether we still need Rev1's portrait files (O-1).** Probably only to see which of the PORT requirements still apply. Rev1 is now readable here, so Claude copies them once the library's latest planning is pushed (Rev1's GitHub is still at 3e444eb, 2026-10-18, before it adopted this API).
-  4. **OUT-08, the bulk-upload zip:** still needed now that the library pulls through the API? Proposed: withdraw it.
+  4. **OUT-08, the bulk-upload zip:** still needed now that the library pulls through the API? Proposed: withdraw it. Now asked as **Q-27**, together with the restated acceptance checks.
 - **Linked:** Q-09, Q-16, O-1, OUT-10, AC-02, AC-03.
 
 ## Stage 3: Finding pictures
@@ -466,11 +466,12 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
   Nothing here needs the owner unless a reviewer objects.
 
-### T-25 · Feature cards for the harness · **next**
+### T-25 · Feature cards for the harness · **drafted**
 - **Depends on:** all topics above, and the harness's input format (from the other chat, D-15).
 - **To decide:** rewrite `plan/features.md` from the decisions. The current 35 cards predate D-24..D-29.
+- **Done (2026-10-20):** draft 2, with 45 cards in six phases for the hosted TypeScript app. Old IDs are kept where the feature continues; F-36..F-48 are new; F-20 and F-33 are withdrawn. Left: conversion to the harness's format (D-15).
 
-### T-26 · Outside reviews and plan freeze · open
+### T-26 · Outside reviews and plan freeze · **next**
 - **Depends on:** T-25.
 - **To decide:**
   - review rounds by other AI tools (`reviews/`);
@@ -605,4 +606,15 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
   Next: T-24.
 - **2026-10-20 00:50.** T-24 proposed in full (build plan §5, for TypeScript): `node:test`, PGlite, contract tests against the OpenAPI file, smoke tests on deployed copies, live tests only on live cards. Next: T-25, rewriting the feature cards. It needs the harness's card format if the harness chat has settled one (D-15).
+- **2026-10-20 01:00–03:00.** At the owner's request, ahead of tomorrow's outside reviews:
+  - **Consistency pass:**
+    - `spec/requirements.md` consolidated (every ID kept, each item restated for the hosted API app);
+    - `plan/build-plan.md` rewritten;
+    - old contracts marked superseded;
+    - status and README refreshed;
+    - the reviewer prompt updated for this round;
+    - API draft 3 adds `lcnaf_id`;
+    - GitHub added to the outbound allowlist (SRC-01).
+  - **Q-27** gathers the four B2 items whose restatement needs the owner's OK.
+  - **T-25 drafted:** 45 feature cards. **Next: T-26**, the outside reviews.
 

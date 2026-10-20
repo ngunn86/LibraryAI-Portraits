@@ -1,6 +1,6 @@
 # The portraits API (T-08)
 
-**Status: draft 1 (2026-10-19).** Defined by this project and adopted by the library (D-37). The machine contract is [portraits-api.openapi.json](portraits-api.openapi.json) (OpenAPI 3.1). [portraits-api.sample.json](portraits-api.sample.json) holds example payloads, and [check_api.py](check_api.py) checks the two against each other offline.
+**Status: draft 3 (2026-10-20).** Draft 2 added each file's `licence_url` (D-48); draft 3 adds the teacher's LoC name id, `lcnaf_id` (IN-13). Defined by this project and adopted by the library (D-37). The machine contract is [portraits-api.openapi.json](portraits-api.openapi.json) (OpenAPI 3.1). [portraits-api.sample.json](portraits-api.sample.json) holds example payloads, and [check_api.py](check_api.py) checks the two against each other offline.
 
 ## In plain words
 

@@ -68,7 +68,7 @@ T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-57); see the tracker.
 4. **Keys never go in the repo, chat, logs, reports or API answers.** Keys are Railway variables, read from the environment (see `brain/spec/architecture.md`, RUN-10).
 5. **Originals come only from the adopted sources in `brain/spec/sources.md`, by the match rules in `SRC-03`.**
    - The tool never reads Library-AI's scans or the owner's reference shelf.
-   - The tool's network client refuses every other host except the configured model APIs.
+   - The tool's network client refuses every other host except the configured model API (OpenRouter) and GitHub for the teacher list (SRC-01).
 6. **Testing follows the owner's standard: features work reasonably well and without bugs.**
    - No scientific evaluation and no coverage targets.
    - Tests run offline on fixtures and stubs.

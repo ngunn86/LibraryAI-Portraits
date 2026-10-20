@@ -13,6 +13,7 @@
     "born": 1854,
     "died": 1948,
     "wikidata_qid": "Q1065536",
+    "lcnaf_id": "n85000000",
     "on_list": true,
     "portraits": {
      "waiting": 1,
@@ -33,6 +34,7 @@
     "born": 1849,
     "died": 1925,
     "wikidata_qid": null,
+    "lcnaf_id": null,
     "on_list": true,
     "portraits": {
      "waiting": 0,
@@ -57,6 +59,7 @@
   "born": 1854,
   "died": 1948,
   "wikidata_qid": "Q1065536",
+  "lcnaf_id": "n85000000",
   "on_list": true,
   "portraits": {
    "waiting": 1,

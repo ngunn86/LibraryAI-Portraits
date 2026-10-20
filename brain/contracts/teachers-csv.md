@@ -1,5 +1,7 @@
 # Contract: `teachers.csv`
 
+> **Superseded (D-31, D-45, 2026-10-19).** There is no `teachers.csv` file. Teachers are synced from library-pipeline's `authors.csv` into the app's database (IN-01, IN-12, IN-13). This page is kept for its history only.
+
 The owner supplies the teacher list because the library's people records don't exist yet. The rules come from B2; items marked *proposed* are Claude's (C) and wait for the owner.
 
 ## Format

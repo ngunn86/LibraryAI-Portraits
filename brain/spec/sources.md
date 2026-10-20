@@ -63,7 +63,7 @@ Every original that is considered, including the ones refused, gets a permanent 
 - **Rights:** the rights evidence as given (licence string and URL, rights advisory, rights URI or publication year, quoted raw), the rule applied, the verdict (allowed tier, or refused with the reason), and the portrait's own licence (SRC-11).
 - **Match:** `matched_by` (R1–R3 or owner_link), `matched_to` (the Wikidata id or name heading).
 - **Credit:** the credit line, built per source (for example "Photograph: unknown, Library of Congress Prints and Photographs, no known restrictions").
-- **The file and the check:** file size, pixel size and SHA-256, the date retrieved, and a saved copy of the raw source record (JSON) in the state store.
+- **The file and the check:** file size, pixel size and SHA-256, the date retrieved, and a saved copy of the raw source record (JSON) in the database.
 
 The log lives in the app's database (T-07). The admin page offers it as a CSV download, and each portrait's API record carries its own original's rights (OUT-14). The delivery folder is withdrawn (D-42).
 

@@ -41,6 +41,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q-24 | Accept uncaptioned portraits at the front of a teacher's own book? | — | — | withdrawn (D-24: no book plates) |
 | Q-25 | Free data keys (Smithsonian, NYPL, DPLA) later, if coverage is low? | — | — | resolved → D-34 (keys are fine where needed, kept to a minimum) |
 | Q-26 | Which authors become teachers: `active` only, or `proposed` too? | — | — | resolved → D-45 (`active` only) |
+| **Q-27** | **B2 items restated for the hosted API: withdraw the zip, and accept the new acceptance wording?** | **build** | Withdraw OUT-08's zip; accept OUT-10 and AC-01..AC-03 as restated | **open** |
 
 ---
 
@@ -217,4 +218,11 @@ The owner installed the Claude GitHub App on this repo, and Claude's push works.
 ### Q-26 · Which authors become teachers · resolved → D-45
 - **Background.** `authors.csv` has 406 rows: 182 active, 146 proposed, 46 undecided, 32 excluded (2026-10-19).
 - **Proposal.** Take `active` only, as the pipeline does. A proposed author gets a portrait once the owner makes them active.
+
+### Q-27 · B2 items restated for the hosted API · build
+- **Background.** The consolidated requirements (2026-10-20) restate every B2 item for the hosted app and its API. Most follow directly from the owner's decisions (D-31, D-37, D-42, D-44). These four were in the brief as fixed, so Claude doesn't change them without the owner's OK:
+  1. **OUT-08, the bulk-upload zip** for the library's Imports page. With the library pulling everything through the API, it would duplicate the API. **Proposal:** withdraw it.
+  2. **OUT-10, the sample run** the library imports as its acceptance check. **Proposal:** replace it with the contract's sample payloads, plus a staging copy seeded with fixture portraits that the library pulls from end to end.
+  3. **AC-01..AC-03, the brief's "done when" checks for the list, the delivery folder and the receiver stub.** **Proposal:** the restated versions in requirements §9: the `authors.csv` sync; records valid against the API contract; the library stub working against staging.
+- **If the owner keeps the zip:** a `zip` command is added (one small feature card), writing a run's portraits and records into one file for download from the admin page.
 

@@ -65,7 +65,7 @@ All checks pass on the three examples, at both sizes. Outputs are in `out/versio
 
 ## The recipe (0.2.0)
 
-These are the settings in `recipe.py`. They become the `[recipe]` block of `settings.toml`.
+These are the settings in `recipe.py`. They become the recipe in the TypeScript app's `src/config/settings.ts` (D-57). The Python code here stays as the reference implementation: the port must reproduce `out/` from `fixtures/` (F-16).
 
 ```
 descreen: edge-preserving blur on every original, 0.30 cell (0.6 with a screen) · colour sigma 0.08

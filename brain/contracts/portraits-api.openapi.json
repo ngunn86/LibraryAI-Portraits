@@ -2,7 +2,7 @@
  "openapi": "3.1.0",
  "info": {
   "title": "Nexus Portraits API",
-  "version": "1.0.0-draft.2",
+  "version": "1.0.0-draft.3",
   "summary": "What the library reads from the portraits tool, and the decisions and requests it sends back.",
   "description": "Defined by this project and adopted by the library (D-37). Draft for T-08, 2026-10-19.\n\n- **Pull only** (D-44): the library reads the change feed on its own schedule; the tool never calls the library.\n- **One key** (D-44) for the library, for reading and sending. Made and switched off by the owner; stored only as a hash.\n- **Requests are handled right away** (D-44): a request answers 202, and its result appears in the change feed.\n- The library keeps its own copy of every file it pulls (D-42); each file carries its SHA-256.\n- Conventions mirror the library's own API (Rev1 `brain/contracts/api.openapi.json`): bearer keys, the same error object, the same change-feed pattern.\n- Within v1, changes are additive only: new optional fields and new routes. Response objects may gain fields; readers must ignore unknown ones."
  },
@@ -858,6 +858,18 @@
        }
       ]
      },
+     "lcnaf_id": {
+      "oneOf": [
+       {
+        "type": "string",
+        "pattern": "^n[a-z]?[0-9]+$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The teacher's Library of Congress name authority id (id.loc.gov), when known or found (IN-13). Helps the library match its people."
+     },
      "on_list": {
       "type": "boolean"
      },
@@ -923,7 +935,8 @@
      "portraits",
      "main_portrait_id",
      "portrait_search",
-     "record_version"
+     "record_version",
+     "lcnaf_id"
     ]
    },
    "Teacher": {

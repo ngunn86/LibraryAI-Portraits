@@ -1,5 +1,7 @@
 # Contract: `requests.json` and `status.json` (draft)
 
+> **Superseded (D-37, D-38, D-44, 2026-10-19).** The library sends requests and decisions through this project's API (`portraits-api.openapi.json`: `POST /api/v1/requests`, `POST /api/v1/decisions`). There are no `requests.json` or `status.json` files. This page is kept for its history only.
+
 Status: **draft, proposed** by Claude (C) from B2. Both files are written by the library into the delivery folder's root and read by the tool. Rev1's PORT-060 and PORT-061 may already define them. If so, Rev1's definition wins and this page is rewritten to match (Q-09). Until the library exists, these files appear only as test fixtures.
 
 ## `requests.json`

@@ -1,42 +1,42 @@
 # Status
 
-**Phase 0: planning.** There is no code yet. Last updated 2026-10-19 by Claude.
+**Phase 0: planning.** There is no code yet. Last updated 2026-10-20 by Claude.
 
-**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **T-01 decided:** fully hosted on Railway, two-way API (D-31..D-36). **T-05 decided** in the library (D-38). **T-09 mostly decided:** this project owns the OpenAPI contract (D-37). **T-02 decided** (D-39): the original and a PNG viewing copy; white and black-and-white (black edge) versions at 1,000 and 500 px; AI files offered to the library. **T-03 decided** (D-40): up to 3 different photographs, best-known first, then spread across life; better copies offered to the library. **T-04 decided** (D-41): no category scheme; an approximate date for the spread, correctable by the library. **T-06 decided** (D-42): files in the tool's bucket, the library keeps its own copies, history kept, database backups, a read-only admin page. **T-07 decided** (D-43, as proposed). **T-08 decided** (D-44): one key, pull only, requests at once; [OpenAPI draft 1](contracts/portraits-api.openapi.json). T-09 waits on Rev1's push (O-1). **T-10 decided** (D-45): active authors only; dates and Wikidata ids filled when two sources agree; unknowns skipped and listed. **T-11 decided** (D-46): Commons, the LoC and Wellcome first; Smithsonian only if the coverage survey shows gaps; NYPL and DPLA dropped. **T-12 decided** (D-47): any medium, the trial decides; matching by LoC name id. **T-13 decided** (D-48): CC0 for portraits of public-domain originals, credited "Portrait by New Thought Nexus". **T-14 decided** (D-49): the recipe is the starting point; the outline is drawn by code only. **T-16 decided** (D-50): fingerprint, feature matching and a model tie-break; when unsure, it's the same photograph. **T-17 decided** (D-51): one remake with a fresh AI copy; one AI check per draft. **T-18 decided** (D-52): Haiku pre-checks, Sonnet draft checks and tie-breaks. **T-19 decided** (D-53): nightly, requests at once, monthly re-search. **T-20 decided** (D-54): $100 first run; $10 a night, $30 a month after; trial $30. **T-21 decided** (D-55): one admin password; the same AI key everywhere. **T-22 decided** (D-56): three enhance models; the checker picks and the owner can veto. **T-23 decided** (D-57): TypeScript like the library; [architecture v2](spec/architecture.md). **T-24 proposed** (build plan §5). **Now: T-25, rewriting the feature cards for the harness.** Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated).
+**Where planning is:**
+- **The owner's decisions are made** for tracker topics T-01..T-23 (D-31..D-57). The tool is a hosted Railway app in TypeScript, like the library, with an API the library adopts.
+- **Requirements consolidated** on 2026-10-20 and **feature cards drafted** for the new design.
+- **Next:** outside reviews by other AI tools ([reviews/README.md](reviews/README.md)), starting 2026-10-20.
 
 ## Where things stand
 
-The planning notes now exist. The plan is drafted, but it isn't ready for review rounds yet: three inputs are missing (below), and the questions marked *now* are open.
-
 | Piece | State |
 |---|---|
-| Briefs | v1 (2026-10-17) and v2 (2026-10-19), in `brief/`. v2 is current |
-| Requirements | Drafted with IDs from B2 plus Claude's review. **Not yet reconciled with Rev1's PORT lines** (needs O-1) |
-| Architecture | v2 (proposed, 2026-10-20): TypeScript on Node 24 (D-57), Railway web/worker/cron, Postgres with a queue table, an S3 bucket, `sharp` and OpenCV.js; the Python prototype is the reference |
-| Contracts | Teacher list (now generated from library-pipeline's `authors.csv`, D-22), requests and status, and the delivery folder are drafted. The manifest schema waits for O-1 |
-| Sources | Decided (D-46): Wikidata/Commons, the LoC and Wellcome for the first build; Smithsonian only if the coverage survey shows gaps; NYPL (API retired) and DPLA dropped; Internet Archive omitted (D-24) |
-| Build plan and features | 35 feature cards across phases 1–6, with checks, dependencies, live/stub, parkable |
+| Tracker | [tracker.md](tracker.md). T-01..T-08, T-10..T-14 and T-16..T-23 decided. T-24 and T-25 proposed in full. T-09 waits for Rev1's push; T-15 for real AI copies in the trial; T-26 is the review rounds; T-27 is the harness's own planning |
+| Briefs | v1 (2026-10-17) and v2 (2026-10-19), in `brief/`. v2 is the brief; decisions D-24 onwards extend it |
+| Requirements | [spec/requirements.md](spec/requirements.md), consolidated 2026-10-20: every ID kept, every item current. Open: Q-27 (B2 items restated for the API) and the PORT reconciliation (needs O-1) |
+| Architecture | [spec/architecture.md](spec/architecture.md) v2 (proposed): TypeScript on Node 24 (D-57); Railway web, worker and cron; Postgres with a queue table; an S3 bucket; `sharp` and OpenCV.js, with a porting spike. The Python prototype is the reference |
+| API contract | [contracts/portraits-api.openapi.json](contracts/portraits-api.openapi.json), draft 3, with samples and an offline check (`check_api.py`, passing). The library adopts it (D-37); hand-off note in [handoffs/library-api.md](handoffs/library-api.md) |
+| Sources | [spec/sources.md](spec/sources.md): Wikidata/Commons, the LoC and Wellcome (D-46); Smithsonian only if the survey shows gaps |
+| Build plan and features | [plan/build-plan.md](plan/build-plan.md) (rewritten 2026-10-20) and [plan/features.md](plan/features.md) (cards redrafted 2026-10-20 for the hosted TypeScript app; the format stays provisional until the harness settles its own, D-15) |
 | Decisions | D-01..D-57 |
-| Open questions | Q-01..Q-26. Still open and marked *now*: Q-16 (needs O-1). Resolved: Q-04, Q-10, Q-17, Q-18, Q-20, Q-21, Q-22, Q-23, Q-25. Superseded: Q-03, Q-09 |
-| Examples | The three targets and their originals are in `design/portraits/`. Test use only (D-13) |
-| Style prototype | Recipe 0.4.0 adds the black-and-white version (option C) and the 500 px copies (D-39). Recipe 0.3.1 added the local drift check and the blur on the AI copy: descreen (D-17), AI-enhanced blend with the cut-out from its green background (D-18, D-19), and prompts for every model step (D-20). Real AI copies are first tried in F-27 and F-28 |
-| Reviews | Format ready (`reviews/README.md`). No reviews yet |
+| Open questions | Only **Q-27** is open (the zip and the restated acceptance checks). All others are resolved, superseded or withdrawn |
+| Style prototype | Recipe 0.4.0 (`prototype/`), accepted as the starting point (D-49): descreen, AI-enhanced blend with safeguards, code outline, black-and-white and 500 px versions, and the same-photo check prototype. Prompts in `prototype/prompts/` |
+| Harness | Planned in its own chat (D-15). This project's requirements for its proof run: [handoffs/harness-throwaway-test.md](handoffs/harness-throwaway-test.md) (kept updated) |
+| Reviews | Format and prompt ready ([reviews/README.md](reviews/README.md)). First rounds due 2026-10-20 |
 
-## Waiting on the owner (*now*)
+## Waiting on the owner
 
-1. **O-1:** copy Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py` into `brain/reference/rev1/`, and note the Rev1 commit. Rev1 is now readable here through GitHub, so Claude can copy them once the latest Rev1 work is pushed, including `brain/reference/hosting-railway-review.md`.
-2. **Tracker topic T-25** (now): rewrite the feature cards. Then T-26 (outside reviews and the plan freeze) and T-27. T-09 waits for Rev1's push; T-15 waits for real AI copies in the trial. T-09 finishes once Rev1's latest planning is on GitHub.
-3. The *build* questions, in one pass (each is linked from its tracker topic): Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
+1. **Pass [handoffs/library-api.md](handoffs/library-api.md) to the library chat** and have Rev1's latest planning pushed to GitHub (O-1). That unblocks T-09 and the PORT reconciliation.
+2. **Q-27:** withdraw the zip, and accept the restated acceptance checks?
+3. **The outside reviews** (P0-6): point the reviewing tools at `brain/reviews/README.md`.
+4. Later: the harness's card format (D-15) and the throwaway test; then the owner inputs O-4, O-8..O-11 as the build reaches them.
 
 ## Next planning steps, in order
 
-1. Reconcile the PORT lines (P0-1), then settle Q-09 and Q-16.
-2. Owner answers the *now* and *build* questions (P0-2).
-3. Style prototype with the examples (P0-3).
-4. Curate the trial set from a first partial teacher list (P0-4, needs O-3).
-5. Contract schemas and a sample run (P0-5).
-6. Review rounds by other AI tools (P0-6).
-7. Freeze plan v1 and hand it to the harness (P0-7).
+1. Outside review rounds; Claude merges accepted points and records decisions (P0-6, T-26).
+2. T-09 and the PORT reconciliation, once Rev1 is pushed (P0-1).
+3. Convert the cards to the harness's format when it exists (T-25).
+4. Freeze plan v1 (P0-7).
 
 ## Session log
 
@@ -174,4 +174,9 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 
   Q-15 resolved. Next: T-24.
 - **2026-10-20:** T-24 proposed in full: the testing approach rewritten for TypeScript (node:test, PGlite, contract and smoke tests). Next: T-25, the feature cards.
-
+- **2026-10-20 (overnight):** Consistency pass and card drafts, at the owner's request, before the outside reviews.
+  - `spec/requirements.md` consolidated: every ID kept, each item restated for the hosted API app with its origins.
+  - B2 items whose new wording needs the owner's OK are gathered as Q-27.
+  - `plan/build-plan.md` rewritten: phases, Phase 0 states, harness workflow in TypeScript, spend, risks (R-13 porting, R-14 retired APIs, R-15 the library's readiness).
+  - Feature cards redrafted (`plan/features.md`).
+  - The API contract (draft 3) adds the teacher's LoC name id.

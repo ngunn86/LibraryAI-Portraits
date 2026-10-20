@@ -1,5 +1,7 @@
 # Contract: the delivery folder
 
+> **Withdrawn (D-31, D-42, 2026-10-19).** There is no delivery folder. Files live in the tool's bucket (OUT-12), and the library pulls them through the API (OUT-14). This page is kept for its history only.
+
 This is one shared Google Drive folder, laid out so the library's Drive door can read it the same way it reads library-pipeline's deliveries: hourly, taking a file only once its manifest record exists. The layout is *fixed* (B2). The run id format, write order and trial location are *proposed* (C).
 
 ## Layout
