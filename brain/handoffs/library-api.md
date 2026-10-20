@@ -40,3 +40,4 @@ Unchanged:
 2. **How often the library will read the change feed** (hourly or nightly), for the cost and run planning (T-19).
 3. Whether the library still wants the **bulk-upload zip** (OUT-08). This project proposes withdrawing it, since the API replaces it.
 4. Anything in the contract the library's builders would change. Changes go through this project, because it owns the contract (D-37).
+5. **Mention new portraits waiting in the library's daily admin email** (D-53). This tool sends no email of its own; its errors and spend are on its own admin page.

@@ -16,13 +16,13 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q | Question | Priority | Proposal in one line | Status |
 |---|---|---|---|---|
 | Q-01 | What is an "authority match"? | — | — | resolved → D-45 (two sources must agree: Wikidata and the LoC name authority; otherwise skip and list) |
-| Q-02 | Re-runs: skip teachers whose draft is already waiting? | build | Yes, using the tool's own delivery record until `status.json` exists | open |
+| Q-02 | Re-runs: skip teachers whose draft is already waiting? | — | — | resolved → D-53 (teachers with full slots, approved or waiting, are skipped) |
 | Q-03 | Deliver through a synced folder or the Drive API? | — | — | superseded by D-31 (hosted app; the library pulls through the API; storage is T-06) |
 | Q-04 | Prove the style in planning, before the harness builds? | — | Yes: prototype the recipe here against the three examples | resolved → D-16 |
 | Q-05 | Add a code-drawn outline as a fourth trial contender? | — | — | resolved → D-49 (code only; model-drawn outlines dropped) |
 | Q-06 | What does "remake" mean when most steps are deterministic? | — | — | resolved → D-51 (one remake with a fresh AI copy) |
 | Q-07 | Do pre-check rejections count toward the three originals? | — | — | resolved → D-51 (no; per teacher per run, 6 drafted and 12 pre-checked at most) |
-| Q-08 | What can a Try-again note change? | build | It guides a fresh attempt and the check; it never changes recipe settings | open |
+| Q-08 | What can a Try-again note change? | — | — | resolved → D-53 (it guides a fresh AI copy and the check; crop and outline notes can't apply) |
 | Q-09 | Who defines `requests.json` and `status.json`? | — | — | superseded by D-37 (decisions come back through this project's API, defined in its OpenAPI file) |
 | Q-10 | Where did the owner's three originals come from, and are those teachers delivered? | — | Use them as style targets only | resolved → D-13 (source unknown; never delivered) |
 | Q-11 | Are engravings and drawings acceptable originals? | — | — | resolved → D-47 (yes; the trial decides, and a setting can turn them off) |
@@ -57,7 +57,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
   - **(c)** With neither an id nor both years, skip the teacher and name them in the report.
 - **Alternative.** "Authority" could mean a Library of Congress name authority record (id.loc.gov), which also carries dates. That adds a third service for little gain, since Wikidata items usually link to it anyway.
 
-### Q-02 · Re-runs before the library exists · build
+### Q-02 · Re-runs before the library exists · resolved → D-53
 - **Background.** Until the library writes `status.json`, nothing counts as approved. Read literally, a second run would remake and pay again for every teacher it already delivered.
 - **Proposal.** The tool keeps its own delivery record and skips any teacher with a draft waiting, unless a request names them. Once `status.json` exists, its `waiting` status takes over.
 
@@ -104,7 +104,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 - **Background.** The pre-check costs very little. Group photos and tiny originals are common, so counting them toward the three originals would leave many teachers blank for no good reason.
 - **Proposal.** Pre-check rejections don't count toward the three. There is a separate cap of 8 pre-checks per teacher per run, to bound spend.
 
-### Q-08 · What a Try-again note can change · build
+### Q-08 · What a Try-again note can change · resolved → D-53
 - **Background.** The recipe is one set of settings for every teacher (STY-05), so an admin's note such as "crop lower" can't change settings for one teacher.
 - **Proposal.**
   - A note triggers a fresh attempt: a new model outline, or the next cut-out provider.

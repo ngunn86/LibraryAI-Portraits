@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11. T-14 is decided (D-49): code outline only (PIP-07), PIP-19, STY-07; TRI-03 amended. T-16 is decided (D-50): PIP-20. T-17 is decided (D-51): PIP-09..PIP-11. T-18 is decided (D-52): checking models in PIP-02, PIP-09.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11. T-14 is decided (D-49): code outline only (PIP-07), PIP-19, STY-07; TRI-03 amended. T-16 is decided (D-50): PIP-20. T-17 is decided (D-51): PIP-09..PIP-11. T-18 is decided (D-52): checking models in PIP-02, PIP-09. T-19 is decided (D-53): RUN-01, RUN-02, RUN-07..RUN-09.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -114,6 +114,8 @@ A request naming a teacher who isn't on the list is skipped and named in the rep
 *Verify:* run fixtures (F-26).
 
 *Amended by D-37, D-44:* requests now arrive through `POST /api/v1/requests` (OUT-14), not `requests.json`, and are handled right away. The three kinds keep their names.
+
+*Since D-53:* a `try_again` note guides a fresh AI copy (it goes to the enhance prompt and the draft check). A note about the crop or the outline can't change one portrait under one recipe (STY-05); the request is answered `refused`, with that reason, and suggests `another_original`.
 
 **IN-07 · Status** *fixed* · B2; format *proposed* · C
 When `status.json` is present, the tool reads it:
@@ -774,10 +776,16 @@ Each portrait has an id, `<teacher_id>-<n>` (for example `charles-fillmore-1`). 
 
 ## 7. Running, state and spend
 
-**RUN-01 · Where it runs** *fixed* · B2
-It runs as a command-line tool on the owner's PC (WSL Ubuntu), or on any machine with its keys and settings.
+**RUN-01 · Where it runs** *fixed* · D-31, D-36 (replacing B2's PC tool)
+It runs hosted on Railway:
+- a web service (the API and the admin page);
+- a worker (the queue);
+- a nightly cron job;
+- Postgres and a storage bucket, per environment.
 
-**RUN-02 · What a run does, in order** *fixed* · B2; waiting drafts *proposed* · C (Q-02)
+The command-line tool remains for the harness and the owner to run steps by hand (`railway run`). Details at T-23.
+
+**RUN-02 · What a run does, in order** *fixed* · B2, D-53
 A run works in this order:
 
 1. Requests, first.
@@ -786,10 +794,11 @@ A run works in this order:
 It skips:
 
 - approved teachers;
-- teachers with a draft already waiting (from `status.json` if present, otherwise from the tool's own delivery record), unless a request names them;
-- teachers already given up on, unless new candidates exist.
+- teachers whose slots are full (PIP-14: approved or waiting in the library), unless a request names them (D-53);
+- teachers already given up on, unless new candidates exist;
+- teachers searched within the last month, unless a request names them (D-53: sources are searched again monthly).
 
-Teachers are processed one at a time.
+Teachers are processed one at a time. Requests are queued as they arrive and go first (D-44).
 *Verify:* run fixtures (F-25, F-26).
 
 **RUN-03 · Resumable without paying twice** *fixed* · B2
@@ -827,7 +836,26 @@ The tool has these commands:
 *Verify:* the CI or harness test command runs with networking disabled.
 
 **RUN-07 · Logs** *proposed* · C
-Each run writes a detailed log to the state directory. It stays local and is never delivered, and it holds no keys (IN-11).
+Each run writes a detailed log. Since the app is hosted (D-31), logs go to the host's log stream (`railway logs`) and are summarised on the admin page. They hold no keys (IN-11).
+
+**RUN-08 · Schedule** *fixed* · D-53
+- **Nightly**, a cron job:
+  - syncs the teacher list (IN-12);
+  - queues every teacher with an open slot not searched in the last month;
+  - then exits.
+- The worker works through the queue.
+- **Library requests** are queued as they arrive (D-44).
+- Sources are searched again **monthly** per teacher.
+
+*Verify:* scenario tests with a fake clock: a teacher searched 10 days ago is not queued, one searched 35 days ago is; a request is queued at once; the cron job exits.
+
+**RUN-09 · How the owner hears about it** *fixed* · D-53
+- **The admin page** (OUT-13) shows each run: what it did, spend, errors and set-asides.
+- **The library's daily admin email** mentions new portraits waiting in its queue. That is the library's side; it's asked for in `handoffs/library-api.md`.
+- **Railway's alerts** cover crashes and failed deploys.
+- The tool sends no email of its own and needs no email key.
+
+*Verify:* the admin page shows a fixture run's report; no outbound mail code exists.
 
 ---
 

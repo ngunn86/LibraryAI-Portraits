@@ -139,4 +139,9 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
   - the library's requests are queued for the worker at once, which HT-15 covers (queued jobs survive a redeploy);
   - pull only, so the app makes no outbound call to the library. The test needs no new requirement.
 - **2026-10-19 (night):** D-46 (picture sources). The real app calls Wikimedia, the Library of Congress and Wellcome, with no keys, through an allowlist of hosts. The throwaway test already proves outbound calls (HT-18, HT-19), so no new requirement. For the real build, the coverage survey (SRC-14) is a cron or one-off job like HT-16's.
+- **2026-10-19 (night):** D-53 (runs):
+  - a nightly cron job, which HT-16 already covers (it runs on schedule, can be started by hand, exits, and skips an overlap);
+  - a database queue that survives redeploys, which HT-15 covers;
+  - no email from the app;
+  - Railway's alerts on crashes and failed deploys are the owner's only push notice from the host. Worth adding to HT-25's alert check when the harness chat next revises the test.
 

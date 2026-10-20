@@ -421,3 +421,26 @@ The image model is unchanged: Nano Banana Pro, with Nano Banana 2 and GPT Image 
 
 → T-18, PIP-02, PIP-09, PIP-20
 
+**D-53 · 2026-10-19 · How runs work** · owner · *closes T-19; resolves Q-02, Q-08*
+1. **Nightly, with requests at once.**
+   - A nightly cron job syncs the teacher list and queues teachers with open slots.
+   - The worker works through the queue.
+   - The library's requests are queued as they arrive (D-44).
+2. **Sources are searched again monthly** for teachers with open slots, so new uploads are picked up within a month.
+3. **How the owner hears about it:**
+   - the library's daily admin email mentions new portraits waiting (a request to the library's planning);
+   - the tool's own errors, spend and runs are on its admin page (OUT-13);
+   - Railway alerts on crashes and failed deploys.
+
+   There is no email of the tool's own, and no extra key.
+4. **A Try-again note guides a fresh AI copy.**
+   - The note goes to the enhance prompt and to the draft check.
+   - A note about the crop or the outline can't change one portrait under one recipe (STY-05). The tool answers that it can't, and suggests `another_original`.
+
+Claude's choices carried with this decision:
+- a database-backed queue, so a redeploy or crash resumes without paying twice (RUN-03);
+- teachers whose three slots are full (approved or waiting) are skipped. The tool knows what's waiting from its own records and the library's decisions (this resolves Q-02);
+- run reports live on the admin page.
+
+→ T-19, RUN-01, RUN-02, RUN-08, RUN-09, IN-06, Q-02, Q-08
+

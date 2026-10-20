@@ -40,8 +40,8 @@
 | T-16 | Telling portraits apart (same photo or a different one) | 4 Processing | T-03, T-14 | **decided** (D-50): fingerprint, feature matching, model tie-break; unsure means the same |
 | T-17 | Checks and failure rules | 4 Processing | T-02, T-03, T-14, T-15 | **decided** (D-51): one remake with a fresh AI copy; one AI check per draft |
 | T-18 | Models and prompts | 4 Processing | T-14 – T-17 | **decided** (D-52): Haiku pre-checks, Sonnet draft checks and tie-breaks; Nano Banana Pro enhances |
-| T-19 | How runs work | 5 Running | T-01, T-05, T-08 | **next** |
-| T-20 | Spend | 5 Running | T-03, T-18, T-19 | open |
+| T-19 | How runs work | 5 Running | T-01, T-05, T-08 | **decided** (D-53): nightly, requests at once, monthly re-search, library email + admin page |
+| T-20 | Spend | 5 Running | T-03, T-18, T-19 | **next** |
 | T-21 | Security | 5 Running | T-01, T-08 | open |
 | T-22 | The trial | 5 Running | T-14 – T-18, T-20 | open |
 | T-23 | Stack and architecture | 6 Build | T-01, T-06, T-08 | open |
@@ -383,7 +383,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
 ## Stage 5: Running, cost and safety
 
-### T-19 · How runs work · **next**
+### T-19 · How runs work · **decided**
 - **Depends on:** T-01, T-05, T-08.
 - **To decide:**
   - on demand or scheduled (daily, like the pipeline);
@@ -392,9 +392,16 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - the library's requests;
   - the run report;
   - notifications to your phone.
+- **Decided (D-53):**
+  - nightly, with requests handled at once;
+  - sources searched again monthly;
+  - you hear through the library's daily email, the admin page and Railway's alerts;
+  - a Try-again note guides a fresh AI copy.
+
+  Q-02 and Q-08 resolved. **Written into:** RUN-01, RUN-02, RUN-07, RUN-08, RUN-09, IN-06; and a request in `handoffs/library-api.md`.
 - **Linked:** RUN-01..RUN-07.
 
-### T-20 · Spend · open
+### T-20 · Spend · **next**
 - **Depends on:** T-03, T-18, T-19.
 - **To decide:**
   - the per-run cap ($250 for the first run, D-06);
@@ -561,4 +568,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **2026-10-19 22:55.** **T-16 decided** (D-50): when unsure, it's the same photograph. The method (PIP-20) was prototyped in `prototype/same_photo.py`: copies scored 56–330 and different photographs at most 19. Next: T-17.
 - **2026-10-19 23:05.** **T-17 decided** (D-51): one remake with a fresh AI copy; the black-and-white version is checked by code only. Per teacher per run, 6 drafts and 12 pre-checks at most. Q-06 and Q-07 resolved. Next: T-18.
 - **2026-10-19 23:15.** **T-18 decided** (D-52): Haiku 5.5 pre-checks, Sonnet 5.5 draft checks and tie-breaks, all through OpenRouter. Prompts updated. Next: T-19.
+- **2026-10-19 23:25.** **T-19 decided** (D-53): nightly runs with requests at once; monthly re-search; updates through the library's daily email, the admin page and Railway alerts; Try-again notes guide a fresh AI copy. Q-02 and Q-08 resolved. Next: T-20.
 
