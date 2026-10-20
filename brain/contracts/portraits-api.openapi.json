@@ -330,7 +330,7 @@
     ],
     "summary": "What changed since",
     "operationId": "listChanges",
-    "description": "Every change since a point, in sequence order. The first call passes `since`; each later call passes the previous `next_cursor` as `after`. Exactly one of the two is required: neither, or both, answers 422 `invalid`. With `after`, the answer's `since` is the time of the cursor's entry (the service's start for `c_0`). An empty page echoes the cursor it was given as `next_cursor` (or `c_0` when there are no changes yet), with `more: false`.",
+    "description": "Every change since a point, in sequence order. The first call passes `since`; each later call passes the previous `next_cursor` as `after`. Exactly one of the two is required: neither, or both, answers 422 `invalid`. With `after`, the answer's `since` is the time of the cursor's entry (the service's start for `c_0`). An empty page echoes the cursor it was given as `next_cursor`, with `more: false`. With `since` and nothing after it, `next_cursor` is the cursor of the last change at or before `since` (`c_0` when there's none), so the next call doesn't replay older changes.",
     "parameters": [
      {
       "name": "since",
@@ -441,7 +441,7 @@
     ],
     "summary": "Ask for work on a teacher",
     "operationId": "sendRequest",
-    "description": "Try again, another original, or try a link (IN-06). Accepted with 202 and handled right away by the worker (D-44); the result, or `refused` with its reason, appears in the request and the change feed. Unknown teacher or portrait: 404. A link outside the adopted sources, or a try_again/another_original without a portrait: 422. Safe to resend: a repeated `request_id` returns the existing request.",
+    "description": "Try again, another original, or try a link (IN-06). Accepted with 202 and handled right away by the worker (D-44); the result, or `refused` with its reason, appears in the request and the change feed. Unknown teacher or portrait: 404. A link outside the adopted sources, or a try_again/another_original without a portrait: 422. A try_again/another_original on a portrait that is turned down or replaced: 409 `conflict`. Safe to resend: a repeated `request_id` returns the existing request.",
     "requestBody": {
      "required": true,
      "content": {
@@ -1340,7 +1340,7 @@
           "type": "null"
          }
         ],
-        "description": "Set on a waiting portrait offered in place of another: a better copy of the same photograph, or a different photograph that ranks above one of a full teacher's three (D-61). Approving it is the swap."
+        "description": "Set only on a waiting portrait offered in place of an approved one: a better copy of the same photograph, a remake asked for by try_again, or a different photograph that ranks above it (D-61). Approving it is the swap. A draft that supersedes a waiting portrait carries no `replaces`."
        },
        "replaced_by": {
         "oneOf": [
@@ -1574,7 +1574,7 @@
      },
      "next_cursor": {
       "type": "string",
-      "description": "Opaque; pass as `after`. On an empty page, the cursor that was given (or `c_0`)."
+      "description": "Opaque; pass as `after`. On an empty page: the cursor that was given, or, with `since`, the cursor of the last change at or before it (`c_0` when there's none)."
      },
      "more": {
       "type": "boolean"
@@ -1838,7 +1838,7 @@
        "another_original",
        "try_link"
       ],
-      "description": "IN-06. try_again: a new draft from the same original; the note guides a fresh AI copy. A cut-out fault (an ear, hair or a shoulder cut off, background left inside the line) is restoration, since a fresh AI copy brings a new cut-out. A note about the crop (zoom, centring, framing) or the outline (its style, thickness or colour) can't be applied under one recipe: the request is accepted, then answered `refused` with that reason (classified by a model, prompt note_kind.md). another_original: the portrait becomes turned_down (reason other) and its slot is filled from the next photograph. try_link: try the pasted link; a link outside the adopted sources is refused at once with 422 `invalid`. The link is read without fetching the page. Accepted forms: commons.wikimedia.org/wiki/File:<title> or an upload.wikimedia.org file link; (www.)loc.gov/(pictures/)item/<id> or loc.gov/resource/<id>; (api.)wellcomecollection.org/(catalogue/v2/)works/<id> (SRC-04)."
+      "description": "IN-06. try_again: a new draft from the same original; the note guides a fresh AI copy. On a waiting portrait the new draft replaces it; on an approved one it's offered with `replaces`, and the approved one stays until the library approves the new one. A cut-out fault (an ear, hair or a shoulder cut off, background left inside the line) is restoration, since a fresh AI copy brings a new cut-out. A note about the crop (zoom, centring, framing) or the outline (its style, thickness or colour) can't be applied under one recipe: the request is accepted, then answered `refused` with that reason (classified by a model, prompt note_kind.md). another_original: the portrait becomes turned_down (reason other) and its slot is filled from the next photograph. try_link: try the pasted link; a link outside the adopted sources is refused at once with 422 `invalid`. The link is read without fetching the page. Accepted forms: commons.wikimedia.org/wiki/File:<title> or an upload.wikimedia.org file or thumbnail link; (www.)loc.gov/item/<id>, (www.)loc.gov/pictures/item/<id> or (www.)loc.gov/resource/<id>; (api.)wellcomecollection.org/(catalogue/v2/)works/<id> (SRC-04)."
      },
      "note": {
       "type": "string",
@@ -1926,13 +1926,23 @@
        "refused_reason": {
         "oneOf": [
          {
-          "type": "string"
+          "type": "string",
+          "enum": [
+           "crop_note",
+           "outline_note",
+           "licence_refused",
+           "licence_held",
+           "precheck_failed",
+           "draft_failed",
+           "no_candidates",
+           "cap_reached"
+          ]
          },
          {
           "type": "null"
          }
         ],
-        "description": "When refused: a crop or outline note, a refused licence, a failed pre-check or draft, no candidates left, or a cap reached (IN-06)."
+        "description": "When refused (IN-06): crop_note or outline_note (the note asks for what one recipe can't change; try another_original), licence_refused or licence_held (try_link), precheck_failed or draft_failed, no_candidates (no photograph left to try), cap_reached (a spend cap stopped it; it isn't retried)."
        },
        "result_portrait_id": {
         "oneOf": [
@@ -1948,7 +1958,7 @@
           "type": "null"
          }
         ],
-        "description": "When done: the new portrait. A remake always gets a new id; the portrait it remade becomes `replaced` (OUT-07)."
+        "description": "When done: the new portrait, always a new id. If the request was on a waiting portrait, that one becomes `replaced` at once; on an approved one, the new portrait arrives with `replaces` set, and the swap happens if the library approves it (OUT-07, PIP-17)."
        },
        "updated": {
         "type": "string",
@@ -2016,7 +2026,7 @@
        "another_original",
        "try_link"
       ],
-      "description": "IN-06. try_again: a new draft from the same original, with the note (Q-08). another_original: set aside this portrait's original and use the next candidate. try_link: try the pasted link (SRC-04)."
+      "description": "IN-06. try_again: a new draft from the same original, with the note. On a waiting portrait it replaces it; on an approved one it's offered with `replaces`. another_original: the portrait becomes turned_down (reason other), its photograph is set aside, and the slot is filled from the next photograph. try_link: try the pasted link (SRC-04)."
      },
      "note": {
       "type": "string",

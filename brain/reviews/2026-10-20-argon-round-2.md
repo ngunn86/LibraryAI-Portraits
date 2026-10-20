@@ -383,7 +383,7 @@ Merging also brought up one thing the review didn't: the prototype had measured 
 
 | Point | Response | What changed |
 |---|---|---|
-| argon-1 | **Accepted, refined.** Copies are grouped on small previews (about 800 px, from each source's own sized-image service), not on downloaded originals. A full original is downloaded only for a photograph chosen for a slot | PIP-21 (new); PIP-01, SRC-07; architecture.md's data flow; `sources.md`; F-09, F-10 and F-34 record preview links; F-11 now gathers, previews, groups and orders; F-23 pre-checks before choosing, tries the next copy on damage, and counts downloads |
+| argon-1 | **Accepted, refined.** Copies are grouped, and pre-checked, on previews (at most 1,600 px, from each source's own sized-image service), not on downloaded originals. A full original is downloaded only for a photograph chosen for a slot | PIP-21 (new); PIP-01, SRC-07; architecture.md's data flow; `sources.md`; F-09, F-10 and F-34 record preview links; F-11 now gathers, previews, groups and orders; F-23 pre-checks before choosing, tries the next copy on damage, and counts downloads |
 | argon-2 | **Accepted.** | PIP-22 (new): 8-bit sRGB PNG at most 1,600 px and under 5 MB; the enhance and cut-out calls get the descreened working region; the same-photo check gets 800 px. `modelImage.ts` in F-41. Request-shape checks in F-18, F-19, F-21 and F-43 (each now depends on F-41). The prompts' *Send* lines |
 | argon-3 | **Accepted.** | PIP-09 and F-21 follow `draftcheck.md`'s order; `checkPageRgb: [28, 30, 38]` in settings (F-01, architecture.md) and named in `draftcheck.md` |
 | argon-4 | **Accepted.** | PIP-19: the 98% share is measured on the raw cut-out before smoothing, the other limits on the smoothed figure; F-15's check |
@@ -403,3 +403,27 @@ Merging also brought up one thing the review didn't: the prototype had measured 
 | argon-17 | **Accepted.** The references bear it out: a half-size or JPEG copy changes the difference hash by at most 1 bit, different people by 29–37 bits | PIP-20 and F-42: a whole-picture 64-bit difference hash, at most 2 bits; feature points computed once per picture; one representative per photograph group |
 | argon-18 | **Accepted.** | The contract: `value` constrained by `field`; `reason` only on a turn-down; `field` and `value` only on a correction. `check_api.py` has four more refused payloads (eleven). The change-feed rules in the contract and F-44 |
 | argon-19 | **Accepted.** | F-01 installs OpenCV.js and `sharp`; O-10 noted on the Phase 2 cards that record live responses; `"usage": {"include": true}` on every OpenRouter call (F-17, architecture.md); HT-18 widened (model ids, actual cost, one image-edit answer), with a change-log line in `handoffs/harness-throwaway-test.md`; `/admin/trial` shows an empty state until F-28 (F-46) |
+
+### After the merge: an independent check
+
+A separate agent, which hadn't seen the merge being made, checked it against these responses and across the files. Every change claimed above was present. It found ten gaps the merge had left, all now fixed:
+
+1. **The pre-check came before the download** but was sent the viewing copy, made from the downloaded original. Previews are now at most 1,600 px, and the pre-check gets the best copy's preview. The original's width and height come from the source's metadata, for `minFacePx`; without them, the check is repeated after the download (PIP-21, PIP-22, PIP-02, F-09, F-10, F-34, F-11, F-18, `precheck.md`).
+2. **The cache key had no attempt number,** so a remake or a note-less `try_again` would have been served the first copy. The key now holds every image sent, in order, plus the attempt (RUN-03, F-04).
+3. **F-31 checked ids with F-08, which came after it.** F-08 now comes before F-31, and F-31 depends on it.
+4. **`try_again` on an approved portrait** would have replaced it before the library approved anything. Now, on a waiting portrait the remake replaces it at once; on an approved one it's offered with `replaces`. A request on a turned-down or replaced portrait answers 409 (IN-06, the contract, F-45).
+5. **Slots:** `replaces` is now set only on an offer in place of an approved portrait, so an offer never frees a slot for a fourth draft (PIP-14, OUT-07, T-07).
+6. **D-61's terms are defined:** PIP-16 is re-run over the three and the new photograph. If the new one is chosen, and the one left out is approved and not the main portrait, it's offered in that one's place; otherwise nothing is offered. One open offer per teacher at a time (PIP-17, F-48).
+7. **Mask mapping for large originals** composes the working region's offset and scale, and the data flow shows face detection before the region (PIP-03, F-30, architecture.md).
+8. **The `held` verdict is carried through** to the rights log, the admin site and SRC-11's check (SRC-11, SRC-12, `sources.md`, F-32, F-46).
+9. **T-07 is brought up to date** with a list of additions since D-43; F-04 builds from it.
+10. **A failing cut-out fallback** fails the draft; the remake tries once more, then the original is set aside (PIP-03, F-19, F-23).
+
+Smaller ones, also fixed:
+- **`refused_reason`** is now a set of codes, with a refused payload in `check_api.py`, making twelve.
+- **Works by P50** are found with Wikidata's own search, never the query service, whose host isn't allowed.
+- **Link forms:** `www.` is accepted on every LoC form, and so are Commons thumbnail links.
+- **The change feed:** an empty `since` page doesn't replay older changes.
+- **Spend:** requests during the first pass count toward its budget.
+- **Keys:** the bucket client accepts `trial/` keys.
+- **Text brought up to date:** PIP-22's checks in F-21 and F-43; TRI-08's figures; RUN-08 now mentions D-61; the prompts README; the request kinds in the contract; the module list; the build plan's header.

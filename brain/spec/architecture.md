@@ -66,16 +66,18 @@ src/
     survey.ts                         the coverage survey (SRC-14)
   imaging/
     cv.ts                             loads OpenCV.js once; Mat lifetime helpers
-    face.ts                           YuNet box and landmarks
+    face.ts                           YuNet box and landmarks (PIP-04)
+    modelImage.ts                     the PNGs sent to models (PIP-22)
     descreen.ts · crop.ts · align.ts · blend.ts · tone.ts · halftone.ts · mask.ts · outline.ts · versions.ts · checks.ts
     samePhoto.ts                      PIP-20
   models/
     openrouter.ts                     client, spend ledger, caps, stub mode (RUN-04, RUN-06)
-    precheck.ts · enhance.ts · cutout.ts · draftCheck.ts · samePhotoCheck.ts
+    precheck.ts · enhance.ts · cutout.ts · draftCheck.ts · samePhotoCheck.ts · noteKind.ts
     prompts/                          the prompt files, versioned (from prototype/prompts/)
   pipeline/
     teacher.ts                        one teacher end to end: step order, slots, candidates, drafts, failure policy (PIP-01..PIP-23)
     portrait.ts                       one portrait: its files (OUT-11) and the record (SRC-11)
+    requests.ts                       the worker's side of the library's requests (IN-06)
     trial.ts                          TRI-01..TRI-09
   api/                                routes, auth, change feed, decisions, requests (OUT-14)
   admin/                              pages and templates (OUT-13)
@@ -91,17 +93,19 @@ prototype/                            the Python reference (not the product)
 teacher (synced from authors.csv; id and dates checked or found, IN-12, IN-13)
   1 → candidates by R1, R2, R3 (+ library try_link) → licence filter (SRC-02;
       CC BY-SA 1.0 held here) → merge exact duplicates                [record]
-  2 → fetch ~800 px previews, at most 24 (SHA-256 noted)              [memory/temp only]
+  2 → fetch previews ≤ 1,600 px, at most 24; note SHA-256 and the original's w × h   [memory/temp only]
   3 → group copies of one photograph (PIP-20) → order copies (SRC-07)
-  4 → PRE-CHECK (Haiku) the best copy of each photograph, at most 12   [cache]
+  4 → PRE-CHECK (Haiku) the preview of each photograph's best copy, at most 12   [cache]
       (fails for damage → next copy; face box ×(w, h) → pixels, minFacePx in code)
   5 → choose for open slots: best-known first, then spread across life (PIP-16)
   6 → download the full original of each chosen copy (SHA-256)        [bucket, rights log]
+  → face landmarks (YuNet on a ≤ 640 px copy, PIP-04) → crop square   (code)
   → originals over 2,000 px: working region, crop square + 25% (PIP-23)   (code)
   → descreen + edge-preserving blur                                   (code)
   → ENHANCE (Nano Banana Pro): restored copy on flat green            [cache]
       (fails, refused or bad mask → cutout_keyed call, aligned the same way)
-  → align + drift check; keyed cut-out; mask mapped back to the original → mask.png   (code)
+  → align + drift check; keyed cut-out; mask mapped back to the original
+      (through the alignment and the working region's offset and scale) → mask.png   (code)
   → crop → blend 50% → tone → halftone → mask → code outline          (code)
   → cut-out limits (PIP-19; the 98% piece on the raw cut-out) → white master check (STY-06)   (code)
   → DRAFT CHECK (Sonnet): original view, draft, three examples        [cache]
@@ -126,7 +130,7 @@ The tables follow the records of T-07 (`../topics/T-07-records.md`):
 - `runs`
 - `spend`
 - `jobs` (the queue)
-- `step_cache`, keyed on the SHA-256 of the image sent, the step, the model, the prompt version and any note (RUN-03); never on `recipeVersion`
+- `step_cache`, keyed on the SHA-256s of the images sent, the step, the model, the prompt version, any note and the attempt (RUN-03); never on `recipeVersion`
 - `api_keys` (hashes)
 - `changes` (the feed, with a sequence)
 - `sessions`
@@ -146,7 +150,7 @@ Additions are additive migrations only, once live.
 - the caps (D-54, RUN-10);
 - the schedule (RUN-08);
 - the allowed hosts (SRC-01);
-- the check page colour, `checkPageRgb: [28, 30, 38]` (PIP-09), and the working limits `maxWorkingPx: 2000` (PIP-23) and `maxModelImagePx: 1600` (PIP-22);
+- the check page colour, `checkPageRgb: [28, 30, 38]` (PIP-09), and the size limits `previewPx: 1600` (PIP-21), `maxWorkingPx: 2000` (PIP-23) and `maxModelImagePx: 1600` (PIP-22);
 - `minSpreadYears: 10` (PIP-16) and `maxCandidatesPerTeacher: 24` (PIP-21).
 
 A test fails if the recipe values change without a new `recipeVersion` (STY-05).
@@ -215,7 +219,7 @@ These differ between the prototype's numpy, scipy and OpenCV calls and OpenCV.js
 
 - The exact OpenRouter model ids and prices (D-52, D-56), confirmed by `doctor`.
 - The OpenRouter request shape for image editing, and that answers include the actual cost when `usage.include` is sent (HT-18 checks it first).
-- The Commons API for depicts search (`haswbstatement:P180=<Q-id>` in the file namespace) and `imageinfo` with `extmetadata`.
+- The Commons API for depicts search (`haswbstatement:P180=<Q-id>` in the file namespace) and `imageinfo` with `extmetadata`; Wikimedia's current standard thumbnail widths (for previews, PIP-21).
 - The loc.gov JSON fields for names, dates, LoC name ids, rights advisory and image links; Wellcome's licence and contributor fields (marked *confirm* in `../topics/T-11-picture-sources.md`).
 - Railway's bucket variables and signed-URL support; the Hobby plan's backup options (HT-12).
 - Which OpenCV.js build has every function above (the porting spike).

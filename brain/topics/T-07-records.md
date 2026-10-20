@@ -1,9 +1,22 @@
 # T-07 · The records: what we keep
 
-**Status:** proposed by Claude (2026-10-19), waiting for the owner's look. This is mostly technical. The owner only needs to say whether anything is missing.
+**Status:** accepted as proposed (D-43, 2026-10-19), with the additions below (2026-10-20).
 **Tracker:** [T-07](../tracker.md) · **Builds on:** D-14 (complete credits), D-22 (teacher ids), D-38 (the library's decisions come back), D-39 (the files of a portrait), D-40 (photographs and copies), D-41 (approximate date), D-42 (storage, history)
 
 The database (Railway Postgres) is the source of truth. The API (T-08) exposes these records, and `record.json` in the bucket is a copy of each portrait's (OUT-12). Every id is stable across runs and never reused.
+
+## Additions since D-43 (2026-10-20)
+
+The requirements and the API contract win where this page says less. Since D-43, the records also carry:
+
+- **Teacher:** `lcnaf_id` (IN-13), `ids_from` and `dates_from` (where the ids and years came from: the list, found by the tool, or none), and `key_works` (IN-12, used only to tell apart people who share a name, SRC-06b). The ids can come from the authors list's optional columns (D-60).
+- **Candidate:** the preview link, its SHA-256, and the original's full width and height from the source (PIP-21); the verdict `held` for CC BY-SA 1.0 (SRC-02, SRC-12).
+- **Photograph:** each copy's stored fingerprint (a 64-bit difference hash) and feature points, computed once (PIP-20).
+- **Portrait:** `replaces` as in the table below (D-61, PIP-14); `failed` portraits set their candidate aside (OUT-04).
+- **Request:** `refused_reason` as one of IN-06's codes.
+- **Run and spend:** each spend line's budget (`trial`, `trial_examples`, `first_pass`, `regular`), and `first_pass_state` in the stored settings (RUN-04).
+- **Step cache:** keyed on the images sent, the step, the model, the prompt version, the note and the attempt (RUN-03).
+- **Trial:** `trial_runs` and `trial_items`, apart from the portraits (TRI-09).
 
 ## The records
 
@@ -46,7 +59,7 @@ One per photograph the tool turned into a portrait (up to 3 live per teacher, PI
 | `teacher_id`, `photograph_id`, `candidate_id` | Whose it is, which photograph, and which copy was used |
 | `status` | `making` · `waiting` (in the library's queue) · `approved` · `turned_down` · `replaced` · `failed` |
 | `main` | True if the library chose it as the teacher's main portrait |
-| `replaces`, `replaced_by` | For a better copy (PIP-17) |
+| `replaces`, `replaced_by` | `replaces`: set only on an offer in place of an approved portrait (a better copy, a `try_again` remake, or a higher-ranked photograph, D-61; PIP-14). `replaced_by`: set when this portrait is superseded |
 | `approx_date` | Value, precision (year, circa, decade) and where it came from: source, estimate or library (PIP-18) |
 | `best_known` | Wikidata's main image or a copy of it (PIP-16); set by the tool or corrected by the library |
 | `recipe_version`, `settings_hash` | How it was made (STY-05) |

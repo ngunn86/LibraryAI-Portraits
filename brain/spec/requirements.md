@@ -101,6 +101,8 @@ These are Library-AI's build, not this project:
 **IN-06 · Requests from the library** *fixed* · B2, D-44, D-53; format *proposed* · C
 - Requests arrive through `POST /api/v1/requests` (OUT-14) and are queued for the worker at once. There are three kinds:
   - `try_again`: a new draft from the same original. The note guides a fresh AI copy, through the enhance prompt and the draft check. A note about the crop or the outline can't change one portrait under one recipe (STY-05), so such a request is answered `refused` with that reason, suggesting `another_original`.
+    - **On a waiting portrait,** the new draft replaces it at once (OUT-07).
+    - **On an approved portrait,** the new draft is offered with `replaces` set, and the approved one stays until the library approves the new one: the swap (PIP-17).
     - The note's kind (restoration, crop, outline or other) is judged by Claude Haiku with the prompt `note_kind.md` v2, stubbed in tests.
     - **A cut-out or silhouette fault counts as restoration,** because a fresh AI copy brings a new cut-out. Examples: an ear, hair or a shoulder cut off, or background left inside the line.
     - "Crop" means changing the zoom, centring or framing; "outline" means changing the line's style, thickness or colour.
@@ -108,17 +110,18 @@ These are Library-AI's build, not this project:
   - `try_link`: try a pasted link on an adopted source (SRC-04).
 - **Rejected at once:**
   - an unknown teacher or portrait: 404;
-  - a link outside the adopted sources, or `try_again` or `another_original` without a portrait: 422.
+  - a link outside the adopted sources, or `try_again` or `another_original` without a portrait: 422;
+  - `try_again` or `another_original` on a portrait that is turned down or replaced: 409 `conflict`.
 - **The request's life cycle:**
   1. The web service validates the request (404 or 422 as above), writes it as `queued`, queues a priority job and answers 202.
   2. The worker classifies the note and does the work. Meanwhile the request is `working`.
-  3. It ends `done`, with `result_portrait_id` set to the **new** portrait it published. A remake always gets a new portrait id, and the old portrait becomes `replaced` (OUT-07).
-  4. Or it ends `refused`, with `refused_reason`:
-     - a crop or outline note;
-     - a refused licence;
-     - a failed pre-check or draft;
-     - no candidates left;
-     - a cap reached.
+  3. It ends `done`, with `result_portrait_id` set to the **new** portrait it published. A remake always gets a new portrait id. The old portrait becomes `replaced` at once if it was waiting, or when the library approves the new one if it was approved.
+  4. Or it ends `refused`, with `refused_reason`, one of:
+     - `crop_note` or `outline_note`;
+     - `licence_refused` or `licence_held`;
+     - `precheck_failed` or `draft_failed`;
+     - `no_candidates`;
+     - `cap_reached`.
 
   Each change of state appears in the change feed.
 
@@ -263,8 +266,8 @@ R4 (book plates) is *withdrawn* (D-24); see `sources.md`.
 - A link in a `try_link` request is accepted as the owner's own match (`matched_by: owner_link`).
 - It must point to an adopted source, and its licence must pass SRC-02.
 - **The link is read without fetching the web page.** These forms are accepted:
-  - **Commons:** `commons.wikimedia.org/wiki/File:<title>` or an `upload.wikimedia.org/…/<title>` file link, giving `File:<title>`;
-  - **LoC:** `(www.)loc.gov/(pictures/)item/<id>` or `loc.gov/resource/<id>`, giving the item `<id>`;
+  - **Commons:** `commons.wikimedia.org/wiki/File:<title>` or an `upload.wikimedia.org/…/<title>` file link, giving `File:<title>`. A thumbnail link (`…/thumb/…/<title>/<width>px-<title>`) gives the title from the folder before its last part;
+  - **LoC:** `(www.)loc.gov/item/<id>`, `(www.)loc.gov/pictures/item/<id>` or `(www.)loc.gov/resource/<id>`, giving the item `<id>`;
   - **Wellcome:** `(api.)wellcomecollection.org/(catalogue/v2/)works/<id>`, giving the work `<id>`.
 - Anything else is refused with 422.
 
@@ -290,6 +293,7 @@ A heading without dates or id never matches.
      - the Wikidata person's LoC id (P244) is that name record;
      - their years agree in both places.
   4. **When several Wikidata people qualify** (names collide; there's a linguist called Charles J. Fillmore, for one), the teacher's key works from `authors.csv` must pick out exactly one. That one must have a notable work (P800), or be the author (P50) of a work, whose title matches a key work. Otherwise nothing is accepted.
+     - Works by P50 are found with Wikidata's own search on `www.wikidata.org` (`haswbstatement:P50=<Q-id>`), never the query service, whose host isn't allowed (SRC-01).
 
   An accepted id is recorded as `resolved_by_tool` and offered for `authors.csv`.
 - **(c) Otherwise** the teacher is skipped and listed (IN-04).
@@ -359,17 +363,17 @@ Every file of a portrait (OUT-11) records its own `licence`, `licence_url` and `
 
 *Verify:*
 - fixtures for each row;
-- a CC BY-SA 1.0 original is held;
+- a CC BY-SA 1.0 original is held at the licence step, before any spend (F-07), so none reaches publishing;
 - every file of every fixture portrait has a licence, a link (null only where the source gives none) and a credit (F-24).
 
 **SRC-12 · The rights log** *proposed* · C, D-21
 - Every original considered, **including the refused ones**, gets one permanent row in the database. The row holds:
   - SRC-08's fields;
   - the rights evidence quoted raw;
-  - the verdict and its reason;
+  - the verdict (tier 1, tier 2, `held` or refused) and its reason;
   - the outcome: used, a copy of another, failed the pre-check, or set aside.
 - The raw source record (JSON) is kept. Nothing is researched twice.
-- The admin page offers the log as a CSV download (OUT-13).
+- The admin page offers the log as a CSV download (OUT-13), and lists the held originals for the owner (SRC-02).
 
 *Verify:* the end-to-end run leaves one row per original considered, refusals included, and a second run adds no duplicates (F-32, F-26).
 
@@ -487,7 +491,7 @@ For each open slot (PIP-14), take the next photograph by PIP-16 that hasn't been
   - any caption, as written, with the person it names. A caption naming someone else fails.
 - A failing original is set aside with its reason, and nothing more is spent on it.
 - **The face box comes back as fractions** (0..1) of the width and height. Code turns it into pixels and checks `minFacePx` itself, since the model doesn't know the picture's size.
-- **Model:** Claude Haiku 5.5 through OpenRouter (D-52); prompt `precheck.md` v2. It is sent the viewing copy (PIP-22).
+- **Model:** Claude Haiku 5.5 through OpenRouter (D-52); prompt `precheck.md` v2. It is sent the copy's preview, as a PNG (PIP-21, PIP-22).
 - **Medium:** any medium that passes is used (D-47). A setting (`allowedMedia`) can turn engravings off after the trial.
 
 *Verify:* stubbed responses drive the pass and fail paths (F-18). The live behaviour is judged in the trial.
@@ -500,9 +504,10 @@ For each open slot (PIP-14), take the next photograph by PIP-16 that hasn't been
   - its mask fails PIP-19's limits.
 
   The fallback's image is aligned to the original exactly as the AI copy is.
-- The mask is mapped back onto the original's own size and position (through the alignment), kept as `mask.png` (OUT-11), and reused for every later try on the same original.
+- The mask is mapped back onto the original's own size and position, through the alignment and, for a working region (PIP-23), the region's offset and scale. It is kept as `mask.png` (OUT-11) and reused for every later try on the same original.
+- **If the fallback fails too** (an error, a copy that can't be aligned, or a mask outside PIP-19's limits), the draft fails for its cut-out. PIP-10's one remake applies (a fresh AI copy, then a fresh fallback if needed); a second failure sets the original aside.
 
-*Verify:* a stub test proves the second try makes no new call (F-19).
+*Verify:* a stub test proves the second try makes no new call; a failing fallback fails the draft (F-19, F-23).
 
 **PIP-04 · Crop, by code** *fixed* · B2; method *proposed* · C
 - A similarity transform from five face landmarks (eyes, nose, mouth corners).
@@ -613,7 +618,8 @@ Code lays the line over the dots and writes the master (STY-06).
 **PIP-14 · Up to three portraits per teacher** *fixed* · D-25, D-40; setting *proposed* · C
 - A teacher has at most `maxPortraitsPerTeacher` (3) portraits that are being made, waiting or approved.
 - Turned-down and replaced portraits don't count; their slot is filled from the next photograph.
-- A waiting portrait with `replaces` set (an offer under PIP-17) doesn't count either. If the library approves it, the portrait it replaces becomes `replaced`, so the count stays at most 3.
+- **`replaces` is set only on an offer in place of an approved portrait** (PIP-17, D-61, IN-06). Such an offer doesn't take a slot of its own: it's an offer for that portrait's slot. If the library approves it, the approved one becomes `replaced`, so the count stays at most 3. An approved portrait has at most one open offer.
+- A draft that supersedes a **waiting** portrait replaces it at once (OUT-07) and carries no `replaces`.
 
 *Verify:* scenario: 5 different photographs give 3 portraits; a turn-down frees a slot for the 4th (F-23).
 
@@ -640,7 +646,13 @@ When more different photographs pass than there are free slots:
 **PIP-17 · Later runs: better copies and turn-downs** *fixed* · D-40, D-59, D-61; details *proposed* · C
 - **A clearly better copy of an approved portrait** is offered as a new waiting portrait with `replaces` set. The approved one stays until the library approves the new one, which is the swap. Finding one needs the teacher to be searched again even when their slots are full, which they are, monthly (RUN-08, D-59).
 - *Proposed:* a clearly better copy of a portrait still waiting replaces it (OUT-07).
-- **When all slots are full,** a different photograph that clearly ranks above one of them is offered as a draft with `replaces` set to the one it would displace (D-61). Examples: the best-known image, or a much better photograph from an uncovered part of life. The library decides; if it approves, the displaced portrait becomes `replaced`.
+- **When all slots are full,** a different photograph that ranks above one of them can be offered in its place (D-61). Examples: the best-known image, or a much better photograph from an uncovered part of life. Precisely:
+  1. Code re-runs PIP-16's choice over the teacher's three photographs and the new one.
+  2. If the new one is chosen, and the one left out is **approved and not the main portrait**, the new one is drafted and offered with `replaces` set to the one left out.
+  3. Otherwise nothing is offered. In particular, nothing displaces a waiting portrait (the library hasn't decided on it yet) or the main portrait.
+  4. A teacher has at most one such offer open at a time, and an offer the library turns down isn't made again.
+
+  The library decides; if it approves, the displaced portrait becomes `replaced`.
 - **A turned-down photograph** may come back only as a clearly better copy, offered once. It never comes back when the reason was `not_this_teacher` or `do_not_use`.
 - *Proposed:* **clearly better** means either:
   - a face at least 1.5× larger in pixels, with no lower licence tier;
@@ -698,9 +710,13 @@ Each step uses only what earlier steps produced:
 1. **Gather** candidates from every adopted source, by R1–R3 (SRC-03).
    - Classify their licences (SRC-02) and log refusals.
    - Merge exact duplicates (same source and id, or same file link).
-2. **Fetch previews:** a small image, about 800 px on the long side, from each source's own sized-image service (Commons thumbnails, LoC derivatives, Wellcome IIIF), for at most `maxCandidatesPerTeacher` (24) candidates, ordered by rule and size. Record each preview's SHA-256. Full originals aren't downloaded yet.
+2. **Fetch previews:** a reduced image, at most `previewPx` (1,600) on the long side, from each source's own sized-image service, for at most `maxCandidatesPerTeacher` (24) candidates, ordered by rule and size.
+   - Commons: the largest of Wikimedia's standard thumbnail widths not over 1,600 px. LoC and Wellcome: IIIF, `full/!1600,1600/0/default.jpg`. A file already under 1,600 px is fetched whole.
+   - Record each preview's SHA-256, and the original's full width and height from the source's metadata (Commons `imageinfo`; IIIF `info.json` at the LoC and Wellcome).
+   - Full originals aren't downloaded yet. Previews live only in memory or temporary files, never in the bucket.
 3. **Group copies into photographs** (PIP-20), on the previews, and order each photograph's copies (SRC-07).
-4. **Pre-check** the best copy of each photograph not set aside (PIP-02), within the per-run cap of 12 (PIP-11). This gives the damage rating, medium, face box and age estimate.
+4. **Pre-check** the best copy of each photograph not set aside (PIP-02), on its preview, within the per-run cap of 12 (PIP-11). This gives the damage rating, medium, face box and age estimate.
+   - The face box is turned into the original's pixels with the width and height from step 2. If a source gave no size, `minFacePx` is checked again on the downloaded original in step 6, before the enhance call.
 5. **Choose** which photographs fill the open slots (PIP-16), from those that passed.
 6. **Download the full original** of each chosen copy, check its SHA-256, and make the portrait (PIP-03..PIP-13, up to 6 drafts per run).
 
@@ -708,9 +724,9 @@ Each step uses only what earlier steps produced:
 
 **PIP-22 · What the models are sent** *proposed* · C (argon-2)
 - AI models never get the original file: Library of Congress masters can be 40 MB TIFFs, which the models refuse.
-- **The pre-check and the draft check** get the 8-bit sRGB PNG viewing copy (OUT-05), at most 1,600 px.
+- **The pre-check** gets the copy's preview (PIP-21), and **the draft check** the viewing copy (OUT-05), each as an 8-bit sRGB PNG at most 1,600 px.
 - **The enhance call and the cut-out fallback** get the descreened working region (PIP-23; the whole descreened original when it's 2,000 px or less), as an 8-bit sRGB PNG at most 1,600 px on the long side.
-- **The same-photograph check** gets 800 px images.
+- **The same-photograph check** gets the two previews, reduced to 800 px.
 - Every image sent is under 5 MB. A larger one is re-encoded smaller before sending.
 
 *Verify:* request-shape tests for each model step: PNG only, size limits, never `image/tiff` (F-18, F-19, F-21, F-43).
@@ -777,7 +793,7 @@ Each run's report is a page on the admin site (RUN-09). It says, in plain words:
 *Verify:* a snapshot test of the fixture run's report (F-25).
 
 **OUT-07 · Replacing a waiting draft** *fixed* · B2, D-40, D-42, D-61
-- A new draft of the same photograph replaces the one still waiting (a remake on a library `try_again`, or a better copy under PIP-17).
+- A new draft of the same photograph replaces the one still waiting (a remake on a library `try_again`, or a better copy under PIP-17). It carries no `replaces`: that is only for offers in place of an approved portrait (PIP-14).
 - The old one becomes `replaced`, with `replaced_by` set, and keeps its files.
 - `replaced` always means **"superseded by the portrait in `replaced_by`"** (D-61). That is one of:
   - a better copy, or a higher-ranked photograph, the library approved in its place;
@@ -883,10 +899,11 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 **RUN-03 · Resumable without paying twice** *fixed* · B2
 - Each teacher or request is a job in the database queue. A job survives a crash or redeploy and resumes.
 - Every paid step's result is cached. The key is made of:
-  - the SHA-256 of the image the step was sent;
+  - the SHA-256s of every image the step was sent, in order;
   - the step and the model;
   - the step's prompt version;
-  - the `try_again` note, if any.
+  - the `try_again` note, if any;
+  - the **attempt:** 0 for the first try of the step on an original, counted up by each remake (PIP-10) and each `try_again`, so a fresh copy is never served from the cache.
 
   It does **not** include `recipeVersion` or other settings. So changing the recipe after the trial (TRI-06) doesn't throw away the trial's paid results (argon-14).
 - A job stopped part-way resumes without repeating any paid call.
@@ -900,7 +917,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
   - **After the first pass: $10 a night and $30 a calendar month**, whichever comes first. The first pass's spend doesn't count toward a month.
   - **$2 per teacher per run** (proposed).
 
-  The library's requests count toward the night and the month.
+  The library's requests count toward the budget of the night they run in: the first pass's while it's active, otherwise the night and the month.
 - **The trial** has its own budget of $30 (TRI-07), split into named sub-budgets that the client enforces: $27 for F-28 and $3 for F-29.
 - **Other environments** (RUN-10): pull-request copies make no paid calls at all; staging has $2 a night and $10 a month.
 - Before each paid call, the client checks that the spend so far, plus the call's estimated maximum, fits under every cap that applies. If it doesn't, the work stops cleanly, finished portraits are published, and the report says so.
@@ -939,13 +956,13 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 
 *Verify:* F-26's key scan covers the logs.
 
-**RUN-08 · Schedule** *fixed* · D-53, D-59
+**RUN-08 · Schedule** *fixed* · D-53, D-59, D-61
 - **Nightly, in production,** the cron job:
   - syncs the teacher list;
   - queues the teachers due a search (RUN-02);
   - exits.
 - The worker works through the queue. **The library's requests** are queued as they arrive.
-- **Each teacher is searched again monthly:** those with an open slot (D-53), and those whose slots are full, for better copies (D-59).
+- **Each teacher is searched again monthly:** those with an open slot (D-53), and those whose slots are full, for better copies (D-59) and higher-ranked photographs (D-61).
 - The schedule is off until the release (F-47) and in every other environment. Staging and pull-request copies run only by hand.
 
 *Verify:* fake-clock scenarios (F-25):
@@ -1034,7 +1051,7 @@ $30, separate from the run caps: $27 for the trial (F-28) and $3 for the example
   - dots across 110 ± 2;
   - no STY-06 problems.
 
-  The prototype scores 0.88–0.97 overlap, 0.053–0.071 tone error and 110.5 dots across.
+  The prototype (recipe 0.5.0) scores 0.89–0.97 overlap, 0.049–0.073 tone error and 110.5 dots across.
 
 *Verify:* F-29.
 

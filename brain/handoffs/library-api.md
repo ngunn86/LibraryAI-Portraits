@@ -35,7 +35,7 @@ Unchanged:
 
 - **`replaced`** means superseded by the portrait in `replaced_by` (D-61): a better copy or a higher-ranked photograph you approved in its place, or a newer draft that replaced a waiting one.
 - **The main portrait** passes to the replacement on a swap. Turning down the main portrait clears it, and the teacher has none until you set one.
-- **A request** answers 202 (`queued`), then becomes `working`, and ends `done` with `result_portrait_id` (always a new portrait) or `refused` with `refused_reason`.
+- **A request** answers 202 (`queued`), then becomes `working`, and ends `done` with `result_portrait_id` (always a new portrait) or `refused` with a `refused_reason` code. A `try_again` on a waiting portrait replaces it; on an approved one, the new draft arrives with `replaces` set, and your approval is the swap. A request on a turned-down or replaced portrait answers 409.
 - **A `try_link`** can be any of the links an admin copies from a browser: a Commons file page or file link, a LoC item or resource page, or a Wellcome work page (SRC-04).
 - **`another_original`** turns the current portrait down (reason `other`) and fills the slot from the next photograph.
 - A teacher's `portrait_search.state` can be `skipped`, when the teacher has no Wikidata id, LoC name id or dates. The owner adds them to `authors.csv`.

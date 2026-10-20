@@ -10,6 +10,8 @@
   - A `correct` decision's `value` must suit its `field`, and a decision can't carry fields of another kind.
   - The change feed's cursor rules, the request life cycle and the accepted link forms for `try_link` are written out.
   - The sample `try_again` now ends with a new portrait (`charles-fillmore-4`).
+  - A `try_again` on a waiting portrait replaces it; on an approved one, the new draft is offered with `replaces`. A request on a turned-down or replaced portrait answers 409.
+  - `refused_reason` is one of eight codes (`crop_note`, `outline_note`, `licence_refused`, `licence_held`, `precheck_failed`, `draft_failed`, `no_candidates`, `cap_reached`).
 
 Defined by this project and adopted by the library (D-37). The machine contract is [portraits-api.openapi.json](portraits-api.openapi.json) (OpenAPI 3.1). [portraits-api.sample.json](portraits-api.sample.json) holds example payloads, and [check_api.py](check_api.py) checks the two against each other offline.
 

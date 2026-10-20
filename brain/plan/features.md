@@ -37,10 +37,10 @@
 | 5 | F-36 | Railway setup and deploys | 1 | F-01, F-04, F-37 | O-8 | deploy | no |
 | 6 | F-02 | Authors list reader and row checks | 2 | F-01 | none | none | no |
 | 7 | F-06 | Outbound client (allowlist, polite, cached, replayable) | 2 | F-01, F-04 | O-10 (live only) | none | no |
-| 8 | F-31 | Teacher sync through GitHub | 2 | F-02, F-04, F-06 | O-9 (live only) | network | no |
-| 9 | F-07 | Licence classifier and credit lines | 2 | F-06 | O-10 (to record) | network | no |
-| 10 | F-32 | Rights log | 2 | F-04, F-07 | none | none | no |
-| 11 | F-08 | Wikidata: fetch, check, find ids | 2 | F-06 | O-10 (to record) | network | no |
+| 8 | F-08 | Wikidata: fetch, check, find ids | 2 | F-06 | O-10 (to record) | network | no |
+| 9 | F-31 | Teacher sync through GitHub | 2 | F-02, F-04, F-06, F-08 | O-9 (live only) | network | no |
+| 10 | F-07 | Licence classifier and credit lines | 2 | F-06 | O-10 (to record) | network | no |
+| 11 | F-32 | Rights log | 2 | F-04, F-07 | none | none | no |
 | 12 | F-09 | Commons: P18 and depicts | 2 | F-07, F-08 | O-10 (to record) | network | no |
 | 13 | F-10 | Library of Congress pictures | 2 | F-07, F-32 | O-10 (to record) | network | yes |
 | 14 | F-34 | Wellcome Collection | 2 | F-07, F-32 | O-10 (to record) | network | yes |
@@ -99,7 +99,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
     - the recipe 0.5.0 values from `prototype/recipe.py`;
     - the models, caps, schedule and sources;
     - the allowed hosts (SRC-01);
-    - `checkPageRgb: [28, 30, 38]`, `maxModelImagePx: 1600`, `maxWorkingPx: 2000`, `minSpreadYears: 10`, `maxCandidatesPerTeacher: 24`;
+    - `checkPageRgb: [28, 30, 38]`, `maxModelImagePx: 1600`, `previewPx: 1600`, `maxWorkingPx: 2000`, `minSpreadYears: 10`, `maxCandidatesPerTeacher: 24`;
   - `src/config/env.ts` (zod). The CLI connects with `DATABASE_PUBLIC_URL ?? DATABASE_URL`, so `railway run` works from the owner's PC;
   - `src/cli.ts`;
   - a test setup that refuses all outbound calls.
@@ -129,7 +129,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - the contract and samples copied to `contracts/` at the repo root, byte for byte.
 - **Checks:**
   - Every sample in `portraits-api.sample.json` validates against its schema with ajv, and parses with the matching zod type.
-  - The eleven refused payloads from `check_api.py` are refused by both ajv and zod. Examples: a turn-down without a reason; an unknown field in a decision; an `approx_date` given as text.
+  - The twelve refused payloads from `check_api.py` are refused by both ajv and zod. Examples: a turn-down without a reason; an unknown field in a decision; an `approx_date` given as text; a `refused_reason` that isn't one of the codes.
   - zod and ajv agree on 10 good and 10 bad generated payloads per request body. The contract constrains a `correct` decision's `value` by its `field` (a year or null for `approx_date`, true or false for `best_known`), so a discriminated zod union agrees with it.
   - A test fails if `contracts/portraits-api.openapi.json` differs from `brain/contracts/portraits-api.openapi.json`, so the two copies can't drift.
 - **Test data:** the contract's samples.
@@ -139,7 +139,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-04 · Database, queue and step cache
 - **Phase:** 1
-- **Goal:** The records of T-07 in Postgres through Drizzle, a job queue that survives crashes, and a cache of paid step results.
+- **Goal:** The records of T-07 (`../topics/T-07-records.md`, with its additions of 2026-10-20) in Postgres through Drizzle, a job queue that survives crashes, and a cache of paid step results.
 - **Covers:** RUN-03, RUN-04 (storage), PIP-12 (storage), IN-08 (storage), TRI-09 (storage), T-07
 - **Depends on:** F-01
 - **Owner input:** none
@@ -156,7 +156,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - The migrations run from empty on PGlite, and every table records and reads back.
   - Two workers claiming at once never get the same job (`FOR UPDATE SKIP LOCKED`, shown with two connections).
   - A job whose worker stops heartbeating is claimed again after the timeout, and resumes at its last finished step.
-  - The step cache hits for the same key, and misses when the image's SHA-256, the step, the model, the prompt version or the note changes. Changing `recipeVersion` alone still hits (RUN-03).
+  - The step cache hits for the same key, and misses when any image's SHA-256, the step, the model, the prompt version, the note or the attempt changes. A remake (attempt 1) and a `try_again` without a note both miss; changing `recipeVersion` alone still hits (RUN-03).
   - The `changes` table hands out increasing sequence numbers, also inside concurrent transactions.
 - **Test data:** none
 - **Live calls:** none
@@ -172,7 +172,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - **Build:** `src/storage/bucket.ts` (`@aws-sdk/client-s3`, `s3-request-presigner`); an in-memory fake with the same interface for tests; layout helpers.
 - **Checks:**
   - Putting and getting a file round-trips, with its SHA-256 and content type.
-  - Keys follow `portraits/<teacher_id>/<portrait_id>/<file>`. A bad id (path characters, `..`) is refused.
+  - Keys follow `portraits/<teacher_id>/<portrait_id>/<file>`, or `trial/<trial_run_id>/<file>` for the trial (TRI-09). Any other key, or a bad id (path characters, `..`), is refused.
   - A signed link expires after 15 minutes (the fake checks the expiry it was given).
   - Nothing is ever deleted by the client's normal calls; there's no delete method outside tests.
 - **Test data:** small files.
@@ -250,11 +250,31 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - **Parkable:** no
 - **Size:** M
 
+### F-08 · Wikidata: fetch, check, find ids
+- **Phase:** 2
+- **Goal:** Read a teacher's Wikidata item, check a given id, and find a missing one as SRC-06 allows.
+- **Covers:** SRC-03 (R1), SRC-06 (a, b's Wikidata half), IN-04
+- **Depends on:** F-06
+- **Owner input:** O-10, to record
+- **Build:** `src/sources/wikidata.ts`
+- **Checks:**
+  - A good id returns its P18 file name, its birth and death years, its labels and aliases, and its LoC name id (P244) if present.
+  - An id that isn't a human, or whose years disagree with the teacher's, is refused with the reason.
+  - **Search** (SRC-06b, step 1), which works for teachers with no years:
+    - it finds humans whose label or alias matches the teacher's name or an alias (normalised), and who have both a birth and a death year on Wikidata;
+    - any years the teacher already has must match;
+    - each person found is returned with their id, years, LoC name id (P244) and works (P800, and items whose author P50 is them, found with `haswbstatement:P50=<Q-id>` in Wikidata's own search on `www.wikidata.org`; never the query service);
+    - none, or a year mismatch, returns nothing. Several people are all returned, for F-35 to separate.
+- **Test data:** recorded responses for about six real teachers and the edge cases.
+- **Live calls:** network (free; to record)
+- **Parkable:** no
+- **Size:** S
+
 ### F-31 · Teacher sync through GitHub
 - **Phase:** 2
 - **Goal:** Sync the active authors from the private library-pipeline repo into the database, with stable teacher ids, nightly and by command.
 - **Covers:** IN-01, IN-03, IN-04 (eligibility), IN-12, AC-01
-- **Depends on:** F-02, F-04, F-06
+- **Depends on:** F-02, F-04, F-06, F-08 (to check ids from the list)
 - **Owner input:** O-9 (the read-only GitHub token), needed for the live check only
 - **Build:** `src/teachers/sync.ts`; the `sync` command; the cron job calls it.
 - **Checks:**
@@ -262,7 +282,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - A second sync with the same file changes nothing (no new rows, no `record_version` bumps, no change-feed entries).
   - **Renames** (IN-12's order): a row is matched to an existing teacher by `wikidata_qid` or `lcnaf_id`, then by the same normalised name, then by a shared name or alias with compatible years, never by row position. A renamed author keeps the `teacher_id`; inserting a row above it changes nothing.
   - A clashing slug gets `-2` and is reported. An author no longer active gets `on_list = false`, and their portraits are untouched.
-  - Ids from the optional columns are stored with `ids_from = list`, and checked as SRC-06(a) says.
+  - Ids from the optional columns are stored with `ids_from = list`, and checked with F-08 as SRC-06(a) says. An id that fails is refused for that row, with its reason, and the teacher is treated as having none.
   - Each teacher's eligibility (IN-04) is set: `qid`, `lcnaf_or_years` or `none`.
   - A broken file (F-02's whole-file refusals) leaves the existing teachers exactly as they were (IN-03).
   - The only GitHub call is a GET of `collection/authors.csv`. No write method exists in the client.
@@ -286,7 +306,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
     - NC, ND, fair use, GFDL alone, "rights status not evaluated" and blank → refused.
   - A dual-licensed file takes its most open allowed licence. An unknown string is refused, and its raw text is kept.
   - Adaptation licences follow SRC-11's table: CC0 1.0 for public domain, CC BY 4.0 for CC BY, CC BY-SA 4.0 for CC BY-SA 2.0 and later.
-  - **CC BY-SA 1.0 is held** at this step, before anything is spent: its verdict is `held` with the reason, and it never becomes a candidate (SRC-02).
+  - **CC BY-SA 1.0 is held** at this step, before anything is spent: its verdict is `held` with the reason, and it never becomes a candidate (SRC-02, SRC-11).
   - Credit lines match SRC-11's formats, including the example, and "Portrait by New Thought Nexus, adapted from: …" for the adaptations.
 - **Test data:** strings recorded once from real responses.
 - **Live calls:** network (free; to record the strings once)
@@ -302,31 +322,11 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - **Build:** `src/sources/rightsLog.ts`
 - **Checks:**
   - Recording the same original twice keeps one row, keyed by source and source id (and SHA-256 once downloaded), and adds to its history.
-  - A refused original keeps its reason, and a later run doesn't research it.
+  - A refused original keeps its reason, and a later run doesn't research it. A `held` one keeps its verdict and is listed for the owner (SRC-12).
   - A candidate missing its source, item link, licence or credit line is refused (SRC-08).
   - The CSV export has every SRC-08 and SRC-12 field, and the raw record is kept beside it.
 - **Test data:** records from F-07's fixtures.
 - **Live calls:** none
-- **Parkable:** no
-- **Size:** S
-
-### F-08 · Wikidata: fetch, check, find ids
-- **Phase:** 2
-- **Goal:** Read a teacher's Wikidata item, check a given id, and find a missing one as SRC-06 allows.
-- **Covers:** SRC-03 (R1), SRC-06 (a, b's Wikidata half), IN-04
-- **Depends on:** F-06
-- **Owner input:** O-10, to record
-- **Build:** `src/sources/wikidata.ts`
-- **Checks:**
-  - A good id returns its P18 file name, its birth and death years, its labels and aliases, and its LoC name id (P244) if present.
-  - An id that isn't a human, or whose years disagree with the teacher's, is refused with the reason.
-  - **Search** (SRC-06b, step 1), which works for teachers with no years:
-    - it finds humans whose label or alias matches the teacher's name or an alias (normalised), and who have both a birth and a death year on Wikidata;
-    - any years the teacher already has must match;
-    - each person found is returned with their id, years, LoC name id (P244) and works (P800, and items whose author P50 is them);
-    - none, or a year mismatch, returns nothing. Several people are all returned, for F-35 to separate.
-- **Test data:** recorded responses for about six real teachers and the edge cases.
-- **Live calls:** network (free; to record)
 - **Parkable:** no
 - **Size:** S
 
@@ -341,7 +341,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - **R1:** the P18 file becomes a candidate (`wikidata_p18`) with its licence, author, credit, size and file link.
   - **R2:** each depicts-tagged file becomes a candidate (`commons_p180`); a file that is only in the teacher's category doesn't (negative fixture).
   - Non-image files (PDF, DjVu, audio) are skipped.
-  - A thumbnail link about 800 px on the long side is recorded for previews (PIP-21), beside the full file link.
+  - For previews (PIP-21), a thumbnail link at the largest of Wikimedia's standard widths not over 1,600 px is recorded, beside the full file link and the full width and height from `imageinfo`.
   - A file with a refused licence becomes a refused row in the rights log, not a candidate.
 - **Test data:** recorded responses for two teachers, one with several depicts files.
 - **Live calls:** network (free; to record)
@@ -359,7 +359,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - **Matches:** a record whose name heading carries the teacher's LoC name id; a record with a heading like `Fillmore, Charles, 1854-1948` whose dates match.
   - **No match:** a near miss (same name, different dates); an undated heading; a name in the title only.
   - The rights advisory is classified by F-07. "Rights status not evaluated" is refused.
-  - The largest available image link is chosen, and its pixel size is recorded when given. A smaller derivative (about 800 px) is recorded for previews (PIP-21).
+  - The largest available image link is chosen, and its pixel size is recorded (from the IIIF `info.json` when the record doesn't give it). An IIIF link at most 1,600 px (`full/!1600,1600/0/default.jpg`) is recorded for previews (PIP-21).
   - Requests are paced to 20 a minute (through F-06).
 - **Test data:** recorded responses for three teachers, plus near-miss and undated records.
 - **Live calls:** network (free; to record)
@@ -376,7 +376,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - **Checks:**
   - A record whose contributor or subject carries the teacher's LoC name id matches. So does one with the name and matching dates.
   - Licences map through F-07: PDM and CC0 → tier 1; CC BY → tier 2; CC BY-NC → refused.
-  - The IIIF image links for the full size and for an 800 px preview (`/full/!800,800/0/default.jpg`) are recorded.
+  - The IIIF image links for the full size and for a preview at most 1,600 px (`/full/!1600,1600/0/default.jpg`) are recorded, with the full width and height from `info.json`.
 - **Test data:** recorded responses for two teachers (one mind-cure figure).
 - **Live calls:** network (free; to record)
 - **Parkable:** yes
@@ -543,7 +543,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - **Key mask:** the mask from the green matches the prototype's cut-out fixture with overlap ≥ 0.94.
   - **Drift check:** measured inside the face box shrunk by `driftBoxInset` (0.15) on each side. Copies with the eyes and mouth moved by about 1.2 dot cells measure above 0.7 and are refused; good copies measure below. Both are within 0.1 of the prototype's figures (`prototype/out/enhance-mechanics.json`: good 0.14–0.31, moved 0.95–1.08).
   - **Poor alignment:** a copy that can't be aligned (a different face) is refused, and the original is used alone.
-  - **The mask is mapped back:** the key mask is warped through the inverse of the alignment onto the original's own size and position. On a synthetic copy, the mapped mask overlaps the true figure in the original by at least 0.97. It's the same for a `cutout_keyed` image.
+  - **The mask is mapped back:** the key mask is warped through the inverse of the alignment onto the original's own size and position, composed with the working region's offset and scale for a large original (PIP-23). On a synthetic copy, small and large (4,000 × 5,000), the mapped mask overlaps the true figure in the original by at least 0.97. It's the same for a `cutout_keyed` image.
 - **Test data:** the generator from `prototype/test_enhance_mechanics.py`, ported.
 - **Live calls:** none
 - **Parkable:** no (the cut-out depends on it)
@@ -649,8 +649,8 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - **Checks:**
   - Canned verdicts drive pass and fail. A fail sets the original aside with its reasons, and no further call is made for it.
   - The face box, medium, age estimate, dot pattern and caption are parsed. Malformed JSON is retried once, then counted as a failure with the raw text kept.
-  - The face box comes back as fractions and is turned into pixels; a face under `minFacePx` wide fails in code, whatever the model said.
-  - The request carries the viewing copy as a PNG at most 1,600 px, never the original file (a 40 MB TIFF fixture is never sent).
+  - The face box comes back as fractions and is turned into the original's pixels with the width and height the source gave; a face under `minFacePx` wide fails in code, whatever the model said. With no size from the source, the check is repeated on the downloaded original before the enhance call.
+  - The request carries the copy's preview, re-encoded as an 8-bit PNG at most 1,600 px; never a TIFF, never the full original.
   - A caption naming someone else fails.
   - `allowedMedia` excludes engravings when set.
   - The answer is cached per original (a second check makes no call).
@@ -670,6 +670,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - A canned image answer becomes `enhanced.png`, with the model, prompt version, alignment and drift scores and whether it was used.
   - A second try on the same original makes no call; a remake (PIP-10) makes exactly one new call.
   - **One `cutout_keyed` call** is made when the enhance call errors, when its copy is refused by its safeguards, or when its mask fails PIP-19. Its image is aligned like the AI copy, and its mask becomes `mask.png`.
+  - If the fallback errors, can't be aligned or fails PIP-19, the draft fails for its cut-out (PIP-03), and no further call is made for that attempt.
   - The enhance and cut-out requests carry the descreened working region as a PNG at most 1,600 px, never the original file.
   - A `try_again` note is added to the enhance prompt, and recorded.
 - **Test data:** synthetic keyed images as canned answers (from F-30's generator).
@@ -685,7 +686,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - **Owner input:** none
 - **Build:** `src/models/draftCheck.ts`; prompts `draftcheck.md`, `compare.md`
 - **Checks:**
-  - The request carries, in this order: the original's viewing copy, the draft on `checkPageRgb`, then the three examples on the same colour (as `draftcheck.md` says).
+  - The request carries, in this order: the original's viewing copy, the draft on `checkPageRgb`, then the three examples on the same colour (as `draftcheck.md` says). Every image is an 8-bit PNG at most 1,600 px and under 5 MB; none is a TIFF.
   - Canned answers pass only when all five criteria pass. The scores and notes are recorded.
   - A `try_again` note becomes an extra criterion.
   - The compare mode returns a score per criterion against the target.
@@ -706,7 +707,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - "same" groups the pair; "different" separates it; "unsure" groups it (D-50).
   - The evidence is recorded with the pair.
   - A pair is never asked twice (cached by both SHA-256s, in either order).
-  - Both images are sent at 800 px.
+  - Both images are the candidates' previews, reduced to 800 px and sent as 8-bit PNGs; never a TIFF.
 - **Test data:** canned answers.
 - **Live calls:** none
 - **Parkable:** no
@@ -725,7 +726,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
     - the refused one logged;
     - the duplicate merged;
     - the copies of each photograph in SRC-07's order (licence tier, then size; damage once pre-checked).
-  - **Previews:** at most `maxCandidatesPerTeacher` previews are fetched, about 800 px, from each source's sized-image link. They're kept only in memory or temporary files, never in the bucket. No full original is fetched by this step.
+  - **Previews:** at most `maxCandidatesPerTeacher` previews are fetched, at most 1,600 px, from each source's sized-image link. They're kept only in memory or temporary files, never in the bucket. No full original is fetched by this step.
   - **The download** (called by F-23 for chosen copies only): checked against its SHA-256 on a second fetch, and stored as `original.<ext>`.
   - Set-aside photographs are excluded.
   - The best-known flag is set on the P18 photograph and its copies.
@@ -775,7 +776,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
     - a failure a new copy can't change sets it aside at once;
     - at most 6 drafted and 12 pre-checked per teacher per run.
   - A source date beats an estimated date; an estimate uses the birth year.
-  - A cut-out limit failure, or a failed enhance call, triggers the keyed fallback call once.
+  - A cut-out limit failure, or a failed enhance call, triggers the keyed fallback call once. A failing fallback fails the draft; the remake tries once more; a second failure sets the original aside.
   - A two-run scenario never tries a set-aside photograph again.
 - **Test data:** a stub world (sources, models and images) for three teachers.
 - **Live calls:** none
@@ -819,7 +820,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
     - `since` then `after` pages through every change in order;
     - `more` and `next_cursor` behave as the contract says;
     - with `after`, the answer's `since` is the time of the cursor's entry (the service's start for `c_0`);
-    - an empty page echoes the cursor it was given as `next_cursor` (or `c_0` when there are no changes yet), with `more: false`;
+    - an empty page echoes the cursor it was given as `next_cursor`, with `more: false`. With `since` and nothing after it, `next_cursor` is the cursor of the last change at or before `since` (`c_0` when there's none), so the next call doesn't replay older changes;
     - neither `since` nor `after`, or both, gives 422 `invalid`;
     - a cursor older than 30 days gives 410 `cursor_too_old`.
   - `/files/{kind}` redirects to a signed link that expires in 15 minutes.
@@ -845,12 +846,13 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - **Bad decisions:** a turn-down without a reason is refused with `invalid` naming `/reason`; set_main on a waiting portrait gives `conflict`.
   - **Resending:** the same `decision_id` or `request_id` changes nothing and says it's a duplicate. Reusing an id with different content gives `conflict`.
   - **Requests:**
-    - a `try_link` to an adopted source is queued. Each link form in SRC-04 is read without fetching the page (`commons.wikimedia.org/wiki/File:…`, `upload.wikimedia.org/…`, `www.loc.gov/item/…`, `loc.gov/pictures/item/…`, `loc.gov/resource/…`, `wellcomecollection.org/works/…`, `api.wellcomecollection.org/catalogue/v2/works/…`);
+    - a `try_link` to an adopted source is queued. Each link form in SRC-04 is read without fetching the page (`commons.wikimedia.org/wiki/File:…`, `upload.wikimedia.org/…` including a thumbnail link, `(www.)loc.gov/item/…`, `(www.)loc.gov/pictures/item/…`, `(www.)loc.gov/resource/…`, `wellcomecollection.org/works/…`, `api.wellcomecollection.org/catalogue/v2/works/…`);
     - a link elsewhere is refused with the reason;
     - a `try_again` whose note Claude Haiku (stubbed, prompt `note_kind.md`) judges to be about the crop or the outline is answered `refused`, suggesting `another_original`; a restoration note is passed on. "The line cuts off the left ear" counts as restoration;
     - `another_original` makes the portrait `turned_down` (reason `other`) and queues the teacher;
-    - an unknown teacher or portrait gets 404; a link outside the adopted sources gets 422.
-  - **Life cycle (IN-06):** the web answer is 202 with `queued`. The worker sets `working`, then either `done` with `result_portrait_id` (a new portrait id; the old one `replaced`), or `refused` with `refused_reason` and no result. Each `refused_reason` in IN-06 has a fixture. Each state change is in the change feed.
+    - an unknown teacher or portrait gets 404; a link outside the adopted sources gets 422; a `try_again` or `another_original` on a turned-down or replaced portrait gets 409;
+    - a `try_again` on a waiting portrait replaces it when done; on an approved portrait, the new draft is offered with `replaces`, and the approved one (and `main`) stays until the library approves it;
+  - **Life cycle (IN-06):** the web answer is 202 with `queued`. The worker sets `working`, then either `done` with `result_portrait_id` (always a new portrait id), or `refused` with a `refused_reason` code and no result. Each code in IN-06 has a fixture. Each state change is in the change feed.
   - Every answer validates against the contract.
 - **Test data:** the fixture database.
 - **Live calls:** none
@@ -871,7 +873,11 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - **Turn-downs:**
     - turned down for `quality`, a 2× copy is offered once, and not a second time;
     - turned down as `not_this_teacher` or `do_not_use`, it never returns.
-  - **Full slots (D-61):** with all slots full, a different photograph that clearly ranks above one of them is offered with `replaces` set to the one it would displace. Approving it makes that one `replaced`; turning it down leaves the three as they were. A photograph ranking below all three isn't offered.
+  - **Full slots (D-61, PIP-17):** with all slots full, PIP-16 is re-run over the three and a new photograph.
+    - When the new one is chosen and the one left out is approved and not main, it's offered with `replaces` set to that one. Approving it makes that one `replaced`; turning it down leaves the three as they were, and it isn't offered again.
+    - When the one left out is waiting, or the main portrait, nothing is offered. A photograph PIP-16 wouldn't choose isn't offered.
+    - Only one such offer per teacher is open at a time.
+  - **Slots:** an open offer doesn't take a slot of its own, so a teacher with three portraits and an offer gets no fourth draft (PIP-14).
   - **Corrections:** a library-corrected date and best-known flag survive a re-run.
 - **Test data:** F-23's stub world over three runs.
 - **Live calls:** none
@@ -892,6 +898,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
     - the session cookie is secure, HTTP-only and SameSite, and lasts 30 days.
   - **Pages:** the teacher list, one teacher (all versions, rights, the library's decisions), the runs and one run's report all render from the fixture database.
   - `/admin/trial` shows "No trial run yet" until F-28 fills it.
+  - Held originals (CC BY-SA 1.0) are listed for the owner, with their source and licence (SRC-02, SRC-12).
   - The rights-log CSV and the suggestions CSV download with the right columns.
   - No page has a form that changes data, except logging in and out.
   - Every page renders at 390 px wide without horizontal scrolling (a layout test).

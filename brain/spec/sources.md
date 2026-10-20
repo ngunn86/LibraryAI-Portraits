@@ -41,8 +41,8 @@ A file counts only by one of these rules. Name-only, category-only and search-ra
 
   An uncaptioned portrait at the front of the teacher's own book is very likely them, but it isn't certain. It's reported as a "likely" candidate for the owner, not used (Q-24).
 - **Owner's link** (SRC-04): a pasted link to any adopted source (Commons, the LoC, Wellcome), recorded as the owner's match. The link is read without fetching its page. Accepted forms:
-  - Commons: `commons.wikimedia.org/wiki/File:<title>`, or a file link on `upload.wikimedia.org`;
-  - LoC: `(www.)loc.gov/item/<id>`, `loc.gov/pictures/item/<id>` or `loc.gov/resource/<id>`;
+  - Commons: `commons.wikimedia.org/wiki/File:<title>`, or a file or thumbnail link on `upload.wikimedia.org` (a thumbnail's title is the folder before its last part);
+  - LoC: `(www.)loc.gov/item/<id>`, `(www.)loc.gov/pictures/item/<id>` or `(www.)loc.gov/resource/<id>`;
   - Wellcome: `wellcomecollection.org/works/<id>`, or `api.wellcomecollection.org/catalogue/v2/works/<id>`.
 - **Any medium** (D-47): photographs, paintings, drawings and engravings that pass the pre-check, with the medium recorded. A setting (`allowed_media`) can turn engravings off after the trial.
 
@@ -61,9 +61,9 @@ Order of preference among the copies of one photograph (SRC-07): licence tier (p
 
 Every original that is considered, including the ones refused, gets a permanent row in the **rights log**, so nothing is researched twice and every portrait's credit can be traced. The row holds:
 
-- **Source and location:** source, source id, record page link, file or IIIF link, and the preview link (about 800 px) used to group copies (PIP-21).
+- **Source and location:** source, source id, record page link, file or IIIF link, and the preview link (at most 1,600 px) used to group and pre-check copies (PIP-21).
 - **Description as given:** title, creator or photographer, date, publisher and place.
-- **Rights:** the rights evidence as given (licence string and URL, or the LoC rights advisory, quoted raw), the verdict (tier 1, tier 2, or refused with the reason), and the licences of the portrait's files (SRC-11).
+- **Rights:** the rights evidence as given (licence string and URL, or the LoC rights advisory, quoted raw), the verdict (tier 1, tier 2, `held` for CC BY-SA 1.0, or refused with the reason), and the licences of the portrait's files (SRC-11).
 - **Match:** `matched_by` (`wikidata_p18`, `commons_p180`, `name_dates`, `lcnaf_id` or `owner_link`), `matched_to` (the Wikidata id, LoC name id or name heading) and the evidence.
 - **Credit:** the credit line, in SRC-11's format (for example "Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication.").
 - **The file and the check:** file size, pixel size and SHA-256, the date retrieved, and a saved copy of the raw source record (JSON) in the database.
@@ -87,7 +87,7 @@ The log lives in the app's database (T-07). The admin page offers it as a CSV do
   | Wellcome | `api.wellcomecollection.org`, `iiif.wellcomecollection.org` (images) |
 
   Redirects are followed by hand, and each target is checked against the same list.
-- **Previews before downloads** (PIP-21): copies are grouped on small images from each source's own sized-image service (Commons thumbnails, LoC derivatives, Wellcome IIIF at `!800,800`). Only the chosen copies' full files are downloaded.
+- **Previews before downloads** (PIP-21): copies are grouped and pre-checked on reduced images, at most 1,600 px, from each source's own sized-image service (Commons' standard thumbnail widths; IIIF `!1600,1600` at the LoC and Wellcome). Only the chosen copies' full files are downloaded.
 
 ## Finding plates in a book (R4): *withdrawn* by D-24, kept for reference only
 

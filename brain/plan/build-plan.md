@@ -1,6 +1,6 @@
 # Build plan
 
-**Status (2026-10-20):** proposed by Claude, rewritten for the hosted TypeScript app (D-31..D-57). It waits for the review rounds (P0-6).
+**Status (2026-10-20):** proposed by Claude, rewritten for the hosted TypeScript app (D-31..D-61). Argon's review round is merged (P0-6).
 
 ## 1. The shape of the work
 
