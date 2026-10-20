@@ -33,7 +33,7 @@ The project serves two purposes:
 - an API for the library;
 - no extraction from books.
 
-T-01..T-08, T-10..T-14 and T-16..T-22 are decided (D-31..D-56); see the tracker. Spec sections still marked under rework wait for their topics. `brain/spec/architecture.md` still describes the earlier PC-run CLI until T-23.
+T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-57); see the tracker. Spec sections still marked under rework wait for their topics. The app is built in **TypeScript on Node 24**, like the library (D-57); `brain/spec/architecture.md` v2 describes it, and `prototype/` (Python) is the reference implementation of the recipe.
 
 ## Repo map
 
@@ -46,7 +46,7 @@ T-01..T-08, T-10..T-14 and T-16..T-22 are decided (D-31..D-56); see the tracker.
 | `brain/status.md` | Where planning stands, what's blocked, what's next, session log |
 | `brain/brief/` | The owner's briefs, verbatim. v2 (2026-10-19) is current; v1 is superseded and kept for history |
 | `brain/spec/requirements.md` | **The normative requirements**, with stable IDs. This is what gets built and tested |
-| `brain/spec/architecture.md` | Proposed stack, modules, state store, settings and CLI |
+| `brain/spec/architecture.md` | The hosted app (v2): TypeScript stack, Railway layout, modules, database, settings, secrets, porting risks |
 | `brain/spec/sources.md` | Image sources: which to adopt, match rules, rights evidence, the rights log |
 | `brain/contracts/` | Contracts shared with the owner and with Library-AI. **The portraits API** (`portraits-api.openapi.json`, owned by this project, D-37) replaces the earlier files (requests, status, delivery folder, manifest) |
 | `brain/plan/build-plan.md` | Phases, gates, testing approach, spend plan and risks |
@@ -65,7 +65,7 @@ T-01..T-08, T-10..T-14 and T-16..T-22 are decided (D-31..D-56); see the tracker.
    - Items marked **open** point to a question in `brain/open-questions.md`.
 2. **IDs are permanent.** Never renumber requirements (`IN-`, `SRC-`, `STY-`, `PIP-`, `OUT-`, `RUN-`, `TRI-`, `AC-`), features (`F-`), decisions (`D-`) or questions (`Q-`). Retire an ID by marking it *withdrawn*, and add new IDs at the end of their group.
 3. **Library-AI---Rev1 and library-pipeline are separate projects and read-only from here.** Never write to them. Anything this project needs from Rev1 is copied into `brain/reference/rev1/` unchanged, with the source commit noted. The tool reads library-pipeline's `collection/authors.csv` (IN-12) and nothing else of it.
-4. **Keys never go in the repo, chat, logs, reports or the delivery folder.** Keys are read from the environment or from a keys file outside the repo (see `brain/spec/architecture.md`).
+4. **Keys never go in the repo, chat, logs, reports or API answers.** Keys are Railway variables, read from the environment (see `brain/spec/architecture.md`, RUN-10).
 5. **Originals come only from the adopted sources in `brain/spec/sources.md`, by the match rules in `SRC-03`.**
    - The tool never reads Library-AI's scans or the owner's reference shelf.
    - The tool's network client refuses every other host except the configured model APIs.

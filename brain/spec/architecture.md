@@ -1,211 +1,181 @@
-# Architecture (proposed)
+# Architecture (v2, hosted)
 
-> **Superseded in part (2026-10-19).** The app is now fully hosted on Railway (D-31, D-36), with a two-way API the library adopts (D-37). The layout is a web service (API and admin pages), a worker, a cron job, Postgres and a storage bucket. This page still describes the earlier PC-run CLI with SQLite. It will be rewritten at tracker topic T-23. Until then, the module list and the image steps below still apply; the state store, settings paths and the delivery folder don't.
+**Status (2026-10-20):**
+- **Fixed:** hosted on Railway (D-31, D-36); TypeScript, like the library (D-57).
+- **Everything else on this page is proposed by Claude** (T-23), for the reviewing agents to challenge.
 
-Status: **proposed** by Claude (2026-10-19), waiting for owner review and for the reviewing agents. The stack choice is Q-15.
+It replaces v1, the PC-run Python CLI with SQLite, which is in git history.
 
-The aim is the simplest structure that meets the requirements:
+The aim is the simplest structure that meets the requirements, and that rehearses the library's own toolchain for the harness (D-57):
 
-- one Python package;
-- one command-line tool;
-- one local SQLite state store;
-- one process working on one teacher at a time.
-
-Nothing runs as a server.
+- one TypeScript repo;
+- three Railway services (web, worker, cron) sharing one codebase;
+- Postgres for the records and the queue;
+- one private bucket for files.
 
 ## Stack
 
 | Piece | Choice | Why |
 |---|---|---|
-| Language | Python 3.12, run in WSL Ubuntu on the owner's PC | The image work (NumPy, OpenCV, Pillow) is native to Python, and all three coding models are strongest in it |
-| Environment | `uv`, with a `pyproject.toml` and a lock file | One command to set up; the same setup on any machine |
-| Images | Pillow, NumPy, OpenCV (headless), scikit-image where it saves code | Halftone, descreen (FFT), contours, masks |
-| Face box and landmarks | OpenCV's YuNet face detector (box plus five landmarks; a small model file, committed) | Free, local and the same every time. The crop needs the eye and mouth landmarks (PIP-04). Falls back to the pre-check's box |
-| HTTP | `httpx`, with an on-disk response cache and record/replay for tests | Retries, timeouts, an allowlist (SRC-01) |
-| Data and contracts | `pydantic` for settings and records; `jsonschema` for the manifest | Settings errors name the field; the schema check is the same one the library uses |
-| CLI | `typer` | Small and typed |
-| State | SQLite (Python standard library) | One file. Survives crashes, and makes runs resumable |
-| Tests | `pytest` | Offline by default (RUN-06) |
-| PDF board | `reportlab` or Pillow pages saved as PDF | A board readable on a phone |
+| Language and runtime | **TypeScript on Node 24 LTS** (D-57), pinned in `.nvmrc` and `package.json` engines | The library's stack (Rev1 build plan), so the harness rehearses that exact toolchain |
+| Web | Express, with `helmet` and `express-rate-limit` | As the library uses |
+| Validation | `zod` for settings, request bodies and records; `ajv` (2020-12) to check answers against `contracts/portraits-api.openapi.json` in tests | One schema per shape; the contract test uses the published file itself |
+| Database | Postgres (Railway), **Drizzle ORM with drizzle-kit SQL migrations**, run as Railway's pre-deploy command | As the library uses; migrations apply in PR copies, staging and production with no hand step (HT-11) |
+| Queue | A `jobs` table in Postgres, claimed with `FOR UPDATE SKIP LOCKED` | No extra service. A job resumes after a redeploy (HT-15, RUN-03) |
+| Files | Railway bucket (S3-compatible) through `@aws-sdk/client-s3` and `@aws-sdk/s3-request-presigner` | Private bucket, 15-minute signed links (OUT-12, OUT-14) |
+| Image input and output | `sharp` (libvips): decode, colour to sRGB, resize, PNG and JPEG out | Fast and robust; the library already uses it |
+| Image processing | **OpenCV.js** (`@techstark/opencv-js`, WebAssembly). It provides: bilateral filter, DFT, warps, ECC alignment, Farneback optical flow, distance transform, connected components, SIFT, RANSAC | The prototype's steps map onto OpenCV functions one to one. See "Porting risks" |
+| Face box and landmarks | YuNet (MIT, a small ONNX file, committed), run through OpenCV.js's `FaceDetectorYN` if present, otherwise `onnxruntime-node` | Free, local and the same every time (PIP-04) |
+| HTTP out | Node's `fetch` (undici), wrapped in one client with a host allowlist, User-Agent, pacing, retries and a response cache (SRC-01, SRC-09) | One place to enforce rule 5 |
+| AI | OpenRouter only (D-19), through `fetch`, with a spend ledger and caps (RUN-04, D-54) | One key |
+| Admin pages | Server-rendered HTML (a few templates, no client framework), behind one password (RUN-10) | Read-only browsing doesn't need React. The library's React and Vite stay the library's |
+| Tests | `node:test` through `tsx --test`, offline by default (RUN-06); `tsc` for types; esbuild for the build | As the library uses |
+| Deploys | Railway, configured as code in `.railway/railway.ts` (`railway.toml` stops being read on 2026-12-01). Healthcheck `GET /api/v1/health` | The harness deploys and checks by itself (HT-03, HT-07, HT-08) |
+
+## Railway layout
+
+```
+project nexus-portraits (environments: production · staging · one per pull request)
+  web      node dist/web.js     API (OUT-14) + admin pages (OUT-13); healthcheck /api/v1/health
+  worker   node dist/worker.js  claims jobs from Postgres, one teacher at a time (RUN-02, RUN-03)
+  cron     node dist/cron.js    nightly: sync the teacher list, queue teachers, exit (RUN-08)
+  postgres                      records, queue, rights log, spend ledger; Railway backups (D-42)
+  bucket                        portraits/<teacher_id>/<portrait_id>/… (OUT-12)
+pre-deploy: drizzle-kit migrate
+```
+
+All three services are built from the same repo and image, each with its own start command.
 
 ## Modules
 
 ```
-portraits/
-  cli.py              commands (RUN-05)
-  config.py           load and validate settings; recipe hash vs recipe_version (STY-05)
-  keys.py             read keys from the environment or the keys file; never log them (IN-11)
-  teachers.py         load and validate teachers.csv (IN-01..03)
-  teachers_sync.py    build data/teachers.csv from library-pipeline's authors.csv; stable ids; enrichment (IN-12, IN-13)
-  contracts/
-    manifest.py       build records; validate against portraits.manifest.schema.json (OUT-02, OUT-04)
-    requests.py       read and validate requests.json (IN-06)
-    status.py         read and validate status.json (IN-07)
-    schemas/          JSON Schemas: the manifest schema copied from Rev1, plus requests and status
-  net.py              the one HTTP client: allowlist, User-Agent, rate limit, retry, cache (SRC-01, SRC-09)
+src/
+  web.ts · worker.ts · cron.ts        entry points
+  cli.ts                              commands for the harness and owner (railway run): doctor, survey, teacher, keys, password, trial
+  config/settings.ts                  the typed, committed settings (no keys); recipe hash vs recipe_version (STY-05)
+  config/env.ts                       secrets from the environment (zod); never logged (IN-11, RUN-10)
+  db/schema.ts · db/migrations/       Drizzle schema (the records of T-07) and SQL migrations
+  queue.ts                            jobs table: enqueue, claim, heartbeat, finish
+  net/client.ts                       the one outbound client: allowlist, User-Agent, pacing, retries, cache (SRC-01, SRC-09)
+  teachers/sync.ts · enrich.ts        authors.csv via GitHub (IN-12); Wikidata + LoC name authority (IN-13, D-45)
   sources/
-    licences.py       licence classification (SRC-02)
-    wikidata.py       entity fetch, the id sanity check, id resolution (SRC-03 rule 1, SRC-06)
-    commons.py        file info and metadata; depicts (P180) search (SRC-03 rule 2)
-    loc.py            Prints and Photographs search; heading and dates match (SRC-03 rule 3, SRC-05); LoC books for plates
-    wellcome.py       picture records with open licences (D-29)
-    smithsonian.py, nypl.py, dpla.py   planned picture sources (D-29; details at tracker T-11)
-    rights_log.py     the permanent rights log and its CSV export (SRC-12)
-    candidates.py     assemble, de-duplicate, order, exclude set-asides; download with checksum (SRC-07, SRC-08)
+    licences.ts                       SRC-02
+    wikidata.ts · commons.ts          R1, R2 (SRC-03, SRC-06)
+    loc.ts · wellcome.ts              R3 by name and dates or LoC name id (SRC-05, D-47)
+    rightsLog.ts · candidates.ts      SRC-07, SRC-08, SRC-12
+    survey.ts                         the coverage survey (SRC-14)
   imaging/
-    crop.py           (PIP-04)
-    descreen.py       (PIP-05)
-    blend.py          align and blend the enhanced copy (PIP-13, proposed)
-    halftone.py       (PIP-06, STY-01)
-    outline_code.py   the code-drawn outline (PIP-07, proposed)
-    outline_extract.py  extract and align a model-drawn line (PIP-07)
-    compose.py        composite and master writer; the STY-06 checker
+    cv.ts                             loads OpenCV.js once; Mat lifetime helpers
+    face.ts                           YuNet box and landmarks
+    descreen.ts · crop.ts · align.ts · blend.ts · tone.ts · halftone.ts · mask.ts · outline.ts · versions.ts · checks.ts
+    samePhoto.ts                      PIP-20
   models/
-    client.py         OpenRouter only (D-19); spend ledger and cap (RUN-04); stub mode (RUN-06)
-    precheck.py       (PIP-02)
-    cutout.py         (PIP-03)
-    enhance.py        the AI-enhanced copy (PIP-13, proposed)
-    outline_model.py  (PIP-07)
-    draftcheck.py     (PIP-09), including "compare with target" mode (TRI-08)
-    prompts/          prompt text, versioned in the repo
-  state.py            SQLite: jobs, candidates, set-asides, attempts, spend, handled requests, deliveries, cache
-  pipeline.py         one teacher end to end, with the failure policy (PIP-01..12)
-  run.py              the run queue: order, skips, resume (RUN-02, RUN-03)
-  deliver.py          folder writer, atomic manifest, originals copy, report, zip (OUT-01..08)
-  trial.py            trial set, contenders, scoring, board, writing defaults (TRI-01..08)
-stub/
-  receiver.py         the receiver stub: enforces the contract on a delivery folder (AC-03)
-tests/
-  fixtures/           recorded API responses, images, lists, requests/status, sample run
-  ...
+    openrouter.ts                     client, spend ledger, caps, stub mode (RUN-04, RUN-06)
+    precheck.ts · enhance.ts · cutout.ts · draftCheck.ts · samePhotoCheck.ts
+    prompts/                          the prompt files, versioned (from prototype/prompts/)
+  pipeline/
+    teacher.ts                        one teacher end to end: slots, candidates, drafts, failure policy (PIP-01..PIP-20)
+    portrait.ts                       one portrait: the eight files and the record (OUT-11, SRC-11)
+    trial.ts                          TRI-01..TRI-08
+  api/                                routes, auth, change feed, decisions, requests (OUT-14)
+  admin/                              pages and templates (OUT-13)
+test/
+  fixtures/                           recorded source and model responses, images, the prototype's reference outputs
+  *.test.ts
+prototype/                            the Python reference (not the product)
 ```
 
 ## Data flow for one teacher
 
 ```
-teachers.csv row
-  → Wikidata id check / resolution (SRC-06)
-  → candidates from rule 1, rule 2, rule 3 (+ owner link)  → licence filter (SRC-02)
-  → order, de-duplicate, drop set-asides (SRC-07)
-  → download original (checksum, record)                    [state: originals]
-  → PRE-CHECK  (vision model, paid)                         [cache]
-  → descreen + edge-preserving blur      (code, free)
-  → ENHANCE    (image model, paid, PIP-13): restored copy on flat green   [cache]
-  → align copy to original; key mask = CUT-OUT (PIP-03; fallback: keyed cut-out call)
-  → crop → blend 50% in the frame → halftone   (code, free)
-  → OUTLINE    (image model, paid  |  code, free)           [cache]
-  → composite → STY-06 check             (code)
-  → DRAFT CHECK (vision model, paid)                        [cache]
-  → pass: deliver original copy + master, then manifest record
-  → fail: remake or set aside (PIP-10, PIP-11)
+teacher (synced from authors.csv; id and dates checked or found, IN-12, IN-13)
+  → candidates by R1, R2, R3 (+ library try_link)  → licence filter (SRC-02)
+  → group copies of one photograph (PIP-20) → best copy per photograph (SRC-07)
+  → choose for open slots: best-known first, then spread across life (PIP-16)
+  → download original (SHA-256, rights log)                          [bucket, record]
+  → PRE-CHECK (Haiku)                                                 [cache]
+  → descreen + edge-preserving blur                                   (code)
+  → ENHANCE (Nano Banana Pro): restored copy on flat green            [cache]
+  → align + drift check; keyed cut-out (fallback: cutout_keyed call)  (code)
+  → crop → blend 50% → tone → halftone → mask → code outline          (code)
+  → cut-out limits (PIP-19) → white master check (STY-06)             (code)
+  → DRAFT CHECK (Sonnet) on white-1000                                [cache]
+  → pass: black-and-white version, 500 px copies, viewing copy, record (OUT-11) → status waiting → change feed
+  → fail: one remake with a fresh AI copy, then set aside (PIP-10, PIP-11)
 ```
 
-## State store
+## Database (Drizzle schema)
 
-- **Location:** `~/.local/share/nexus-portraits/` by default, outside the repo, and changeable in settings.
-- **Contents:**
-  - `state.db` (SQLite);
-  - `originals/` (downloads, named by SHA-256);
-  - `cutouts/`, `drafts/` and `cache/` (HTTP and model responses);
-  - `logs/`.
-- **Tables:**
-  - `teachers` (a snapshot of the list per run);
-  - `jobs` (per teacher per run: state, step);
-  - `candidates`;
-  - `originals`;
-  - `set_asides`;
-  - `attempts` (per draft: outline method, scores, notes, cost);
-  - `spend` (per call: run, teacher, step, model, cost, estimated or actual);
-  - `handled_requests`;
-  - `deliveries` (teacher, run, master SHA-256, request id);
-  - `step_cache` (key → artefact path or JSON).
+The tables follow the records of T-07 (`../topics/T-07-records.md`):
 
-## Settings (layout)
+- `teachers`
+- `candidates` (the rights log)
+- `photographs`
+- `portraits`
+- `files`
+- `portrait_events` (history)
+- `library_decisions`
+- `requests`
+- `runs`
+- `spend`
+- `jobs` (the queue)
+- `step_cache`
+- `api_keys` (hashes)
+- `changes` (the feed, with a sequence)
+- `sessions`
 
-The settings file is `settings.toml` in the repo root. It is committed, and it never holds keys. The values below are illustrative; the real ones come from the prototype and the trial.
+Additions are additive migrations only, once live.
 
-```toml
-recipe_version = "0.1.0"          # bump on any [recipe] change (STY-05)
+## Settings
 
-[paths]
-teachers = "data/teachers.csv"     # Q-14
-examples = "design/portraits"
-delivery = "/mnt/f/My Drive/…/portraits"   # synced folder (Q-03)
-state_dir = "~/.local/share/nexus-portraits"
+`src/config/settings.ts` is committed and holds no keys. It carries:
+- the recipe (the values in `prototype/recipe.py`, `SETTINGS`, recipe 0.4.0);
+- the sources and their pacing;
+- the models (D-52);
+- the caps (D-54, RUN-10);
+- the schedule (RUN-08).
 
-[sources]
-contact = "New Thought Nexus portraits tool; <contact address>"   # User-Agent (SRC-09)
-adopted = ["wikidata", "commons", "loc", "wellcome"]   # D-29 (more at tracker T-11); only these hosts are allowed (SRC-01)
+A test fails if the recipe values change without a new `recipeVersion` (STY-05).
 
-[teachers]
-authors_csv = "/mnt/b/Documents/GitHub/library-pipeline/collection/authors.csv"   # read-only (IN-12)
-statuses = ["active"]             # Q-26
+## Secrets (Railway variables, per environment)
 
-[spend]
-run_cap_usd = 250
-trial_cap_usd = 40                 # proposed (TRI-07)
-precheck_cap_per_teacher = 8       # proposed (PIP-11)
+| Variable | What |
+|---|---|
+| `OPENROUTER_API_KEY` | The tool's one AI key, the same in every environment (D-55); credit limit set at OpenRouter (O-4) |
+| `GITHUB_TOKEN` | Read-only, fine-grained, library-pipeline contents only (D-32, O-9) |
+| `ADMIN_PASSWORD_HASH`, `SESSION_SECRET` | The admin login (RUN-10) |
+| `DATABASE_URL` | From Railway's Postgres |
+| Bucket variables | From Railway's bucket (endpoint, name, access key, secret) |
 
-[models]                            # exact model ids confirmed by `doctor` at build time
-precheck      = { id = "…", family = "…", est_cost_usd = 0.0 }
-enhance       = { id = "google/gemini-3-pro-image", family = "google", est_cost_usd = 0.15, enabled = true }   # PIP-13 (D-18)
-enhance_challengers = [ { id = "google/gemini-3.1-flash-image", family = "google" }, { id = "openai/gpt-image-2", family = "openai" } ]
-cutout        = { source = "enhance", fallback_prompt = "cutout_keyed" }   # PIP-03: keyed background (D-19)
-outline       = { method = "model", id = "…", family = "google", est_cost_usd = 0.0 }   # or method = "code"
-challengers   = [ { id = "…", family = "openai" }, { id = "…", family = "bfl" } ]
-draft_check   = { id = "…", family = "…", est_cost_usd = 0.0 }
+`doctor` reports only whether each one is present, never its value.
 
-[recipe]                            # recipe 0.2.0 from the style prototype (prototype/README.md)
-size_px = 1000
-# descreen (PIP-05, D-17)
-edge_blur_cells = 0.30
-edge_blur_color = 0.08
-screen_peak_log = 1.6
-screen_min_cyc_px = 0.08
-screen_min_peaks = 2
-notch_sigma_bins = 2.0
-descreen_blur_cells = 0.6
-# AI-enhanced blend (PIP-13, Q-21)
-enhance_blend = 0.5
-enhance_min_align = 0.90
-# crop (PIP-04)
-eye_mouth_frac = 0.237
-eye_y_frac = 0.443
-face_centre_x_frac = 0.50
-min_face_px = 90
-# tone (STY-01)
-white_from_face_p98 = 0.02
-black_k = 0.2
-gamma = 1.8
-sharpen_amount = 0.6
-sharpen_radius_cells = 1.0
-tone_blur_cells = 0.05
-# halftone (STY-01)
-dots_across = 110
-grid_angle_deg = 45
-supersample = 4
-# figure mask and outline (STY-02)
-mask_smooth_px = 9
-body_smooth_px = 28
-body_blend_px = 120
-outline_gap_px = 2
-outline_width_px = 6
-```
+## The Python prototype is the reference
 
-## Keys
+`prototype/` stays in Python as the reference implementation of the recipe. The TypeScript port must reproduce `prototype/out/` from `prototype/fixtures/` within tolerances:
+- the white master: figure overlap ≥ 0.98 and mean alpha difference ≤ 0.02 against the Python output;
+- the black-and-white version, by the same measures;
+- the dot pitch, 110 ± 1 across.
 
-The tool reads these environment variables:
+This is feature F-16's check. Exact pixel equality isn't expected across two OpenCV builds.
 
-- `OPENROUTER_API_KEY`;
-- a Drive credential path, only if Q-03 goes the API way.
+## Porting risks, and what to do about them
 
-If a variable isn't set, the tool reads `~/.config/nexus-portraits/keys.env`. Keys are never logged, and `doctor` reports only whether each key is present.
+The first imaging feature is a **porting spike**. It confirms each OpenCV.js function the recipe needs and compares its output with the Python prototype on the fixtures. Known risks:
+
+| Risk | Fallback |
+|---|---|
+| `findTransformECC` in OpenCV.js needs all seven arguments (a known quirk) | Pass them all; if it misbehaves, align with feature matching (SIFT + RANSAC), which the same-photo check already uses |
+| SIFT missing from the build used | AKAZE or ORB, with PIP-20's thresholds re-measured |
+| `FaceDetectorYN` missing | Run the YuNet ONNX file with `onnxruntime-node` |
+| `calcOpticalFlowFarneback` missing | Block matching on the face region with `matchTemplate` |
+| DFT speed or memory in WebAssembly | Process at the cell scale the descreen needs, not full resolution |
+| Leaks: every OpenCV.js `Mat` must be freed by hand | One helper that frees all Mats made inside a step, with a test that memory stays flat over 50 runs |
 
 ## Things to verify at build time (not assumed here)
 
-- The exact model ids, and that each one is still available through OpenRouter. On 2026-10-19, OpenRouter's image collection listed Nano Banana Pro (`google/gemini-3-pro-image`), Nano Banana 2 (`google/gemini-3.1-flash-image`), GPT Image 2 (`openai/gpt-image-2`) and Seedream 4.5, but no dedicated background-removal model and no FLUX.2 Pro (the brief's third outline contender). If FLUX.2 Pro is still missing at build, replace it with another listed model or drop it.
-- The OpenRouter request shape for image editing: an image in the message, image output requested, and an aspect-ratio option close to the original's.
-- Whether OpenRouter's response includes the actual cost per call. RUN-04 falls back to estimates.
-- The Commons API for depicts search. Expected: the search API with `haswbstatement:P180=<Q-id>` in the file namespace, plus `imageinfo` with `extmetadata` for licence, artist and credit. The Commons query service needs a login, so it's avoided.
-- The fields of the loc.gov JSON API for Prints and Photographs: names, dates, rights advisory and image links.
-- The Wikimedia User-Agent and rate-limit expectations.
+- The exact OpenRouter model ids and prices (D-52, D-56), confirmed by `doctor`.
+- The OpenRouter request shape for image editing, and whether answers include the actual cost.
+- The Commons API for depicts search (`haswbstatement:P180=<Q-id>` in the file namespace) and `imageinfo` with `extmetadata`.
+- The loc.gov JSON fields for names, dates, LoC name ids, rights advisory and image links; Wellcome's licence and contributor fields (marked *confirm* in `../topics/T-11-picture-sources.md`).
+- Railway's bucket variables and signed-URL support; the Hobby plan's backup options (HT-12).
+- Which OpenCV.js build has every function above (the porting spike).

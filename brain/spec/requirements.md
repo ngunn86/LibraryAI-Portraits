@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11. T-14 is decided (D-49): code outline only (PIP-07), PIP-19, STY-07; TRI-03 amended. T-16 is decided (D-50): PIP-20. T-17 is decided (D-51): PIP-09..PIP-11. T-18 is decided (D-52): checking models in PIP-02, PIP-09. T-19 is decided (D-53): RUN-01, RUN-02, RUN-07..RUN-09. T-20 is decided (D-54): RUN-04, TRI-07. T-21 is decided (D-55): RUN-10. T-22 is decided (D-56): TRI-02..TRI-05.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11. T-14 is decided (D-49): code outline only (PIP-07), PIP-19, STY-07; TRI-03 amended. T-16 is decided (D-50): PIP-20. T-17 is decided (D-51): PIP-09..PIP-11. T-18 is decided (D-52): checking models in PIP-02, PIP-09. T-19 is decided (D-53): RUN-01, RUN-02, RUN-07..RUN-09. T-20 is decided (D-54): RUN-04, TRI-07. T-21 is decided (D-55): RUN-10. T-22 is decided (D-56): TRI-02..TRI-05. T-23 is decided (D-57): TypeScript; `architecture.md` v2.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -783,7 +783,7 @@ It runs hosted on Railway:
 - a nightly cron job;
 - Postgres and a storage bucket, per environment.
 
-The command-line tool remains for the harness and the owner to run steps by hand (`railway run`). Details at T-23.
+The command-line tool remains for the harness and the owner to run steps by hand (`railway run`). Built in **TypeScript on Node 24** (D-57); see [architecture.md](architecture.md).
 
 **RUN-02 · What a run does, in order** *fixed* · B2, D-53
 A run works in this order:

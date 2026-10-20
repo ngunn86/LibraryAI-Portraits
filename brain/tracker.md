@@ -44,8 +44,8 @@
 | T-20 | Spend | 5 Running | T-03, T-18, T-19 | **decided** (D-54): first run $100; then $10 a night, $30 a month; trial $30 |
 | T-21 | Security | 5 Running | T-01, T-08 | **decided** (D-55): one admin password; the same AI key everywhere, with low caps off production |
 | T-22 | The trial | 5 Running | T-14 – T-18, T-20 | **decided** (D-56): three enhance models; the checker picks, the owner can veto; no-blend shown beside |
-| T-23 | Stack and architecture | 6 Build | T-01, T-06, T-08 | **next** |
-| T-24 | Testing approach | 6 Build | T-23 | mostly decided (D-09) |
+| T-23 | Stack and architecture | 6 Build | T-01, T-06, T-08 | **decided** (D-57): TypeScript like the library; [architecture v2](spec/architecture.md) proposed |
+| T-24 | Testing approach | 6 Build | T-23 | mostly decided (D-09) · **next** |
 | T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | open |
 | T-26 | Outside reviews and plan freeze | 6 Build | T-25 | open |
 | T-27 | What the harness must do for a hosted app (hand-off to the harness chat) | 6 Build | T-01 | in discussion: [throwaway test requirements](handoffs/harness-throwaway-test.md) v1 |
@@ -443,15 +443,16 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
 ## Stage 6: Building it with the harness
 
-### T-23 · Stack and architecture · **next**
+### T-23 · Stack and architecture · **decided**
 - **Depends on:** T-01, T-06, T-08.
 - **To decide:**
   - the language (Q-15, Python proposed);
   - the API framework and database (if T-01 chooses a hosted service);
   - hosting;
   - a refresh of `spec/architecture.md`.
+- **Decided (D-57):** TypeScript on Node 24, like the library, so the harness rehearses its toolchain. The image steps are ported from the Python prototype to OpenCV.js and `sharp`, with a porting spike first. **Written:** `spec/architecture.md` v2 (hosted, proposed). Q-15 resolved.
 
-### T-24 · Testing approach · mostly decided
+### T-24 · Testing approach · **next**
 - **Depends on:** T-23.
 - **Decided so far:** the owner's standard (D-09): simple, offline fixtures, live tests only where needed.
 - **To decide:** how to test the API, and what fixtures the distinctness check needs.
@@ -587,4 +588,11 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **2026-10-20 00:05.** **T-20 decided** (D-54): $100 first run; $10 a night and $30 a month after; trial $30. The owner-input list is updated for the hosted app: O-4 is now a Railway variable with a credit limit; O-5 is withdrawn; O-8..O-11 added (Railway account, GitHub token, User-Agent contact, the library's key). Next: T-21.
 - **2026-10-20 00:15.** **T-21 decided** (D-55): one admin password; the same OpenRouter key everywhere, with low caps for staging and pull-request copies. RUN-10 added. Next: T-22.
 - **2026-10-20 00:25.** **T-22 decided** (D-56): the three enhance models compete; the checker picks the winner and the owner can veto; no-blend versions are shown beside each result. Q-19 resolved. Next: T-23, the stack and architecture rewrite for the hosted app.
+- **2026-10-20 00:40.** **T-23 decided** (D-57): TypeScript, like the library, against Claude's recommendation of Python. That's a fair trade for the harness's purpose. Architecture v2 written for the hosted app:
+  - Express, Drizzle, Postgres queue, S3 bucket;
+  - `sharp` plus OpenCV.js;
+  - a porting spike with fallbacks;
+  - the Python prototype as the reference.
+
+  Next: T-24.
 

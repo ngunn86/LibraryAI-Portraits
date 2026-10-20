@@ -493,3 +493,18 @@ Claude's proposals carried with this decision:
 
 → T-22, TRI-02..TRI-06, PIP-20, Q-19
 
+**D-57 · 2026-10-20 · TypeScript, like the library** · owner · *closes T-23; resolves Q-15*
+- Asked whether to build in Python (where the image work is native and the prototype already is) or in TypeScript like Library-AI, **the owner chose TypeScript**. The harness then rehearses the library's exact toolchain.
+- **The cost:** the image steps are ported from the Python prototype to OpenCV.js (WebAssembly) and `sharp`. A porting spike comes first, and fallbacks are planned for each known gap.
+- The Python prototype stays as the reference implementation. The TypeScript port must reproduce its outputs within tolerances (F-16).
+
+Claude's architecture carried with this decision (`spec/architecture.md` v2, proposed):
+- Node 24 LTS, Express, zod, Drizzle with SQL migrations, Postgres and a Postgres-backed queue;
+- the Railway bucket through the S3 SDK;
+- `sharp` and OpenCV.js; YuNet for faces;
+- server-rendered admin pages;
+- `node:test`;
+- Railway configured as code (`.railway/railway.ts`).
+
+→ T-23, T-24, T-25, RUN-01, RUN-05, RUN-06, F-16, Q-15
+

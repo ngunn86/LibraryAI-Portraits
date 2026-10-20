@@ -29,7 +29,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q-12 | How are dates validated? | — | — | resolved → D-45 (the `authors.csv` forms; anything else is unknown and reported) |
 | Q-13 | What happens to duplicate `teacher_id`s? | — | — | resolved → D-45 (a clashing slug gets `-2` and is reported) |
 | Q-14 | Where does `teachers.csv` live? | — | — | superseded by D-31, D-45 (teachers live in the app's database, synced from `authors.csv`) |
-| Q-15 | Which stack? | build | Python 3.12 + uv, in WSL | open |
+| Q-15 | What stack? | — | — | resolved → D-57 (TypeScript on Node 24, like the library; `spec/architecture.md` v2) |
 | Q-16 | Does the manifest carry the portrait's own licence (CC BY-SA share-alike)? | — | — | resolved → D-48 (each file's licence, link and credit are in this project's API; the Rev1 manifest is no longer used, D-37) |
 | Q-17 | Where is the harness planned and built, and what format does it read? | — | Its own repo; this repo supplies feature cards in a fixed format | resolved → D-15 (a separate chat; format provisional) |
 | Q-18 | Which cut-out provider? | — | An OpenRouter image model, with the cut-out from the enhanced copy's keyed background | resolved → D-19 (method proposed in PIP-03) |
@@ -139,7 +139,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 ### Q-14 · Where `teachers.csv` lives · superseded by D-31, D-45
 - **Proposal.** `data/teachers.csv` in this repo, so it is versioned and its changes are visible. Alternative: in the Drive folder, beside `requests.json`.
 
-### Q-15 · Stack · build
+### Q-15 · Stack · resolved → D-57
 - **Proposal.** Python 3.12 with uv, in WSL Ubuntu. Details in [spec/architecture.md](spec/architecture.md).
 
 ### Q-16 · The portrait's own licence · resolved → D-48
