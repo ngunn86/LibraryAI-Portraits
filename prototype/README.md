@@ -136,6 +136,7 @@ F-16 also checks that the recipe re-creates `out/*.png` from `fixtures/` within 
 | `out/board.png` | Original · owner's portrait · prototype at the owner's framing · prototype with automatic crop |
 | `out/zoom.png` | Close-ups: owner's (left) vs prototype (right) |
 | `out/descreen-compare.png` | Texture close-ups: owner's · 0.1.0 (no descreen) · 0.2.0 (descreen) |
+| `same_photo.py` | T-16: same photograph or a different one, by feature matching (writes `out/same-photo.json`) |
 | `versions.py` | Makes the chosen versions (D-39) and the T-02 mock-ups of the black-and-white edge options (A white line, B no line, C black edge, the owner's choice) |
 | `out/versions/<teacher>/` | The chosen versions: `white-1000`, `white-500`, `bw-1000`, `bw-500` (reference outputs for F-16) |
 | `out/versions-board.png`, `out/versions-zoom.png` | The white version and options A–C on a light, a dark and a coloured page; the edge enlarged |

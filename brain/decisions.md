@@ -374,3 +374,18 @@ Claude's proposal carried with this decision: **cut-out sanity limits** (PIP-19)
 
 → T-14, T-22, STY-07, PIP-07, PIP-19, TRI-03, F-20, Q-05
 
+**D-50 · 2026-10-19 · Telling photographs apart; when unsure, the same photograph** · owner · *closes T-16*
+- **When even the vision model can't tell** whether two pictures are the same photograph, the tool treats them as the same, and keeps only the better copy.
+
+Claude's method carried with this decision (PIP-20; prototype `prototype/same_photo.py`):
+1. **A quick fingerprint** of the cropped face catches exact and near-exact duplicates.
+2. **Feature matching:** SIFT points, a ratio test, and RANSAC on a similarity transform, also tried mirrored. At least 40 consistent points means the same photograph; 20 or fewer means different.
+   - In the prototype, 30 doctored copies of the three originals scored 56–330: crops, rescans, reprints, blurred, darker, noisy and mirrored.
+   - Different photographs scored at most 19.
+3. **Between 20 and 40, the vision model decides.** If it is unsure too, they are the same photograph.
+
+Every new candidate is compared with the teacher's other candidates and with all their portraits, turned-down ones included (PIP-17).
+- The thresholds are confirmed on real pairs before the build relies on them: two sittings of the same teacher, collected by the coverage survey (SRC-14).
+
+→ T-16, PIP-15, PIP-17, PIP-20, SRC-14
+
