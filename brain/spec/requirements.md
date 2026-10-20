@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11. T-14 is decided (D-49): code outline only (PIP-07), PIP-19, STY-07; TRI-03 amended. T-16 is decided (D-50): PIP-20.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11. T-14 is decided (D-49): code outline only (PIP-07), PIP-19, STY-07; TRI-03 amended. T-16 is decided (D-50): PIP-20. T-17 is decided (D-51): PIP-09..PIP-11.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -512,7 +512,7 @@ The halftone is made straight onto transparency, to STY-01.
 Code lays the line over the dots and writes the master (STY-06).
 
 **PIP-09 · Check the draft** *fixed* · B2; output *proposed* · C
-- A vision model checks the draft. Its family must differ from the image models used on the draft: the enhance model and, for trial contenders, the outline model. The family rule is checked when settings load. A Claude model via OpenRouter satisfies it against Google, OpenAI and other image models.
+- A vision model checks the draft, once per draft, on `white-1000` (D-51). The black-and-white and 500 px versions are checked by code only (STY-08, STY-09). The checker's family must differ from the enhance model's (the outline is drawn by code, D-49). The family rule is checked when settings load. A Claude model via OpenRouter satisfies it against Google, OpenAI and other image models.
 - The criteria are:
   - the outline hugs the figure;
   - the cut-out is clean;
@@ -525,18 +525,19 @@ Code lays the line over the dots and writes the master (STY-06).
 
 *Verify:* stubbed responses. Live behaviour is judged in the trial.
 
-**PIP-10 · Remaking a failed draft** *fixed* · B2; semantics *proposed* · C (Q-06)
-- A failing draft is remade.
-- A remake re-runs only the steps that can come out differently: the image-model outline, or the cut-out with a different provider if configured. It never re-asks the checker about the same draft.
-- When the failing criterion is one that code would only repeat, the original is set aside after that failure instead of being remade. Those criteria are likeness, damage, moiré, crop, and any criterion under the code outline.
+**PIP-10 · Remaking a failed draft** *fixed* · B2, D-51
+- A failing draft is remade **once, with a fresh AI-enhanced copy** (D-51). That is the only step that can come out differently, since the outline is drawn by code (D-49). The cut-out comes from the new copy too.
+- A remake never re-asks the checker about the same draft.
+- When the failure is one a new AI copy can't change, the original is set aside at once: the crop, or a cut-out limit (PIP-19) when there was no AI copy.
 
 *Verify:* failure-policy scenario tests (F-23).
 
-**PIP-11 · Failure policy** *fixed* · B2; counting *proposed* · C (Q-07)
+**PIP-11 · Failure policy** *fixed* · B2, D-51; counting *proposed* · C
 - Two failed drafts set an original aside.
 - A turn-down from the library (`status.json`) sets that original aside at once. *Amended by D-40:* it sets aside every copy of that photograph, and a clearly better copy may come back once (PIP-17).
-- At most three originals per teacher reach drafting in one run. After that, the teacher keeps the library's blank portrait for now.
-- Originals failed by the pre-check (PIP-02) don't count toward the three. There is a separate cap per teacher per run on pre-checks; the proposed starting value is 8.
+- At most **6** originals per teacher reach drafting in one run (two tries for each of three slots; D-51, replacing B2's three for one portrait). Slots still empty after that stay empty until a later run.
+- Originals failed by the pre-check (PIP-02) don't count toward the 6. There is a separate cap of **12** pre-checks per teacher per run.
+- *Since D-44:* turn-downs arrive through the API, not `status.json`.
 - On a later run, the tool tries the teacher again only if new candidates exist.
 
 *Verify:* scenario tests (F-23).

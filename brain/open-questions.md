@@ -20,8 +20,8 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q-03 | Deliver through a synced folder or the Drive API? | — | — | superseded by D-31 (hosted app; the library pulls through the API; storage is T-06) |
 | Q-04 | Prove the style in planning, before the harness builds? | — | Yes: prototype the recipe here against the three examples | resolved → D-16 |
 | Q-05 | Add a code-drawn outline as a fourth trial contender? | — | — | resolved → D-49 (code only; model-drawn outlines dropped) |
-| Q-06 | What does "remake" mean when most steps are deterministic? | build | Re-run only the steps that can change; otherwise set aside | open |
-| Q-07 | Do pre-check rejections count toward the three originals? | build | No, but cap pre-checks at 8 per teacher per run | open |
+| Q-06 | What does "remake" mean when most steps are deterministic? | — | — | resolved → D-51 (one remake with a fresh AI copy) |
+| Q-07 | Do pre-check rejections count toward the three originals? | — | — | resolved → D-51 (no; per teacher per run, 6 drafted and 12 pre-checked at most) |
 | Q-08 | What can a Try-again note change? | build | It guides a fresh attempt and the check; it never changes recipe settings | open |
 | Q-09 | Who defines `requests.json` and `status.json`? | — | — | superseded by D-37 (decisions come back through this project's API, defined in its OpenAPI file) |
 | Q-10 | Where did the owner's three originals come from, and are those teachers delivered? | — | Use them as style targets only | resolved → D-13 (source unknown; never delivered) |
@@ -94,13 +94,13 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 - **Evidence from the prototype (2026-10-19).** The owner's line is exactly what code produces: a 6 px band 2 px outside a smoothed silhouette, with the dots clipped to the same silhouette. The code line reproduces it on all three examples (`prototype/out/board.png`).
 - **Updated proposal.** Make the code line the default (recipe 0.1.0). Keep the three image-model lines as trial contenders, to confirm or overturn that.
 
-### Q-06 · What "remake" means · build
+### Q-06 · What "remake" means · resolved → D-51
 - **Background.** If code draws the outline, every step except the cut-out and the checks is deterministic. Remaking a failed draft with the same inputs gives the same draft, and asking the checker again until it says yes would just be gaming it.
 - **Proposal (PIP-10).**
   - A remake re-runs only the steps that can come out differently: a new image-model outline, or the cut-out from another provider if one is configured.
   - When the failing criterion is one code would only repeat (likeness, damage, moiré, crop, or anything under the code outline), the original is set aside after one failure.
 
-### Q-07 · Pre-check rejections and the three-original limit · build
+### Q-07 · Pre-check rejections and the three-original limit · resolved → D-51
 - **Background.** The pre-check costs very little. Group photos and tiny originals are common, so counting them toward the three originals would leave many teachers blank for no good reason.
 - **Proposal.** Pre-check rejections don't count toward the three. There is a separate cap of 8 pre-checks per teacher per run, to bound spend.
 

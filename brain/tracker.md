@@ -38,8 +38,8 @@
 | T-14 | The white-dot version: processing recipe | 4 Processing | T-02 | **decided** (D-49): recipe 0.4.0 is the starting point; code-drawn outline only |
 | T-15 | The black-and-white version: style and recipe | 4 Processing | T-02, T-14 | **mostly decided** (D-39: option C, made from the master's layers) |
 | T-16 | Telling portraits apart (same photo or a different one) | 4 Processing | T-03, T-14 | **decided** (D-50): fingerprint, feature matching, model tie-break; unsure means the same |
-| T-17 | Checks and failure rules | 4 Processing | T-02, T-03, T-14, T-15 | **next** |
-| T-18 | Models and prompts | 4 Processing | T-14 – T-17 | mostly decided (D-19, D-20) |
+| T-17 | Checks and failure rules | 4 Processing | T-02, T-03, T-14, T-15 | **decided** (D-51): one remake with a fresh AI copy; one AI check per draft |
+| T-18 | Models and prompts | 4 Processing | T-14 – T-17 | mostly decided (D-19, D-20) · **next** |
 | T-19 | How runs work | 5 Running | T-01, T-05, T-08 | open |
 | T-20 | Spend | 5 Running | T-03, T-18, T-19 | open |
 | T-21 | Security | 5 Running | T-01, T-08 | open |
@@ -350,15 +350,22 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - the method is Claude's three layers (PIP-20). The prototype separates copies (56–330 matching points) from different photographs (19 or fewer);
   - real pairs, including two sittings of one teacher, come from the coverage survey before the thresholds are relied on.
 
-### T-17 · Checks and failure rules · **next**
+### T-17 · Checks and failure rules · **decided**
 - **Depends on:** T-02, T-03, T-14, T-15.
 - **To decide:**
   - which checks run on which version (does the black-and-white version need its own draft check?);
   - remaking a draft (Q-06) and limits (Q-07), now that there can be several portraits per teacher;
   - the cut-out sanity check.
+- **Decided (D-51):**
+  - one remake with a fresh AI copy, then set aside;
+  - no separate AI check for the black-and-white version;
+  - per run, at most 6 drafted and 12 pre-checked per teacher (Claude's);
+  - the cut-out sanity check is PIP-19.
+
+  Q-06 and Q-07 resolved.
 - **Linked:** PIP-02, PIP-09, PIP-10, PIP-11.
 
-### T-18 · Models and prompts · mostly decided
+### T-18 · Models and prompts · **next**
 - **Depends on:** T-14 – T-17.
 - **Decided so far:**
   - One key: OpenRouter (D-19).
@@ -547,4 +554,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **2026-10-19 22:30.** **T-13 decided** (D-48): CC0 for portraits made from public-domain originals; credit "Portrait by New Thought Nexus, adapted from …"; BY and BY-SA rules per SRC-11. API draft 2 adds `licence_url`. Next: T-14.
 - **2026-10-19 22:45.** **T-14 decided** (D-49): the board is good enough to build on (recipe 0.4.0 is the starting point), and the outline is drawn by code only. Model-drawn outlines are dropped from the method and the trial (F-20 withdrawn, TRI-03 amended). PIP-19 cut-out limits proposed. Next: T-16.
 - **2026-10-19 22:55.** **T-16 decided** (D-50): when unsure, it's the same photograph. The method (PIP-20) was prototyped in `prototype/same_photo.py`: copies scored 56–330 and different photographs at most 19. Next: T-17.
+- **2026-10-19 23:05.** **T-17 decided** (D-51): one remake with a fresh AI copy; the black-and-white version is checked by code only. Per teacher per run, 6 drafts and 12 pre-checks at most. Q-06 and Q-07 resolved. Next: T-18.
 

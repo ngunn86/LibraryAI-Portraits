@@ -389,3 +389,15 @@ Every new candidate is compared with the teacher's other candidates and with all
 
 → T-16, PIP-15, PIP-17, PIP-20, SRC-14
 
+**D-51 · 2026-10-19 · Checks and failures** · owner · *closes T-17; resolves Q-06, Q-07*
+1. **One remake with a fresh AI copy.** With the outline drawn by code, the AI-enhanced copy is the only step that can come out differently. A failed draft is remade once with a new copy. A second failure sets the original aside, and the next candidate is tried.
+2. **The black-and-white version gets no AI check of its own.** It is made from the same layers as the checked white version, so code checks it (STY-08, STY-09).
+
+Claude's proposals carried with this decision:
+- The AI draft check (PIP-09) runs once per draft, on `white-1000`.
+- A failure a new AI copy can't change sets the original aside at once: the crop, or a cut-out limit when there was no AI copy.
+- Per teacher, per run: at most 6 originals reach drafting (two tries for each of three slots), and at most 12 are pre-checked. Pre-check failures don't count toward the 6.
+- Turn-downs arrive through the API (D-44), not `status.json`.
+
+→ T-17, PIP-09..PIP-12, Q-06, Q-07
+
