@@ -4,14 +4,17 @@ Read this first. `AGENTS.md` and `GEMINI.md` point here, so every agent works fr
 
 ## What this project is
 
-Nexus Portraits is a standalone command-line tool. It reads the owner's list of New Thought teachers. For each teacher without an approved portrait it:
+Nexus Portraits is a standalone hosted app on Railway (D-31, D-36). It reads the owner's list of New Thought teachers (library-pipeline's `authors.csv`, through GitHub). For each teacher it:
 
-- finds a public-domain or openly licensed portrait that certainly shows them, from the adopted sources by strict match rules (`brain/spec/sources.md`);
-- turns that photograph into a 1,000 × 1,000 portrait in the owner's halftone style (white dots and a thin white outline on transparency);
-- checks the draft;
-- delivers it with a full rights record to a shared folder.
+- finds up to 3 different public-domain or openly licensed photographs that certainly show them, from the adopted sources by strict match rules (`brain/spec/sources.md`);
+- turns each into portraits in the owner's halftone style:
+  - white dots and a thin white outline on transparency;
+  - a black-and-white version with a black edge;
+  - both at 1,000 and 500 px;
+- checks the drafts;
+- keeps each portrait, by teacher, with its original and a full rights record.
 
-Later, the Library-AI library reads that folder and puts each portrait in an admin's approval queue.
+The Library-AI library pulls the portraits through this app's API (`brain/contracts/portraits-api.openapi.json`). It puts each one in an admin's approval queue and sends its decisions back (D-37, D-38).
 
 The project serves two purposes:
 
@@ -22,7 +25,7 @@ The project serves two purposes:
 
 **Phase 0: planning.** There is no code yet. Everything lives in `brain/`. Planning follows [brain/tracker.md](brain/tracker.md) topic by topic; the current state is in [brain/status.md](brain/status.md).
 
-**Owner's requirements of 2026-10-19 (D-24..D-30):**
+**Owner's requirements of 2026-10-19 (D-24..D-30)** are being planned through the tracker:
 
 - up to 3 different portraits per teacher;
 - three versions of each (original, white dots, black-and-white);
@@ -30,7 +33,7 @@ The project serves two purposes:
 - an API for the library;
 - no extraction from books.
 
-They are being planned through the tracker. Spec sections they touch are marked as under rework.
+T-01..T-08 are decided (D-31..D-44). Spec sections still marked under rework wait for their topics. `brain/spec/architecture.md` still describes the earlier PC-run CLI until T-23.
 
 ## Repo map
 
