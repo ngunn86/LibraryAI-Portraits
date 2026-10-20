@@ -16,7 +16,7 @@
 
 ## The throwaway app
 
-The app is a tiny Python web app, with the same shape as the real one:
+The app is a tiny **TypeScript (Node 24) web app**, with the same shape and stack as the real one (D-57): Express, Drizzle with SQL migrations, `node:test`, and the S3 SDK for the bucket.
 
 ```
 throwaway project (one GitHub repo, one host project)
@@ -39,7 +39,7 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 | ID | What must be shown | Passed when |
 |---|---|---|
 | HT-01 | The harness creates the throwaway repo, or uses one the owner creates, with the project skeleton and an offline test suite | The tests pass locally in WSL and on each pull request |
-| HT-02 | The host builds the Python app from the repo with no hand-made build steps *(Railway: Railpack, or a Dockerfile)* | The build log shows success for the commit pushed |
+| HT-02 | The host builds the Node 24 TypeScript app from the repo with no hand-made build steps *(Railway: Railpack, or a Dockerfile)*. *Since D-57:* include one WebAssembly dependency (OpenCV.js) and `sharp`'s native binary, to prove they build and run on the host | The build log shows success for the commit pushed, and `/health` reports that OpenCV.js and `sharp` loaded |
 
 ### B. Deploying
 
@@ -63,7 +63,7 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 | ID | What must be shown | Passed when |
 |---|---|---|
 | HT-10 | Postgres is reachable from web, worker and cron | `/items` writes and reads a row; worker and cron rows appear |
-| HT-11 | Database migrations run automatically on deploy *(Railway: pre-deploy command)* | A new migration in a PR is applied in the PR copy, then in staging, with no hand step |
+| HT-11 | Database migrations run automatically on deploy *(Railway: pre-deploy command; `drizzle-kit migrate`)* | A new migration in a PR is applied in the PR copy, then in staging, with no hand step |
 | HT-12 | Backups are switched on, and one is restored *(Railway: scheduled backups, point-in-time recovery)* | A restored copy holds the test rows. The plan that's needed is noted (Hobby or Pro) |
 | HT-13 | The bucket stores and returns files. A presigned link opens in a browser. Each environment's bucket is separate | Upload, then download, works, and the link opens on a phone. Staging can't see production's files |
 
@@ -147,4 +147,5 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 - **2026-10-20:** D-55 (security):
   - the real app's admin page uses one password with a 30-day session. HT-21's login can be the same kind;
   - the same OpenRouter key is used in every environment, with low caps for staging and pull-request copies. HT-18's separate low-limit test key remains right for the throwaway test, since it is a different project.
+- **2026-10-20:** D-57 (TypeScript, like the library). The throwaway app is now a tiny Node 24 TypeScript app with the real app's stack: Express, Drizzle migrations, `node:test` and the S3 SDK. HT-02 now also proves that OpenCV.js (WebAssembly) and `sharp` build and load on Railway, since the real app's image work depends on them.
 
