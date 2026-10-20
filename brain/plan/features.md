@@ -80,7 +80,7 @@
 
 \* If a parkable dependency is parked, the card is built without it, and the digest says so. For example, F-11 is built without the LoC if F-10 is parked.
 
-F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries rather than features; reviewers check them, and F-06's allowlist test enforces AC-06.
+F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries rather than features; reviewers check them, and F-06's allowlist test enforces AC-06. OUT-08 (the zip) has no card unless the owner keeps it (Q-27).
 
 ---
 
@@ -948,7 +948,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-29 · The examples reproduced
 - **Phase:** 6
 - **Goal:** Show that the pipeline, with the trial's defaults, reproduces the owner's three hand-made portraits closely enough.
-- **Covers:** TRI-08, AC-04
+- **Covers:** TRI-08, AC-04, IN-09
 - **Depends on:** F-28
 - **Owner input:** none
 - **Build:** `test/live/f29-examples.test.ts`
