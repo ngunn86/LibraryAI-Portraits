@@ -269,3 +269,19 @@ Claude's proposals carried with this decision (marked *proposed* in PIP-14..PIP-
 
 → T-04, T-07, T-08, PIP-16, PIP-18
 
+**D-42 · 2026-10-19 · Storage, history, backups and the admin page** · owner · *closes T-06*
+1. **Where files live:** in the tool's own bucket on Railway. There is no Google Drive copy. The owner: "Library makes a local copy of all portraits it pulls through the api." So the library keeps its own copy of every portrait it pulls. The API must make that easy (T-08): a listing of what changed since a date, with each file's checksum.
+2. **History:** the files of a replaced or turned-down portrait are kept as history, and its status is marked.
+3. **Backups:** the database only, at first (Railway's Postgres backups). The bucket can be rebuilt from the rights log. Only the AI copies would cost again, and the library holds its own copies of everything it pulled.
+4. **Admin page:** browse and run status, read-only. It shows:
+   - portraits by teacher, with all versions, credits and the library's decisions;
+   - runs, spend and errors.
+
+   Approvals stay in the library (D-38).
+
+Claude's proposals carried with this decision (not objected to):
+- the layout `portraits/<teacher_id>/<portrait_id>/` with the eight files of OUT-11 and a `record.json`, the database being the source of truth;
+- candidates that never become a portrait are logged in the rights log, not stored.
+
+→ T-06, T-08, T-19, T-21, T-23, OUT-01, OUT-09, OUT-12, OUT-13
+

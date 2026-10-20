@@ -27,8 +27,8 @@
 | T-03 | How many portraits per teacher, and what counts as different | 1 Shape | none | **decided** (D-40): different photographs, best-known first, better copies offered |
 | T-04 | Categories for each portrait | 1 Shape | T-03 | **decided** (D-41): no category scheme; an approximate date for the spread; the library can correct |
 | T-05 | Approval: what the library approves, and the main portrait | 1 Shape | T-01, T-03 | **decided** (D-38): in the library's queue, reported back |
-| T-06 | Storage and organisation by teacher | 2 Data | T-01, T-02, T-03 | **next** (D-27 sets "by teacher") |
-| T-07 | The records: what we keep about teachers, portraits, versions and sources | 2 Data | T-02 – T-05 | open |
+| T-06 | Storage and organisation by teacher | 2 Data | T-01, T-02, T-03 | **decided** (D-42): tool's bucket; library keeps its own copies; history kept; database backups; read-only admin page |
+| T-07 | The records: what we keep about teachers, portraits, versions and sources | 2 Data | T-02 – T-05 | **next** |
 | T-08 | The library API | 2 Data | T-01, T-06, T-07 | open (D-28 sets "an API") |
 | T-09 | The contract with Library-AI (Rev1) | 2 Data | T-08 | **mostly decided** (D-37): this project owns the API and its OpenAPI file; the library adopts it |
 | T-10 | The teacher list (from the pipeline's authors) | 3 Finding | none | mostly decided (D-22) |
@@ -157,7 +157,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
 ## Stage 2: Data, storage and the library contract
 
-### T-06 · Storage and organisation by teacher · open
+### T-06 · Storage and organisation by teacher · **decided**
 - **Depends on:** T-01, T-02, T-03.
 - **To decide:**
   1. Where files live: the Google Drive folder, cloud storage behind the API, or both.
@@ -166,9 +166,16 @@ Topics within a stage can move in parallel when they don't depend on each other.
   4. Full-size originals: kept for every candidate, or only for kept portraits? Backups?
   5. **Your view:** an admin page (D-33). What it shows: portraits by teacher, run status, the trial board, approvals?
 - **Decided so far:** organised by teacher (D-27).
-- **Linked:** Q-03 (synced folder vs Drive API), OUT-01..OUT-08 (the run-based layout, now under review).
+- **Decided (D-42):**
+  1. Files live in the tool's own Railway bucket, with no Drive copy. The library makes its own local copy of everything it pulls through the API.
+  2. Layout `portraits/<teacher_id>/<portrait_id>/`, with the eight files and a `record.json`; the database is the source of truth (Claude's proposal).
+  3. Replaced and turned-down portraits keep their files as history.
+  4. Candidates that never become portraits are logged only (Claude's proposal). Backups: the database only, at first.
+  5. The admin page is read-only: browse and run status.
+- **Written into:** OUT-12, OUT-13; OUT-01 and OUT-09 withdrawn; OUT-08 to be confirmed at T-09.
+- **Linked:** Q-03 (superseded), OUT-01..OUT-08 (the run-based layout).
 
-### T-07 · The records: what we keep · open
+### T-07 · The records: what we keep · **next**
 - **Depends on:** T-02 – T-05.
 - **To decide:**
   1. **Teacher:** id, names, dates, Wikidata id, link to the authors list.
@@ -431,4 +438,11 @@ Topics within a stage can move in parallel when they don't depend on each other.
   Next: T-03.
 - **2026-10-19 19:20.** **T-03 decided** (D-40). The owner took Claude's proposals on what's different, which three, and better copies of approved portraits. On turn-downs the owner chose "only as a clearly better copy", not "never". PIP-14..PIP-17 added. Next: T-04.
 - **2026-10-19 19:35.** **T-04 decided** (D-41): no category scheme ("this kind of detail isn't important for my needs"). An approximate date is kept for the spread across life; the library can correct it (PIP-18). T-05 was already decided, so next: T-06.
+- **2026-10-19 19:50.** **T-06 decided** (D-42):
+  - files in the tool's bucket, and the library keeps its own copies of what it pulls;
+  - history kept;
+  - database backups only, at first;
+  - a read-only admin page.
+
+  OUT-12 and OUT-13 added; OUT-01 and OUT-09 withdrawn. T-08 now needs a "changed since" listing with checksums. Next: T-07.
 

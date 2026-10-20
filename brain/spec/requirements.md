@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -565,7 +565,7 @@ When more different photographs pass the pre-check than there are free slots:
 
 ## 6. Output and delivery
 
-**OUT-01 · Delivery folder layout** *fixed* · B2
+**OUT-01 · Delivery folder layout** *withdrawn* (2026-10-19, D-31, D-42: files live in the tool's bucket and the library pulls through the API; storage is OUT-12) · B2
 The layout is in [../contracts/delivery-folder.md](../contracts/delivery-folder.md):
 
 - `portraits/runs/<run-id>/` holds `manifest.json`, `masters/<teacher_id>.png`, `originals/<teacher_id>.jpg` and `report.md`;
@@ -625,11 +625,11 @@ The run's `tool_run` block records the run id, start time, tool version and the 
 **OUT-07 · Re-delivery** *fixed* · B2
 A later run's draft for a teacher replaces the draft that teacher has waiting; the library handles this by `teacher_id`. The tool never deletes or edits earlier runs' files.
 
-**OUT-08 · Bulk-upload zip on request** *fixed* · B2; location *proposed* · C
+**OUT-08 · Bulk-upload zip on request** *fixed* · B2; location *proposed* · C · *under review at T-09:* with the library pulling through the API (D-37, D-42) this may no longer be needed; the owner confirms there.
 `portraits zip <run-id>` writes the run's masters plus `manifest.json` into one zip, for the library admin's Imports page. It is written to a local path, not into the delivery folder, so the library's Drive door never picks it up.
 *Verify:* the stub accepts the unzipped contents.
 
-**OUT-09 · Delivery target** *open (Q-03)*
+**OUT-09 · Delivery target** *withdrawn* (2026-10-19, D-31, D-42: no Drive folder; Q-03 superseded)
 - B2 gives a Drive folder id and a Drive credential.
 - The proposal is a local folder path that Google Drive for desktop syncs. That means no credential and no Drive code, and works on any machine with Drive for desktop. The Drive API becomes a later option, behind the same interface.
 
@@ -655,6 +655,26 @@ Each portrait has an id, `<teacher_id>-<n>` (for example `charles-fillmore-1`). 
 - The licence and credit of each file are T-13; the API paths are T-08.
 
 *Verify:* the fixture run produces all eight files per portrait, and each passes its own check.
+
+**OUT-12 · Storage** *fixed* · D-42; layout *proposed* · C
+- Files live in the tool's own storage bucket (Railway, S3-compatible), one bucket per environment. There is no Drive copy.
+- Layout: `portraits/<teacher_id>/<portrait_id>/` holds the files of OUT-11 and a `record.json`.
+  - The database is the source of truth.
+  - `record.json` is rewritten from it whenever the portrait changes, so the bucket alone describes every portrait.
+- **History is kept.** A replaced or turned-down portrait keeps its files, marked with its status. Nothing is deleted automatically.
+- **Candidates that never become a portrait are logged, not stored:** the rights log (SRC-12) keeps the link, credit and SHA-256.
+- **The library keeps its own copy** of every portrait it pulls (D-42). The API therefore lists changes since a date, with each file's SHA-256 (T-08).
+- **Backups:** the database only, at first (Railway's Postgres backups). The bucket isn't copied elsewhere. Everything in it can be rebuilt from the rights log and the recipe, except the AI copies, which would be made again at cost.
+
+*Verify:* fixture run: the layout and `record.json` match the database; a turned-down portrait's files are still there; a failed candidate has a rights-log entry and no files.
+
+**OUT-13 · Admin page** *fixed* · D-33, D-42; contents *proposed* · C
+- A read-only admin page behind a login (T-21). It works on a phone.
+- **Teachers:** each teacher's portraits, with all versions, the credit and rights record, and the library's decisions (waiting, approved, turned down, main portrait, replaced).
+- **Runs:** what each run did, spend, errors, and the candidates set aside, with reasons.
+- No approvals here: they happen in the library (D-38).
+
+*Verify:* a smoke test against the deployed app opens the teacher list, one teacher and the run list, and finds no form that changes data.
 
 ---
 
