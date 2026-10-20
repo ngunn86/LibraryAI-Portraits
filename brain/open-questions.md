@@ -19,7 +19,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q-02 | Re-runs: skip teachers whose draft is already waiting? | build | Yes, using the tool's own delivery record until `status.json` exists | open |
 | Q-03 | Deliver through a synced folder or the Drive API? | — | — | superseded by D-31 (hosted app; the library pulls through the API; storage is T-06) |
 | Q-04 | Prove the style in planning, before the harness builds? | — | Yes: prototype the recipe here against the three examples | resolved → D-16 |
-| Q-05 | Add a code-drawn outline as a fourth trial contender? | build | Yes, and make it the default: the prototype shows it reproduces the owner's line | open |
+| Q-05 | Add a code-drawn outline as a fourth trial contender? | — | — | resolved → D-49 (code only; model-drawn outlines dropped) |
 | Q-06 | What does "remake" mean when most steps are deterministic? | build | Re-run only the steps that can change; otherwise set aside | open |
 | Q-07 | Do pre-check rejections count toward the three originals? | build | No, but cap pre-checks at 8 per teacher per run | open |
 | Q-08 | What can a Try-again note change? | build | It guides a fresh attempt and the check; it never changes recipe settings | open |
@@ -81,7 +81,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
   The harness then builds the machinery around a recipe that is already known to work, and F-16 locks it in with a regression test.
 - **Needs:** O-2 (the examples and their originals).
 
-### Q-05 · A code-drawn outline as a fourth contender · build
+### Q-05 · A code-drawn outline as a fourth contender · resolved → D-49
 - **Background.** The cut-out already gives the figure's exact shape. Widening and smoothing that mask, then tracing its edge, gives a line that:
   - sits exactly on the dots;
   - costs nothing;

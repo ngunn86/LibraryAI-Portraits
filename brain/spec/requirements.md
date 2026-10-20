@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11. T-14 is decided (D-49): code outline only (PIP-07), PIP-19, STY-07; TRI-03 amended.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -418,7 +418,7 @@ The master is a 1,000 × 1,000 PNG with an alpha channel:
 
 *Verify:* a checker function, run on every master in every test and inside the tool before delivery.
 
-**STY-07 · The target** *fixed* · B2, D-16; numbers *proposed* (recipe 0.1.0, waiting for the owner's look)
+**STY-07 · The target** *fixed* · B2, D-16; numbers *fixed* as the starting point · D-49 (recipe 0.4.0; the trial may tune them)
 The owner's three hand-made portraits are the target.
 
 - The recipe's starting numbers were set by matching them in Phase 0 (D-16). See `prototype/README.md` and `prototype/out/board.png`.
@@ -493,14 +493,13 @@ Code crops to STY-03 with a similarity transform from five face landmarks (eyes,
 The halftone is made straight onto transparency, to STY-01.
 *Verify:* STY-01 and STY-06 checks.
 
-**PIP-07 · Outline** *fixed* · B2 for the image-model method; *proposed* · C (Q-05) for the code method
-The method is a setting.
+**PIP-07 · Outline** *fixed* · D-49: **code only**. The image-model method (B2) is *withdrawn* by D-49 and kept below for the record.
 
 - **Image model** (starting setting Gemini 3 Pro Image; challengers GPT Image 2 and FLUX.2 Pro):
   1. The model gets the cut-out on black and draws one white contour around it.
   2. Code keeps only the line: threshold, keep the main connected stroke, re-stroke it at the set width.
   3. Code aligns the line to the figure, because image models can shift or rescale what they redraw.
-- **Code** *(proposed)*:
+- **Code** *(the method, D-49)*:
   1. Code widens the cut-out mask by the set offset.
   2. It smooths the mask so the line follows the hair's overall shape.
   3. It traces the edge and strokes it at the set width.
@@ -611,6 +610,17 @@ When more different photographs pass the pre-check than there are free slots:
 - **The library can correct** the date and the best-known flag through the API. A correction replaces the tool's value and is never overwritten by a later run.
 
 *Verify:* unit tests: a source date wins over an estimate; an estimate uses the birth year; a library correction survives a re-run.
+
+**PIP-19 · Cut-out sanity limits** *proposed* · C (D-49)
+Before the draft check, code refuses a draft whose figure (inside the outline, on the 1,000 px square) breaks any of these:
+
+- it fills between 35% and 80% of the square (the examples: 53–64%);
+- it is one piece: the largest connected piece holds at least 98% of the figure;
+- the face box from the landmarks lies inside it;
+- the shoulders run off the bottom: it meets the bottom edge across at least 40% of the width (the examples: 68–96%).
+
+A refusal counts as a failed draft (PIP-11) and names the limit.
+*Verify:* the three example masters pass; fixtures with a floating fragment, a figure cut off above the shoulders, and a figure filling the whole square are refused, each naming its limit.
 
 ---
 
@@ -819,8 +829,8 @@ The set is:
 
 *Proposed:* the set is curated during planning into a fixture file listing each item and its expected outcome, for example "group photo: refused at pre-check". That way the trial doubles as a test.
 
-**TRI-03 · Contenders** *fixed* · B2; fourth contender *proposed* · C (Q-05)
-The three outline models each run with the same cut-out and the same code. The proposal adds the code-drawn outline as a fourth contender.
+**TRI-03 · Contenders** *amended* by D-49: **no outline contenders.** The outline is drawn by code only. What the trial compares instead (the enhance models of PIP-13) is settled at T-22.
+~~The three outline models each run with the same cut-out and the same code. The proposal adds the code-drawn outline as a fourth contender.~~
 
 **TRI-04 · Choosing the winner** *fixed* · B2; "close" *open (Q-19)*
 The check (PIP-09) scores every result, and the best contender wins. If two are close, the cheaper one wins. The proposal for "close" is a total score within 5% of the best.

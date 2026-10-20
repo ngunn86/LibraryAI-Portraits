@@ -366,3 +366,11 @@ Claude's rules carried with this decision (`SRC-11`; background, not legal advic
 
 → T-13, SRC-11, OUT-11, OUT-14, Q-16
 
+**D-49 · 2026-10-19 · The recipe is the starting point; the outline is drawn by code** · owner · *closes T-14; resolves Q-05*
+1. **The board is close enough to build on.** Recipe 0.4.0 (`prototype/recipe.py`, its settings and `prototype/out/`) is the starting point the build reproduces (F-16). The trial may still tune it, under a new `recipe_version` (STY-05).
+2. **The outline is drawn by code only,** from the cut-out. It is free and identical every run, and the prototype matches the owner's line (6 px, 2 px out). The image-model outline and its contenders are dropped from the method and from the trial.
+
+Claude's proposal carried with this decision: **cut-out sanity limits** (PIP-19), from the examples' measurements. A draft breaking any of them is refused before the check.
+
+→ T-14, T-22, STY-07, PIP-07, PIP-19, TRI-03, F-20, Q-05
+

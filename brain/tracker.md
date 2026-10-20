@@ -35,9 +35,9 @@
 | T-11 | Picture sources | 3 Finding | T-07 | **decided** (D-46): Commons, LoC, Wellcome; Smithsonian only if the survey shows gaps; NYPL and DPLA dropped ([notes](topics/T-11-picture-sources.md)) |
 | T-12 | Match rules: when a picture certainly shows the teacher | 3 Finding | T-10, T-11 | **decided** (D-47): three rules, LoC name ids, any medium (trial decides) |
 | T-13 | Rights, licences and credits | 3 Finding | T-02, T-07, T-11 | **decided** (D-48): CC0 for portraits of public-domain originals; "Portrait by New Thought Nexus" |
-| T-14 | The white-dot version: processing recipe | 4 Processing | T-02 | mostly decided (recipe 0.4.0) · **next** |
+| T-14 | The white-dot version: processing recipe | 4 Processing | T-02 | **decided** (D-49): recipe 0.4.0 is the starting point; code-drawn outline only |
 | T-15 | The black-and-white version: style and recipe | 4 Processing | T-02, T-14 | **mostly decided** (D-39: option C, made from the master's layers) |
-| T-16 | Telling portraits apart (same photo or a different one) | 4 Processing | T-03, T-14 | open |
+| T-16 | Telling portraits apart (same photo or a different one) | 4 Processing | T-03, T-14 | **next** |
 | T-17 | Checks and failure rules | 4 Processing | T-02, T-03, T-14, T-15 | open |
 | T-18 | Models and prompts | 4 Processing | T-14 – T-17 | mostly decided (D-19, D-20) |
 | T-19 | How runs work | 5 Running | T-01, T-05, T-08 | open |
@@ -309,7 +309,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
 ## Stage 4: Processing and checking
 
-### T-14 · The white-dot version: processing recipe · mostly decided
+### T-14 · The white-dot version: processing recipe · **decided**
 - **Depends on:** T-02.
 - **Decided so far:**
   - The style (D-04).
@@ -321,6 +321,11 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - your verdict on the board;
   - the code-drawn outline as the default (Q-05);
   - the cut-out sanity limits.
+- **Decided (D-49):**
+  - the board is close enough to build on: recipe 0.4.0 is the starting point, and the trial may tune it;
+  - the outline is drawn by code only;
+  - cut-out sanity limits (PIP-19) are Claude's proposal.
+- **Written into:** STY-07, PIP-07, PIP-19, TRI-03; F-20 withdrawn; Q-05 resolved.
 
 ### T-15 · The black-and-white version · **mostly decided**
 - **Depends on:** T-02, T-14.
@@ -329,7 +334,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - it is made from the master's own layers, so it shares the white version's tones, crop, cut-out and footprint by construction.
 - **Left:** a look at it on real AI-enhanced copies (F-27, F-28), along with T-14's verdict.
 
-### T-16 · Telling portraits apart · open
+### T-16 · Telling portraits apart · **next**
 - **Depends on:** T-03, T-14 (it uses the aligned face crop).
 - **To decide:**
   1. **Method.** Proposed, in three layers:
@@ -536,4 +541,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
   SRC-01 and SRC-09 updated, SRC-14 (coverage survey) added, `spec/sources.md` revised. Next: T-12.
 - **2026-10-19 22:15.** **T-12 decided** (D-47): any medium, with the trial deciding (Q-11 resolved). Claude's refinements: R3 by LoC name id, Wellcome links accepted, SRC-06 aligned with D-45. Next: T-13.
 - **2026-10-19 22:30.** **T-13 decided** (D-48): CC0 for portraits made from public-domain originals; credit "Portrait by New Thought Nexus, adapted from …"; BY and BY-SA rules per SRC-11. API draft 2 adds `licence_url`. Next: T-14.
+- **2026-10-19 22:45.** **T-14 decided** (D-49): the board is good enough to build on (recipe 0.4.0 is the starting point), and the outline is drawn by code only. Model-drawn outlines are dropped from the method and the trial (F-20 withdrawn, TRI-03 amended). PIP-19 cut-out limits proposed. Next: T-16.
 

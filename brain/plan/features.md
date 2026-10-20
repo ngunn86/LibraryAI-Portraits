@@ -50,7 +50,7 @@ Status: **proposed** (Claude, 2026-10-19). The harness builds these one at a tim
 | F-18 | Pre-check | 4 | F-17 | none | none | no |
 | F-30 | AI-enhanced copy: make, align, blend (PIP-13, D-18) | 4 | F-13, F-17 | none | none | yes |
 | F-19 | Cut-out (keyed background) | 4 | F-17, F-30 | none | none | no |
-| F-20 | Model-drawn outline: extract and align | 4 | F-15, F-17 | none | none | yes |
+| F-20 | ~~Model-drawn outline: extract and align~~ *withdrawn* (D-49) | 4 | — | — | — | — |
 | F-21 | Draft check (and compare-with-target) | 4 | F-17 | none | none | no |
 | F-22 | `doctor` | 5 | F-02, F-17 | none | none | yes |
 | F-23 | Per-teacher pipeline and failure policy | 5 | F-11, F-13, F-15, F-18, F-19, F-21 (F-20 and F-30 if not parked) | none | none | no |
@@ -514,7 +514,7 @@ Book plates are omitted unless they prove absolutely necessary. The ID is kept s
 - **Parkable:** no
 - **Size:** S
 
-### F-20 · Model-drawn outline: extract and align
+### F-20 · Model-drawn outline: extract and align · *withdrawn* (D-49: the outline is drawn by code only)
 - **Phase:** 4
 - **Goal:** Ask an image model for a white contour around the cut-out on black, keep only the line, and align it to the figure.
 - **Covers:** PIP-07 (model method), STY-02, STY-04
