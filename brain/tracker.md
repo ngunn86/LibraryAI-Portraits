@@ -28,7 +28,7 @@
 | T-04 | Categories for each portrait | 1 Shape | T-03 | **decided** (D-41): no category scheme; an approximate date for the spread; the library can correct |
 | T-05 | Approval: what the library approves, and the main portrait | 1 Shape | T-01, T-03 | **decided** (D-38): in the library's queue, reported back |
 | T-06 | Storage and organisation by teacher | 2 Data | T-01, T-02, T-03 | **decided** (D-42): tool's bucket; library keeps its own copies; history kept; database backups; read-only admin page |
-| T-07 | The records: what we keep about teachers, portraits, versions and sources | 2 Data | T-02 – T-05 | **next** |
+| T-07 | The records: what we keep about teachers, portraits, versions and sources | 2 Data | T-02 – T-05 | **in discussion**: proposed in full ([notes](topics/T-07-records.md)), waiting for the owner's look |
 | T-08 | The library API | 2 Data | T-01, T-06, T-07 | open (D-28 sets "an API") |
 | T-09 | The contract with Library-AI (Rev1) | 2 Data | T-08 | **mostly decided** (D-37): this project owns the API and its OpenAPI file; the library adopts it |
 | T-10 | The teacher list (from the pipeline's authors) | 3 Finding | none | mostly decided (D-22) |
@@ -175,7 +175,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Written into:** OUT-12, OUT-13; OUT-01 and OUT-09 withdrawn; OUT-08 to be confirmed at T-09.
 - **Linked:** Q-03 (superseded), OUT-01..OUT-08 (the run-based layout).
 
-### T-07 · The records: what we keep · **next**
+### T-07 · The records: what we keep · **in discussion**
 - **Depends on:** T-02 – T-05.
 - **To decide:**
   1. **Teacher:** id, names, dates, Wikidata id, link to the authors list.
@@ -185,6 +185,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   5. **Checks and costs.**
   6. **Ids:** stable across runs.
 - **Decided so far:** complete credit metadata for every portrait (D-14). Every original considered is logged (SRC-12, proposed).
+- **Proposed in full** in [topics/T-07-records.md](topics/T-07-records.md): the teacher, candidate (rights log), portrait, file, library decision, request, run and spend records, and the portrait history.
 - **Linked:** OUT-02 (the Rev1 manifest schema, probably replaced; see T-09), SRC-08, SRC-11, SRC-12.
 
 ### T-08 · The library API · open
@@ -445,4 +446,12 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - a read-only admin page.
 
   OUT-12 and OUT-13 added; OUT-01 and OUT-09 withdrawn. T-08 now needs a "changed since" listing with checksums. Next: T-07.
+- **2026-10-19 20:00.** T-07 drafted in full as a proposal (`topics/T-07-records.md`), since it is mostly technical:
+  - eight records;
+  - stable ids;
+  - turn-down reasons;
+  - library decisions recognised if sent twice;
+  - no personal details of library admins.
+
+  Waiting for the owner's look.
 

@@ -2,7 +2,7 @@
 
 **Phase 0: planning.** There is no code yet. Last updated 2026-10-19 by Claude.
 
-**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **T-01 decided:** fully hosted on Railway, two-way API (D-31..D-36). **T-05 decided** in the library (D-38). **T-09 mostly decided:** this project owns the OpenAPI contract (D-37). **T-02 decided** (D-39): the original and a PNG viewing copy; white and black-and-white (black edge) versions at 1,000 and 500 px; AI files offered to the library. **T-03 decided** (D-40): up to 3 different photographs, best-known first, then spread across life; better copies offered to the library. **T-04 decided** (D-41): no category scheme; an approximate date for the spread, correctable by the library. **T-06 decided** (D-42): files in the tool's bucket, the library keeps its own copies, history kept, database backups, a read-only admin page. **Now: T-07, the records.** Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated).
+**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **T-01 decided:** fully hosted on Railway, two-way API (D-31..D-36). **T-05 decided** in the library (D-38). **T-09 mostly decided:** this project owns the OpenAPI contract (D-37). **T-02 decided** (D-39): the original and a PNG viewing copy; white and black-and-white (black edge) versions at 1,000 and 500 px; AI files offered to the library. **T-03 decided** (D-40): up to 3 different photographs, best-known first, then spread across life; better copies offered to the library. **T-04 decided** (D-41): no category scheme; an approximate date for the spread, correctable by the library. **T-06 decided** (D-42): files in the tool's bucket, the library keeps its own copies, history kept, database backups, a read-only admin page. **Now: T-07, the records** (proposed in full: [notes](topics/T-07-records.md)). Then T-08, the library API. Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated).
 
 ## Where things stand
 
@@ -121,4 +121,5 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
   - The admin page is read-only: browse and run status.
 
   OUT-12 and OUT-13 added; OUT-01 and OUT-09 withdrawn. Next: T-07.
+- **2026-10-19 (evening):** T-07 drafted as a full proposal (`topics/T-07-records.md`). Waiting for the owner's look; then T-08.
 
