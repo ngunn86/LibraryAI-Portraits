@@ -1,6 +1,6 @@
 # Build plan
 
-**Status (2026-10-20):** proposed by Claude, rewritten for the hosted TypeScript app (D-31..D-57). It waits for the review rounds (P0-6) and for Q-27.
+**Status (2026-10-20):** proposed by Claude, rewritten for the hosted TypeScript app (D-31..D-57). It waits for the review rounds (P0-6).
 
 ## 1. The shape of the work
 
@@ -22,12 +22,12 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 | # | Task | Needs | State |
 |---|---|---|---|
 | P0-1 | Copy in Rev1's portrait files and the shared hosting review; reconcile every `tool` PORT line (requirements §10) | O-1 | **Waiting** for the library chat to push |
-| P0-2 | The owner's decisions on the tracker topics | the owner | **Done** for T-01..T-23 (D-31..D-57); Q-27 open |
+| P0-2 | The owner's decisions on the tracker topics | the owner | **Done** for T-01..T-23 (D-31..D-57), plus Q-27 and Q-28 (D-58, D-59) |
 | P0-3 | Style prototype (D-16) | O-2 | **Done:** recipe 0.4.0 accepted as the starting point (D-49) |
 | P0-4 | Trial set curation (TRI-02) | the coverage survey | **Moved into the build:** F-28 picks the set from F-38's report, with the owner's veto |
 | P0-5 | Contract files | — | **Done:** `contracts/portraits-api.openapi.json` with samples and a check (D-44) |
 | P0-6 | Review rounds by other AI tools, merged | P0-2 | **Next** (2026-10-20 onwards; `brain/reviews/`) |
-| P0-7 | Freeze plan v1: the git tag `plan-v1`, and a status line telling the harness to start | P0-6, Q-27, the harness's card format (D-15), the throwaway test passed | Later |
+| P0-7 | Freeze plan v1: the git tag `plan-v1`, and a status line telling the harness to start | P0-6, the harness's card format (D-15), the throwaway test passed | Later |
 
 ## 3. Inputs only the owner can supply
 
@@ -44,7 +44,7 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 | O-9 | A read-only, fine-grained GitHub token for library-pipeline, limited to that repo's contents (D-32), set as a Railway variable | The teacher sync | Never in chat or the repo |
 | O-10 | A contact email address for the tool's User-Agent (D-46), one meant for the app rather than a personal one | The source clients | Wikimedia's 2026 limits require it |
 | O-11 | The library's key for this API, made by the owner once the API is deployed (`portraits keys new`), and handed to the library's settings (D-44) | F-47 | |
-| O-12 | Answer Q-27 (the zip, and the restated acceptance checks) | Before F-05 | |
+| O-12 | Answer Q-27 (the zip, and the restated acceptance checks) | Before F-05 | **Done 2026-10-20** (D-58) |
 
 ## 4. Working with the harness
 

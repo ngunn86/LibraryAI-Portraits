@@ -69,7 +69,7 @@
 | 37 | F-48 | Later runs: better copies, turn-downs, corrections | 5 | F-23, F-45 | none | none | no |
 | 38 | F-46 | Admin site | 5 | F-25, F-32, F-35*, F-44 | none | none | no |
 | 39 | F-22 | Commands and `doctor` | 5 | F-17, F-25, F-44 | none | none | yes |
-| 40 | F-05 | Library stub | 5 | F-45 | O-12 (Q-27) | none | no |
+| 40 | F-05 | Library stub | 5 | F-45 | none | none | no |
 | 41 | F-26 | End-to-end offline run | 5 | F-05, F-22*, F-46, F-48 | none | none | no |
 | 42 | F-27 | Live smoke test on staging | 6 | F-26, F-36 | O-4, O-8, O-9, O-10 | paid ≤ $2 | no |
 | 43 | F-28 | Trial, board and defaults | 6 | F-27, F-38 | O-4 | paid ≤ $27 | no |
@@ -80,7 +80,7 @@
 
 \* If a parkable dependency is parked, the card is built without it, and the digest says so. For example, F-11 is built without the LoC if F-10 is parked.
 
-F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries rather than features; reviewers check them, and F-06's allowlist test enforces AC-06. OUT-08 (the zip) has no card unless the owner keeps it (Q-27).
+F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries rather than features; reviewers check them, and F-06's allowlist test enforces AC-06. OUT-08 (the zip) is withdrawn (D-58).
 
 ---
 
@@ -745,7 +745,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Checks (fake clock):**
   - **Queueing (RUN-02, RUN-08):**
     - a teacher searched 10 days ago isn't queued; one searched 35 days ago is;
-    - a full teacher is queued only when `researchFullTeachers` is on (Q-28), and then only new candidates are looked at;
+    - a full teacher is queued monthly (D-59), and only new candidates are looked at; with `researchFullTeachers` off, it isn't;
     - a request goes ahead of queued teachers;
     - with the schedule switched off, the cron job queues nothing.
   - The cron job exits after queueing.
@@ -869,7 +869,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Goal:** A small program that plays the library: it pulls the change feed, fetches portraits and files, checks their SHA-256 and sends decisions and requests, to prove the API from the other side.
 - **Covers:** OUT-10, AC-03
 - **Depends on:** F-45
-- **Owner input:** O-12 (Q-27, which confirms this as the library's acceptance check)
+- **Owner input:** none (D-58 confirms this as the library's acceptance check)
 - **Build:** `tools/library-stub.ts` (`npm run library-stub -- --base-url … --key …`)
 - **Checks:**
   - Against the in-process app on a fixture database, it:

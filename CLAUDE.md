@@ -33,7 +33,7 @@ The project serves two purposes:
 - an API for the library;
 - no extraction from books.
 
-T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-57); see the tracker. The requirements were consolidated on 2026-10-20; Q-27 and Q-28 are open. The app is built in **TypeScript on Node 24**, like the library (D-57); `brain/spec/architecture.md` v2 describes it, and `prototype/` (Python) is the reference implementation of the recipe.
+T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-59); see the tracker. The requirements were consolidated on 2026-10-20, and no questions are open. The app is built in **TypeScript on Node 24**, like the library (D-57); `brain/spec/architecture.md` v2 describes it, and `prototype/` (Python) is the reference implementation of the recipe.
 
 ## Repo map
 

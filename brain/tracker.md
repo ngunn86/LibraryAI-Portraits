@@ -222,7 +222,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   1. ~~Who owns the contract now~~. **Decided (D-37):** this project defines the API and the records and publishes an OpenAPI file. The library adopts it, pulls, and sends its decisions back. The library has also adopted the three-portrait scope.
   2. ~~What to tell the Rev1 planning~~. **Done:** [handoffs/library-api.md](handoffs/library-api.md), for the owner to pass to the library chat.
   3. **Whether we still need Rev1's portrait files (O-1).** Probably only to see which of the PORT requirements still apply. Rev1 is now readable here, so Claude copies them once the library's latest planning is pushed (Rev1's GitHub is still at 3e444eb, 2026-10-18, before it adopted this API).
-  4. **OUT-08, the bulk-upload zip:** still needed now that the library pulls through the API? Proposed: withdraw it. Now asked as **Q-27**, together with the restated acceptance checks.
+  4. **OUT-08, the bulk-upload zip:** still needed now that the library pulls through the API? Proposed: withdraw it. Asked as Q-27 and **decided (D-58): withdrawn**.
 - **Linked:** Q-09, Q-16, O-1, OUT-10, AC-02, AC-03.
 
 ## Stage 3: Finding pictures
@@ -617,4 +617,9 @@ Topics within a stage can move in parallel when they don't depend on each other.
     - GitHub added to the outbound allowlist (SRC-01).
   - **Q-27** gathers the four B2 items whose restatement needs the owner's OK.
   - **T-25 drafted:** 45 feature cards. **Next: T-26**, the outside reviews.
+- **2026-10-20 07:30.** The owner answered:
+  - **Q-27 → D-58:** the zip is dropped (OUT-08 withdrawn), and B2's checks are restated for the API;
+  - **Q-28 → D-59:** full teachers are searched monthly for better copies, and the first-run cap is a total for the first pass.
+
+  Requirements, cards, build plan and the library hand-off are updated. No open questions remain. Next: the outside reviews (T-26).
 

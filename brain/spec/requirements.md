@@ -11,9 +11,11 @@ Conventions are in [../README.md](../README.md).
 
 > **Consolidated 2026-10-20** after tracker topics T-01..T-23 (D-31..D-57). Each requirement now states what is to be built, and its origin names the decisions behind it. The history of each change is in [../decisions.md](../decisions.md) and in git.
 >
-> **Three things are still open:**
-> - **Q-27 (owner):** the B2 items restated here for the hosted API (OUT-08's zip, OUT-10's acceptance check, and AC-01..AC-03) wait for the owner's OK.
-> - **Q-28 (owner):** whether teachers whose three slots are full are still searched monthly, so better copies can be found (D-40 against D-53), and the reading of the first-run cap (D-54). The text below follows Claude's proposals, marked *(Q-28)*.
+> **The owner settled the two questions of the consistency pass on 2026-10-20:**
+> - D-58 (Q-27): the zip is dropped, and B2's checks are restated for the API;
+> - D-59 (Q-28): full teachers are searched monthly too, and the first-run cap is a total for the first pass.
+>
+> **One thing is still open:**
 > - **PORT reconciliation (section 10):** Library-AI---Rev1's `tool`-tagged lines must each map to a requirement here. This waits for the library's latest planning to reach GitHub (O-1, tracker T-09).
 
 ---
@@ -565,7 +567,7 @@ When more different photographs pass than there are free slots:
 *Verify:* unit test: P18 is kept; of two similar photographs from the same years and one from another decade, the other decade's wins (F-23).
 
 **PIP-17 · Later runs: better copies and turn-downs** *fixed* · D-40; details *proposed* · C
-- **A clearly better copy of an approved portrait** is offered as a new waiting portrait with `replaces` set. The approved one stays until the library approves the new one, which is the swap. *(Q-28)* Finding one needs the teacher to be searched again even when their slots are full (RUN-08).
+- **A clearly better copy of an approved portrait** is offered as a new waiting portrait with `replaces` set. The approved one stays until the library approves the new one, which is the swap. Finding one needs the teacher to be searched again even when their slots are full, which they are, monthly (RUN-08, D-59).
 - *Proposed:* a clearly better copy of a portrait still waiting replaces it (OUT-07).
 - *Proposed:* when all slots are full, a new photograph that ranks above one of them is offered as a draft with `replaces` set. The library decides.
 - **A turned-down photograph** may come back only as a clearly better copy, offered once. It never comes back when the reason was `not_this_teacher` or `do_not_use`.
@@ -676,17 +678,14 @@ Each run's report is a page on the admin site (RUN-09). It says, in plain words:
 
 *Verify:* scenario (F-48, F-26).
 
-**OUT-08 · Bulk-upload zip on request** *open (Q-27)* · B2
-- B2 asked for `zip <run-id>` (the run's masters and records, for the library's Imports page).
-- With the library pulling through the API (D-37, D-42), Claude proposes withdrawing it. The owner confirms in Q-27.
-- Not built unless Q-27 keeps it.
+**OUT-08 · Bulk-upload zip on request** *withdrawn* (D-58): the library pulls everything through the API (D-37, D-42).
 
 **OUT-09 · Delivery target** *withdrawn* (D-31, D-42): there is no Drive folder.
 
-**OUT-10 · Samples for the library** *fixed* · B2, D-37; mechanism *proposed* · C
+**OUT-10 · Samples for the library** *fixed* · B2, D-37, D-58; mechanism *proposed* · C
 - The repo keeps sample payloads for every route (`contracts/portraits-api.sample.json`). They validate against the contract (`check_api.py`).
 - A staging copy, seeded with fixture portraits in stub mode, lets the library's builders pull end to end before any real portrait exists.
-- *(Q-27)* The library's acceptance check of the hand-off is to pull from staging and send one decision of each kind.
+- The library's acceptance check of the hand-off is to pull from staging and send one decision of each kind (D-58).
 
 *Verify:* `check_api.py` passes (F-03); the library stub completes against the seeded staging copy (F-05, F-27).
 
@@ -759,14 +758,14 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - It is built in **TypeScript on Node 24**, like the library (D-57). See [architecture.md](architecture.md).
 - A command-line tool runs steps by hand for the harness and the owner (`railway run`, RUN-05).
 
-**RUN-02 · What a run does, in order** *fixed* · B2, D-44, D-53; full teachers *proposed (Q-28)* · C
+**RUN-02 · What a run does, in order** *fixed* · B2, D-44, D-53, D-59
 1. The library's requests come first, as they arrive.
 2. Then the queued teachers.
 
 **Who is queued:**
 - A teacher is queued when they haven't been searched in the last month. That covers:
   - teachers with an open slot (PIP-14, D-53);
-  - *(Q-28)* teachers whose slots are full, but only to look for better copies and higher-ranked photographs (PIP-17), behind the setting `researchFullTeachers` (default on).
+  - teachers whose slots are full, but only to look for better copies and higher-ranked photographs (PIP-17, D-59), behind the setting `researchFullTeachers` (on).
 - A request queues its teacher at once, whenever they were last searched.
 
 **What a queued teacher gets:** the sources are searched, and only new candidates are tried (PIP-11). Set-aside photographs aren't tried, except as PIP-17 allows. Teachers are processed one at a time.
@@ -783,7 +782,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 **RUN-04 · Spend caps and ledger** *fixed* · B2, D-54; method *proposed* · C
 - One OpenRouter key, the only AI key (D-19). The owner sets a credit limit on it as a backstop (O-4).
 - **Caps in production** (D-54):
-  - **$100 for the first full run.** *(Q-28, Claude's reading)* The first full run is the first pass over the list, from the release (F-47) until the queue first empties. Its $100 is a total across the nights it takes, and the night cap doesn't apply during it. If it reaches $100, the rest of the pass carries on from the next night under the regular caps.
+  - **$100 for the first full run** (D-59). The first full run is the first pass over the list, from the release (F-47) until the queue first empties. Its $100 is a total across the nights it takes, and the night cap doesn't apply during it. If it reaches $100, the rest of the pass carries on from the next night under the regular caps.
   - **After the first pass: $10 a night and $30 a calendar month**, whichever comes first. The first pass's spend doesn't count toward a month.
   - **$2 per teacher per run** (proposed).
 
@@ -821,13 +820,13 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 
 *Verify:* F-26's key scan covers the logs.
 
-**RUN-08 · Schedule** *fixed* · D-53; full teachers *proposed (Q-28)* · C
+**RUN-08 · Schedule** *fixed* · D-53, D-59
 - **Nightly, in production,** the cron job:
   - syncs the teacher list;
   - queues the teachers due a search (RUN-02);
   - exits.
 - The worker works through the queue. **The library's requests** are queued as they arrive.
-- **Each teacher is searched again monthly:** those with an open slot (D-53) and, *(Q-28)*, those whose slots are full, for better copies.
+- **Each teacher is searched again monthly:** those with an open slot (D-53), and those whose slots are full, for better copies (D-59).
 - The schedule is off until the release (F-47) and in every other environment. Staging and pull-request copies run only by hand.
 
 *Verify:* fake-clock scenarios (F-25):
@@ -924,7 +923,7 @@ $30, separate from the run caps: $27 for the trial (F-28) and $3 for the example
 
 ## 9. Project acceptance ("done when", from B2)
 
-AC-01..AC-03 restate B2's checks for the hosted API. They wait for the owner's OK (Q-27), as does OUT-10's acceptance check.
+AC-01..AC-03 restate B2's checks for the hosted API (D-58).
 
 | ID | Done when | Checked by |
 |---|---|---|

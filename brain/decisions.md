@@ -508,3 +508,24 @@ Claude's architecture carried with this decision (`spec/architecture.md` v2, pro
 
 → T-23, T-24, T-25, RUN-01, RUN-05, RUN-06, F-16, Q-15
 
+## After the consistency pass (2026-10-20)
+
+**D-58 · 2026-10-20 · The bulk-upload zip is dropped; B2's checks restated for the API** · owner · *resolves Q-27*
+"To question 27 - yes drop the bulk upload."
+- **OUT-08 (the zip) is withdrawn.** The library pulls everything through the API.
+- The "yes" is taken as accepting Q-27's proposal as a whole:
+  - OUT-10's acceptance check becomes the library pulling from a seeded staging copy and sending one decision of each kind;
+  - AC-01..AC-03 are the restated versions in requirements §9.
+
+→ OUT-08, OUT-10, AC-01..AC-03, F-05
+
+**D-59 · 2026-10-20 · Full teachers are searched monthly too; the first-run cap is a total for the first pass** · owner · *resolves Q-28*
+"To question 28 - yes."
+1. **Teachers whose three slots are full are searched again monthly too,** but only for clearly better copies and higher-ranked photographs (PIP-17). It's a setting (`researchFullTeachers`, on). This reconciles D-40 with D-53.
+2. **"$100 for the first full run" (D-54)** is a total for the first pass over the list, from the release until the queue first empties, across the nights it takes.
+   - The $10 night cap doesn't apply during it.
+   - If $100 is reached, the rest of the pass carries on from the next night under the regular caps.
+   - The pass's spend doesn't count toward a month.
+
+→ RUN-02, RUN-04, RUN-08, PIP-17, F-17, F-25, F-47
+

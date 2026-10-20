@@ -40,10 +40,12 @@ Unchanged:
 
 `not_this_teacher` and `do_not_use` stop that photograph for good. `quality` and `other` allow one clearly better copy later (PIP-17). The queue's turn-down action should ask which.
 
+Teachers are searched again monthly, even when all three slots are full (D-59). So a better copy of an approved portrait can turn up later as a new waiting portrait with `replaces` set.
+
 ## What this project would like back
 
 1. **Push Rev1's latest planning to GitHub**, including `brain/reference/hosting-railway-review.md`, so it can be copied here unchanged (D-36) and the PORT lines reconciled (O-1).
 2. **How often the library will read the change feed** (hourly or nightly), for the cost and run planning (T-19).
-3. Whether the library still wants the **bulk-upload zip** (OUT-08). This project proposes withdrawing it, since the API replaces it.
+3. ~~Whether the library still wants the bulk-upload zip~~. **Settled (D-58):** the owner dropped it; the API replaces it.
 4. Anything in the contract the library's builders would change. Changes go through this project, because it owns the contract (D-37).
 5. **Mention new portraits waiting in the library's daily admin email** (D-53). This tool sends no email of its own; its errors and spend are on its own admin page.

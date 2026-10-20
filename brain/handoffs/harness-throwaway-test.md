@@ -154,4 +154,5 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
   - production's nightly schedule is switched on only at the release.
 
   The throwaway test can mirror this. HT-16's cron belongs in production, or in one chosen environment, rather than in every PR copy. The trial runs in production before the release.
+- **2026-10-20 (morning):** D-58 and D-59. The real app's nightly job also queues teachers whose slots are full, for monthly better-copy searches, and the first-run cap spans several nights. Neither changes the throwaway test.
 
