@@ -34,8 +34,8 @@
 | T-10 | The teacher list (from the pipeline's authors) | 3 Finding | none | **decided** (D-22, D-45): active only; two sources must agree; unknowns skipped and listed |
 | T-11 | Picture sources | 3 Finding | T-07 | **decided** (D-46): Commons, LoC, Wellcome; Smithsonian only if the survey shows gaps; NYPL and DPLA dropped ([notes](topics/T-11-picture-sources.md)) |
 | T-12 | Match rules: when a picture certainly shows the teacher | 3 Finding | T-10, T-11 | **decided** (D-47): three rules, LoC name ids, any medium (trial decides) |
-| T-13 | Rights, licences and credits | 3 Finding | T-02, T-07, T-11 | mostly decided · **next** |
-| T-14 | The white-dot version: processing recipe | 4 Processing | T-02 | mostly decided (recipe 0.3.1) |
+| T-13 | Rights, licences and credits | 3 Finding | T-02, T-07, T-11 | **decided** (D-48): CC0 for portraits of public-domain originals; "Portrait by New Thought Nexus" |
+| T-14 | The white-dot version: processing recipe | 4 Processing | T-02 | mostly decided (recipe 0.4.0) · **next** |
 | T-15 | The black-and-white version: style and recipe | 4 Processing | T-02, T-14 | **mostly decided** (D-39: option C, made from the master's layers) |
 | T-16 | Telling portraits apart (same photo or a different one) | 4 Processing | T-03, T-14 | open |
 | T-17 | Checks and failure rules | 4 Processing | T-02, T-03, T-14, T-15 | open |
@@ -290,7 +290,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - pasted links may point to any adopted source;
   - SRC-06 follows D-45.
 
-### T-13 · Rights, licences and credits · mostly decided
+### T-13 · Rights, licences and credits · **decided**
 - **Depends on:** T-02, T-07, T-11.
 - **Decided so far:**
   - The allowed licence tiers (D-03).
@@ -300,6 +300,12 @@ Topics within a stage can move in parallel when they don't depend on each other.
   1. The licence of each derived version, especially from CC BY-SA originals (Q-16, SRC-11). This now includes the AI-enhanced copy and the mask, which are offered to the library too (D-39).
   2. Whether the original file may be shown by the library, and with what credit.
   3. The credit-line format for each source.
+- **Decided (D-48):**
+  - portraits made from public-domain or CC0 originals are CC0;
+  - credit lines say "Portrait by New Thought Nexus, adapted from: <original credit>";
+  - CC BY originals give CC BY 4.0 adaptations, and CC BY-SA originals give CC BY-SA 4.0 (Claude's rules, SRC-11);
+  - whether the library shows originals is the library's own rule.
+- **Written into:** SRC-11; the API's `File` gains `licence_url` (draft 2). Q-16 resolved.
 
 ## Stage 4: Processing and checking
 
@@ -529,4 +535,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
   SRC-01 and SRC-09 updated, SRC-14 (coverage survey) added, `spec/sources.md` revised. Next: T-12.
 - **2026-10-19 22:15.** **T-12 decided** (D-47): any medium, with the trial deciding (Q-11 resolved). Claude's refinements: R3 by LoC name id, Wellcome links accepted, SRC-06 aligned with D-45. Next: T-13.
+- **2026-10-19 22:30.** **T-13 decided** (D-48): CC0 for portraits made from public-domain originals; credit "Portrait by New Thought Nexus, adapted from …"; BY and BY-SA rules per SRC-11. API draft 2 adds `licence_url`. Next: T-14.
 

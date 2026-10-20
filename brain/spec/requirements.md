@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -313,14 +313,25 @@ The author may be recorded as unknown when the source says so. The source, page 
 The tool has no setting, path or code that reads Library-AI's scans or the owner's reference shelf. This is enforced by SRC-01.
 *Verify:* SRC-01's test, plus code review in the harness's checks.
 
-**SRC-11 · Derived-work rights travel with the portrait** *proposed* · C (Q-16)
-- A portrait is an adaptation of its original. For CC BY and CC BY-SA originals:
-  - the credit line says the portrait is adapted from the original;
-  - a portrait made from a CC BY-SA original carries CC BY-SA itself.
-- The tool records the portrait's licence, so the library's credits page can show it.
-- Whether the manifest schema already has a field for this is part of Q-16.
+**SRC-11 · Derived-work rights travel with the portrait** *fixed* · D-48 (was *proposed*, Q-16)
+Every file of a portrait (OUT-11) records its own `licence`, `licence_url` and `credit`.
 
-*Verify:* fixture records for each tier.
+| Original's licence | `original`, `original-view` | Adaptations: `white-*`, `bw-*`, `enhanced`, `mask` |
+|---|---|---|
+| Public domain, CC0, "no known restrictions" | As the source gives it | **CC0 1.0** (D-48) |
+| CC BY (any version) | As the source gives it | **CC BY 4.0**, crediting the original's author and licence |
+| CC BY-SA 2.0 or later | As the source gives it | **CC BY-SA 4.0** (ShareAlike; 4.0 is a permitted later version) |
+| CC BY-SA 1.0 | As the source gives it | Held for the owner, never delivered automatically |
+
+**Credit lines:**
+- **Original:** "<title or the teacher's name>, <date>. <Creator, or Photographer unknown>. <Holder and collection>. <Licence>."
+  - Example: "Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication."
+- **Adaptations:** "Portrait by New Thought Nexus, adapted from: <original credit>" (D-48).
+  - The AI copy: "AI-assisted restoration by New Thought Nexus, adapted from: …".
+  - The mask: "Cut-out mask by New Thought Nexus, adapted from: …".
+- For CC BY and CC BY-SA, the line also carries the original's title, author, source link and licence link, as the licences require.
+
+*Verify:* fixture records for each row of the table; a CC BY-SA 1.0 original is held; every file of every fixture portrait has a licence, a licence link (null only for "no known restrictions") and a credit.
 
 **SRC-12 · The rights log** *proposed* · C, from D-21 ("pull the metadata and rights etc with these files, and keep track of them")
 - Every original considered, **including the ones refused**, gets one permanent row. The row holds:

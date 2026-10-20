@@ -30,7 +30,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q-13 | What happens to duplicate `teacher_id`s? | — | — | resolved → D-45 (a clashing slug gets `-2` and is reported) |
 | Q-14 | Where does `teachers.csv` live? | — | — | superseded by D-31, D-45 (teachers live in the app's database, synced from `authors.csv`) |
 | Q-15 | Which stack? | build | Python 3.12 + uv, in WSL | open |
-| Q-16 | Does the manifest carry the portrait's own licence (CC BY-SA share-alike)? | **now** | Check the schema; if it's missing, raise it with Rev1 | open |
+| Q-16 | Does the manifest carry the portrait's own licence (CC BY-SA share-alike)? | — | — | resolved → D-48 (each file's licence, link and credit are in this project's API; the Rev1 manifest is no longer used, D-37) |
 | Q-17 | Where is the harness planned and built, and what format does it read? | — | Its own repo; this repo supplies feature cards in a fixed format | resolved → D-15 (a separate chat; format provisional) |
 | Q-18 | Which cut-out provider? | — | An OpenRouter image model, with the cut-out from the enhanced copy's keyed background | resolved → D-19 (method proposed in PIP-03) |
 | Q-19 | In the trial, what counts as "close"? | trial | Total score within 5% of the best | open |
@@ -142,7 +142,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 ### Q-15 · Stack · build
 - **Proposal.** Python 3.12 with uv, in WSL Ubuntu. Details in [spec/architecture.md](spec/architecture.md).
 
-### Q-16 · The portrait's own licence · now
+### Q-16 · The portrait's own licence · resolved → D-48
 - **Background.**
   - A portrait made from a CC BY-SA original is an adaptation, so it must itself be shared under CC BY-SA, with credit.
   - CC BY needs credit and a note that changes were made.

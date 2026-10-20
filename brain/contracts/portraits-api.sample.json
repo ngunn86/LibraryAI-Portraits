@@ -116,12 +116,12 @@
    "source": "loc",
    "item_url": "https://www.loc.gov/item/2004672143/",
    "file_url": "https://tile.loc.gov/storage-services/service/pnp/example.tif",
-   "title": "Charles Fillmore, head-and-shoulders portrait",
+   "title": "Charles Fillmore",
    "creator": null,
    "date": "c. 1895",
-   "licence": "Public domain",
+   "licence": "No known restrictions on publication",
    "licence_url": "https://www.loc.gov/rr/print/res/rights.html",
-   "credit": "Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division.",
+   "credit": "Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication.",
    "match_rule": "R3",
    "match_evidence": "Catalogue name and life dates match the teacher (1854-1948)."
   },
@@ -134,8 +134,9 @@
     "height": 4100,
     "bytes": 39400112,
     "sha256": "0000000000000000000000000000000000000000000000002199ca15a13e9fa6",
-    "licence": "Public domain",
-    "credit": "Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+    "licence": "No known restrictions on publication",
+    "credit": "Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication.",
+    "licence_url": null
    },
    {
     "kind": "original-view",
@@ -145,8 +146,9 @@
     "height": 1600,
     "bytes": 2810444,
     "sha256": "00000000000000000000000000000000000000000000000063b0b9fa10dddd4f",
-    "licence": "Public domain",
-    "credit": "Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+    "licence": "No known restrictions on publication",
+    "credit": "Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication.",
+    "licence_url": null
    },
    {
     "kind": "white-1000",
@@ -156,8 +158,9 @@
     "height": 1000,
     "bytes": 156082,
     "sha256": "00000000000000000000000000000000000000000000000043acda00c6046ce8",
-    "licence": "Public domain",
-    "credit": "Stylized by New Thought Nexus from: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+    "licence": "CC0 1.0",
+    "credit": "Portrait by New Thought Nexus, adapted from: Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication.",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
    },
    {
     "kind": "white-500",
@@ -167,8 +170,9 @@
     "height": 500,
     "bytes": 90113,
     "sha256": "0000000000000000000000000000000000000000000000002c23169d2bc00d58",
-    "licence": "Public domain",
-    "credit": "Stylized by New Thought Nexus from: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+    "licence": "CC0 1.0",
+    "credit": "Portrait by New Thought Nexus, adapted from: Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication.",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
    },
    {
     "kind": "bw-1000",
@@ -178,8 +182,9 @@
     "height": 1000,
     "bytes": 170646,
     "sha256": "0000000000000000000000000000000000000000000000002f8f35c068ce38a1",
-    "licence": "Public domain",
-    "credit": "Stylized by New Thought Nexus from: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+    "licence": "CC0 1.0",
+    "credit": "Portrait by New Thought Nexus, adapted from: Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication.",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
    },
    {
     "kind": "bw-500",
@@ -189,8 +194,9 @@
     "height": 500,
     "bytes": 117533,
     "sha256": "00000000000000000000000000000000000000000000000003d1137f0c36aa0e",
-    "licence": "Public domain",
-    "credit": "Stylized by New Thought Nexus from: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+    "licence": "CC0 1.0",
+    "credit": "Portrait by New Thought Nexus, adapted from: Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication.",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
    },
    {
     "kind": "enhanced",
@@ -200,8 +206,9 @@
     "height": 2624,
     "bytes": 4120332,
     "sha256": "0000000000000000000000000000000000000000000000005a028e564c924b5d",
-    "licence": "Public domain",
-    "credit": "AI-assisted restoration by New Thought Nexus of: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+    "licence": "CC0 1.0",
+    "credit": "AI-assisted restoration by New Thought Nexus, adapted from: Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication.",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
    },
    {
     "kind": "mask",
@@ -211,8 +218,9 @@
     "height": 4100,
     "bytes": 61210,
     "sha256": "0000000000000000000000000000000000000000000000000c12710e822e9bef",
-    "licence": "Public domain",
-    "credit": "Cut-out mask of: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+    "licence": "CC0 1.0",
+    "credit": "Cut-out mask by New Thought Nexus, adapted from: Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication.",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
    }
   ],
   "enhanced_used": true,

@@ -352,3 +352,17 @@ Claude's refinements carried with this decision:
 
 → T-12, SRC-03..SRC-06, PIP-02, Q-11
 
+**D-48 · 2026-10-19 · Licences and credits** · owner · *closes T-13; resolves Q-16*
+1. **Stylized portraits made from public-domain or CC0 originals are released as CC0** (public domain dedication). This matches the ministry's mission, and it sidesteps whether a code-made halftone can be copyrighted at all.
+2. **Credit lines name New Thought Nexus as the maker:** "Portrait by New Thought Nexus, adapted from: <original credit>".
+
+Claude's rules carried with this decision (`SRC-11`; background, not legal advice):
+- The original and its viewing copy keep the original's own licence and credit.
+- The adaptations (white and black-and-white versions, the AI copy, the mask) follow the original:
+  - **public domain, CC0 or "no known restrictions" → CC0;**
+  - **CC BY → CC BY 4.0**, crediting the original's author and licence, marked "adapted from";
+  - **CC BY-SA → CC BY-SA 4.0.** ShareAlike requires it; 4.0 is allowed as a later version for 2.0 and up. Anything older is held for the owner.
+- Each file records its licence, licence link and credit line.
+
+→ T-13, SRC-11, OUT-11, OUT-14, Q-16
+
