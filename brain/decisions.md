@@ -462,3 +462,17 @@ Claude's proposals carried with this decision:
 
 → T-20, RUN-04, TRI-07
 
+**D-55 · 2026-10-20 · Security** · owner · *closes T-21*
+1. **The admin page uses one password.** It is long, kept in the owner's password manager, stored only as a hash, and gives a 30-day session on the phone. Login attempts are rate-limited.
+2. **The same OpenRouter key is used in every environment.**
+
+Claude's choices carried with this decision (RUN-10):
+- **Transport and files:** HTTPS only. The bucket is private; files go out through 15-minute signed links.
+- **The library's key:** random, at least 32 bytes, stored as a hash, made and switched off by a command, and shown once (D-44).
+- **Secrets:** Railway variables per environment, never in the repo, logs or API answers. A test scans for them.
+- **Rate limits** on the API and the login.
+- **Outbound calls** only to the adopted sources and OpenRouter (SRC-01).
+- **Environment caps:** since the key is shared, staging and pull-request copies get their own low caps ($2 a night), and spend is recorded with the environment's name. The key's credit limit (O-4) is the backstop across them all.
+
+→ T-21, RUN-10, IN-11, OUT-13, OUT-14
+

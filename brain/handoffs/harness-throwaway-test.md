@@ -144,4 +144,7 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
   - a database queue that survives redeploys, which HT-15 covers;
   - no email from the app;
   - Railway's alerts on crashes and failed deploys are the owner's only push notice from the host. Worth adding to HT-25's alert check when the harness chat next revises the test.
+- **2026-10-20:** D-55 (security):
+  - the real app's admin page uses one password with a 30-day session. HT-21's login can be the same kind;
+  - the same OpenRouter key is used in every environment, with low caps for staging and pull-request copies. HT-18's separate low-limit test key remains right for the throwaway test, since it is a different project.
 
