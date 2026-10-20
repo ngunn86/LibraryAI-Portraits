@@ -2,7 +2,7 @@
 
 **Phase 0: planning.** There is no code yet. Last updated 2026-10-19 by Claude.
 
-**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **T-01 decided:** fully hosted on Railway, two-way API (D-31..D-36). **T-05 decided** in the library (D-38). **T-09 mostly decided:** this project owns the OpenAPI contract (D-37). **T-02 decided** (D-39): the original and a PNG viewing copy; white and black-and-white (black edge) versions at 1,000 and 500 px; AI files offered to the library. **Now: T-03, how many portraits per teacher and what counts as different.** Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated).
+**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **T-01 decided:** fully hosted on Railway, two-way API (D-31..D-36). **T-05 decided** in the library (D-38). **T-09 mostly decided:** this project owns the OpenAPI contract (D-37). **T-02 decided** (D-39): the original and a PNG viewing copy; white and black-and-white (black edge) versions at 1,000 and 500 px; AI files offered to the library. **T-03 decided** (D-40): up to 3 different photographs, best-known first, then spread across life; better copies offered to the library. **Now: T-04, categories for each portrait.** Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated).
 
 ## Where things stand
 
@@ -16,7 +16,7 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 | Contracts | Teacher list (now generated from library-pipeline's `authors.csv`, D-22), requests and status, and the delivery folder are drafted. The manifest schema waits for O-1 |
 | Sources | Planned (D-29): Wikidata/Commons, LoC, Wellcome, Smithsonian, NYPL, DPLA leads. Internet Archive omitted (D-24). Details at the formal review (tracker T-11) |
 | Build plan and features | 35 feature cards across phases 1–6, with checks, dependencies, live/stub, parkable |
-| Decisions | D-01..D-39 |
+| Decisions | D-01..D-40 |
 | Open questions | Q-01..Q-26. Still open and marked *now*: Q-16 (needs O-1). Resolved: Q-04, Q-10, Q-17, Q-18, Q-20, Q-21, Q-22, Q-23, Q-25. Superseded: Q-03, Q-09 |
 | Examples | The three targets and their originals are in `design/portraits/`. Test use only (D-13) |
 | Style prototype | Recipe 0.4.0 adds the black-and-white version (option C) and the 500 px copies (D-39). Recipe 0.3.1 added the local drift check and the blur on the AI copy: descreen (D-17), AI-enhanced blend with the cut-out from its green background (D-18, D-19), and prompts for every model step (D-20). Real AI copies are first tried in F-27 and F-28 |
@@ -25,7 +25,7 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 ## Waiting on the owner (*now*)
 
 1. **O-1:** copy Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py` into `brain/reference/rev1/`, and note the Rev1 commit. Rev1 is now readable here through GitHub, so Claude can copy them once the latest Rev1 work is pushed, including `brain/reference/hosting-railway-review.md`.
-2. **Tracker topic T-03** (now), then the rest of the tracker in order.
+2. **Tracker topic T-04** (now), then the rest of the tracker in order.
 3. The *build* questions, in one pass (each is linked from its tracker topic): Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
 
 ## Next planning steps, in order
@@ -106,4 +106,11 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
   - The AI-enhanced copy and the cut-out mask are offered to the library.
 
   Recipe 0.4.0 makes them, and the outputs are in `prototype/out/versions/`. STY-08, STY-09 and OUT-11 added, OUT-05 amended, T-15 mostly decided. Next: T-03.
+- **2026-10-19 (evening):** **T-03 decided** (D-40).
+  - A different portrait means a different photograph; only the best copy of a photograph is kept.
+  - Which three: the best-known image (Wikidata P18) first, then the best quality spread across life.
+  - A better copy of an approved portrait is offered to the library.
+  - A turned-down photograph returns only as a clearly better copy.
+
+  PIP-14..PIP-17 added. Next: T-04.
 

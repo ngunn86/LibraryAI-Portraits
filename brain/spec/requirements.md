@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -253,6 +253,7 @@ A heading without dates never matches.
 - "Clearest" is judged by the pre-check (PIP-02), which runs in that order until one original passes.
 - Duplicates are merged, keeping the strongest match rule. A duplicate is the same file reached by two rules, or the same SHA-256.
 - Candidates set aside earlier (PIP-12) are excluded.
+- *Since D-40:* this order picks the best copy **within** each photograph's copies (PIP-15). Which photographs fill the three slots is PIP-16.
 
 *Verify:* unit tests.
 
@@ -483,7 +484,7 @@ Code lays the line over the dots and writes the master (STY-06).
 
 **PIP-11 · Failure policy** *fixed* · B2; counting *proposed* · C (Q-07)
 - Two failed drafts set an original aside.
-- A turn-down from the library (`status.json`) sets that original aside at once.
+- A turn-down from the library (`status.json`) sets that original aside at once. *Amended by D-40:* it sets aside every copy of that photograph, and a clearly better copy may come back once (PIP-17).
 - At most three originals per teacher reach drafting in one run. After that, the teacher keeps the library's blank portrait for now.
 - Originals failed by the pre-check (PIP-02) don't count toward the three. There is a separate cap per teacher per run on pre-checks; the proposed starting value is 8.
 - On a later run, the tool tries the teacher again only if new candidates exist.
@@ -513,6 +514,42 @@ The owner's own portraits were made this way: an AI tool made a subtly enhanced 
 - Cost: one image-model call per original, not per attempt.
 
 *Verify:* synthetic keyed copies (2.8× the size, sharpened, rescaled by 2%, shifted, with a green background) are aligned (correlation ≥ 0.99 in the prototype) and blended without double edges (edge agreement 0.98–1.00). Their keyed cut-out matches the stand-in's (overlap 0.94–0.99). A copy that can't be aligned is refused. The second try on an original makes no new call.
+
+**PIP-14 · Up to three portraits per teacher** *fixed* · D-25, D-40; setting *proposed* · C
+- A teacher has at most `max_portraits_per_teacher` (3) portraits: approved, waiting in the library's queue, or being made.
+- Portraits turned down by the library don't count; their slot is filled from the next candidate.
+
+*Verify:* scenario test: a teacher with 5 different photographs gets 3 portraits; a turn-down frees a slot for the 4th.
+
+**PIP-15 · Different photographs, not copies** *fixed* · D-40; method *open* (T-16)
+- Each portrait is a **different photograph**: another sitting, age or pose.
+- Other scans, crops, retouches or prints of the same photograph are **copies** of it. They are grouped with it by the visual check (T-16).
+- Of each group, only the **best copy** is used. It is chosen in SRC-07's order: licence tier, then size, then the pre-check's damage rating.
+- The other copies are kept in the rights log (SRC-12) as copies of that portrait, with their links, so a better copy is recognised later.
+
+*Verify:* fixtures of the same photograph (cropped, rescanned, retouched) group together; two sittings of one teacher don't.
+
+**PIP-16 · Choosing which three** *fixed* · D-40; spread *proposed* · C (uses T-04)
+When more different photographs pass the pre-check than there are free slots:
+
+1. The teacher's **best-known image** comes first: Wikidata's main image (P18), or a copy of it, if it passes.
+2. Then the best-quality photographs, **spread across the teacher's life**, using the approximate age or date (T-04).
+
+*Verify:* unit test on fixture candidates: P18 kept; of two similar-quality photographs from the same years and one from another decade, the other decade's is chosen.
+
+**PIP-17 · Later runs: better copies and turn-downs** *fixed* · D-40; details *proposed* · C
+- **A clearly better copy of an approved portrait** is offered as a new draft, marked as a better copy of that portrait. The approved portrait stays until the library swaps them, and the library reports the swap back (D-38).
+- *Proposed:* a clearly better copy of a portrait still waiting in the queue replaces the waiting draft (OUT-07).
+- *Proposed:* when all slots are filled, a new photograph that ranks above one of them (PIP-16) is offered as a draft to replace it. The library decides.
+- **A turned-down photograph** (every copy of it) is set aside. It may come back **only as a clearly better copy**, offered once.
+  - *Proposed:* never if the library's reason is "not this teacher" or "don't use this photograph". The reason comes with the turn-down (T-08).
+- *Proposed:* **clearly better** means one of:
+  - a face at least 1.5× larger in pixels, with no lower licence tier;
+  - the same size, with the pre-check rating it clearly less damaged.
+
+  The threshold is tuned at T-16.
+
+*Verify:* scenario tests: better copy of an approved portrait → marked draft, approved one untouched; turned down for quality → a 2× copy offered once; turned down as "not this teacher" → never again.
 
 ---
 

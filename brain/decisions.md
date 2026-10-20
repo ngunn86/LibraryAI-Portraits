@@ -245,3 +245,16 @@ Claude's proposals carried with this decision (not objected to; the layout is co
 
 → T-02, T-06, T-08, T-13, T-15, STY-08, STY-09, OUT-05, OUT-11
 
+**D-40 · 2026-10-19 · Portraits per teacher, and what counts as different** · owner · *closes T-03*
+1. **Different means a different photograph:** another sitting, age or pose. Other scans, crops, retouches or prints of the same photograph are **copies**. Only the best copy is kept; the others are logged as copies.
+2. **Choosing three when there are more:** the teacher's best-known image (Wikidata's main image, P18) comes first, if it passes. Then come the best-quality photographs, spread across the teacher's life.
+3. **A better copy of an approved portrait** is offered to the library as a new draft, marked as a better copy. The approved one stays until the library swaps them.
+4. **A turned-down photograph comes back only as a clearly better copy.**
+
+Claude's proposals carried with this decision (marked *proposed* in PIP-14..PIP-17):
+- the cap of 3 is a setting (`max_portraits_per_teacher`);
+- what counts as "clearly better";
+- a turn-down whose reason is "not this teacher" or "don't use this photograph" never comes back.
+
+→ T-03, T-04, T-16, T-19, T-20, PIP-11, PIP-14..PIP-17, SRC-07
+

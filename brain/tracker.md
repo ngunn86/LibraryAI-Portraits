@@ -24,8 +24,8 @@
 |---|---|---|---|---|
 | T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **decided** (D-31..D-36): fully hosted on **Railway**, two-way API ([notes](topics/T-01-where-it-runs.md)) |
 | T-02 | The three versions of a portrait, exactly | 1 Shape | none | **decided** (D-39): original + PNG viewing copy; white and black-edge B&W at 1,000 and 500 px; AI files offered ([notes](topics/T-02-three-versions.md)) |
-| T-03 | How many portraits per teacher, and what counts as different | 1 Shape | none | open (D-25 sets up to 3) |
-| T-04 | Categories for each portrait | 1 Shape | T-03 | open |
+| T-03 | How many portraits per teacher, and what counts as different | 1 Shape | none | **decided** (D-40): different photographs, best-known first, better copies offered |
+| T-04 | Categories for each portrait | 1 Shape | T-03 | **next** |
 | T-05 | Approval: what the library approves, and the main portrait | 1 Shape | T-01, T-03 | **decided** (D-38): in the library's queue, reported back |
 | T-06 | Storage and organisation by teacher | 2 Data | T-01, T-02, T-03 | open (D-27 sets "by teacher") |
 | T-07 | The records: what we keep about teachers, portraits, versions and sources | 2 Data | T-02 – T-05 | open |
@@ -101,7 +101,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Written into:** STY-08, STY-09, OUT-05 (amended), OUT-11; recipe 0.4.0 (`bw_version`, `small`, `check_bw`); outputs in `prototype/out/versions/`.
 - **Affects:** STY-01..STY-07, OUT-*, T-06, T-13 (each version's licence), T-15.
 
-### T-03 · How many portraits per teacher, and what counts as different · open
+### T-03 · How many portraits per teacher, and what counts as different · **decided**
 - **Depends on:** nothing.
 - **To decide:**
   1. **The limit:** up to 3 per teacher (D-25). Is 3 a hard maximum?
@@ -109,10 +109,19 @@ Topics within a stage can move in parallel when they don't depend on each other.
   3. **More than 3 found:** which 3 are kept? Proposed: the best quality, spread across the teacher's life (T-04), public domain first.
   4. **Copies of one photograph:** which copy is kept? Proposed: the best one (largest, cleanest, most open licence). The others are logged as copies.
   5. **Later runs:** a new copy of a photograph already kept replaces it only if it's clearly better. A new, different photograph is added only if there's room or it beats one of the 3.
-- **Decided so far:** D-25.
-- **Affects:** PIP-01, PIP-11, SRC-07, RUN-02, T-16, T-20.
+- **Decided (D-40):**
+  1. Up to 3; the cap is a setting (Claude's proposal).
+  2. Different means a different photograph. Copies are grouped, and only the best is kept.
+  3. More than 3: the best-known image (Wikidata P18) first, then the best quality spread across the teacher's life.
+  4. Copies: the best kept (licence tier, size, damage), the others logged.
+  5. Later runs:
+     - a better copy of an approved portrait is offered as a draft, and the library decides;
+     - a turned-down photograph comes back only as a clearly better copy, once;
+     - *proposed:* never if it was turned down as "not this teacher".
+- **Written into:** PIP-14..PIP-17; PIP-11 and SRC-07 amended.
+- **Affects:** PIP-01, PIP-11, SRC-07, RUN-02, T-04 (age or date for the spread), T-08 (turn-down reasons), T-16, T-19, T-20.
 
-### T-04 · Categories for each portrait · open
+### T-04 · Categories for each portrait · **next**
 - **Depends on:** T-03.
 - **To decide:**
   1. **Which labels?** Ideas:
@@ -416,4 +425,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - Carried forward: T-06 confirms the names, T-08 serves the eight files, T-13 sets each file's licence and credit (the AI copy included), and T-15 tunes the black-and-white version if needed.
 
   Next: T-03.
+- **2026-10-19 19:20.** **T-03 decided** (D-40). The owner took Claude's proposals on what's different, which three, and better copies of approved portraits. On turn-downs the owner chose "only as a clearly better copy", not "never". PIP-14..PIP-17 added. Next: T-04.
 
