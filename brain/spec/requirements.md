@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -113,6 +113,8 @@ When `requests.json` is present in the delivery folder, the tool reads it. The f
 A request naming a teacher who isn't on the list is skipped and named in the report.
 *Verify:* run fixtures (F-26).
 
+*Amended by D-37, D-44:* requests now arrive through `POST /api/v1/requests` (OUT-14), not `requests.json`, and are handled right away. The three kinds keep their names.
+
 **IN-07 · Status** *fixed* · B2; format *proposed* · C
 When `status.json` is present, the tool reads it:
 
@@ -122,6 +124,8 @@ When `status.json` is present, the tool reads it:
 
 When the file is absent, nothing counts as approved.
 *Verify:* run fixtures (F-26).
+
+*Amended by D-38, D-44:* the library's decisions now arrive through `POST /api/v1/decisions` (OUT-14), not `status.json`. Approved, turned down (with a reason, PIP-17), main portrait and corrections are recorded as they arrive.
 
 **IN-08 · Handled requests aren't redone** *proposed* · C (Q-02)
 The tool records each request id it has acted on. A request already acted on isn't redone in a later run, even if the library hasn't removed it from `requests.json` yet.
@@ -675,6 +679,19 @@ Each portrait has an id, `<teacher_id>-<n>` (for example `charles-fillmore-1`). 
 - No approvals here: they happen in the library (D-38).
 
 *Verify:* a smoke test against the deployed app opens the teacher list, one teacher and the run list, and finds no form that changes data.
+
+**OUT-14 · The library API** *fixed* · D-28, D-37, D-44; details *proposed* · C
+- The tool serves the API in [../contracts/portraits-api.openapi.json](../contracts/portraits-api.openapi.json), explained in plain words in [../contracts/portraits-api.md](../contracts/portraits-api.md). The library adopts it.
+- **One library key**, for reading and sending, stored only as a hash. It can be switched off or replaced without a deploy.
+- **Pull only:** the library reads `/api/v1/changes` on its own schedule. The tool never calls the library.
+- **Decisions and requests** come in through `POST /api/v1/decisions` and `POST /api/v1/requests`. Resending one is safe. Requests are queued for the worker at once.
+- **Files** are served through short-lived signed links, with each file's SHA-256 in the portrait record.
+- Within v1, changes are additive only.
+
+*Verify:*
+- `check_api.py` passes on the contract and its samples;
+- contract tests run each route against the samples;
+- a smoke test on the deployed app gets 401 without the key and 200 with it (HT-20).
 
 ---
 

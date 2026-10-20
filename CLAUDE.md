@@ -39,13 +39,13 @@ They are being planned through the tracker. Spec sections they touch are marked 
 | `brain/README.md` | Index of the notes and their conventions (IDs, status words, how to edit) |
 | `brain/tracker.md` | **The planning tracker**: every topic to decide, in dependency order, with status and an append-only log |
 | `brain/topics/` | Discussion notes for tracker topics that need more than a few lines (for example T-01) |
-| `brain/handoffs/` | Documents for the owner's other chats. `harness-throwaway-test.md` is **kept updated** whenever a decision changes what the hosted app needs |
+| `brain/handoffs/` | Documents for the owner's other chats. `harness-throwaway-test.md` is **kept updated** whenever a decision changes what the hosted app needs. `library-api.md` tells the library's planning what to adopt |
 | `brain/status.md` | Where planning stands, what's blocked, what's next, session log |
 | `brain/brief/` | The owner's briefs, verbatim. v2 (2026-10-19) is current; v1 is superseded and kept for history |
 | `brain/spec/requirements.md` | **The normative requirements**, with stable IDs. This is what gets built and tested |
 | `brain/spec/architecture.md` | Proposed stack, modules, state store, settings and CLI |
 | `brain/spec/sources.md` | Image sources: which to adopt, match rules, rights evidence, the rights log |
-| `brain/contracts/` | File formats shared with the owner and with Library-AI (teacher list, requests, status, delivery folder, manifest) |
+| `brain/contracts/` | Contracts shared with the owner and with Library-AI. **The portraits API** (`portraits-api.openapi.json`, owned by this project, D-37) replaces the earlier files (requests, status, delivery folder, manifest) |
 | `brain/plan/build-plan.md` | Phases, gates, testing approach, spend plan and risks |
 | `brain/plan/features.md` | **Feature cards in build order**: what the harness builds, one at a time, with machine-checkable acceptance checks |
 | `brain/decisions.md` | Decision log (D-numbers): what the owner has settled, with dates |

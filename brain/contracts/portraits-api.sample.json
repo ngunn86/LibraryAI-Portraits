@@ -1,0 +1,409 @@
+{
+ "_note": "Illustrative payloads for brain/contracts/portraits-api.openapi.json (T-08 draft, 2026-10-19). Values such as hashes, ids and links are made up. The Wikidata id is shown only as an example of the format.",
+ "health": {
+  "status": "ok",
+  "version": "1.0.0",
+  "commit": "31e2a9e"
+ },
+ "teacher_page": {
+  "teachers": [
+   {
+    "teacher_id": "charles-fillmore",
+    "name": "Charles Fillmore",
+    "born": 1854,
+    "died": 1948,
+    "wikidata_qid": "Q1065536",
+    "on_list": true,
+    "portraits": {
+     "waiting": 1,
+     "approved": 1,
+     "turned_down": 0,
+     "replaced": 0
+    },
+    "main_portrait_id": "charles-fillmore-1",
+    "portrait_search": {
+     "state": "found",
+     "last_searched": "2026-11-01T03:00:00Z"
+    },
+    "record_version": 6
+   },
+   {
+    "teacher_id": "emma-curtis-hopkins",
+    "name": "Emma Curtis Hopkins",
+    "born": 1849,
+    "died": 1925,
+    "wikidata_qid": null,
+    "on_list": true,
+    "portraits": {
+     "waiting": 0,
+     "approved": 0,
+     "turned_down": 0,
+     "replaced": 0
+    },
+    "main_portrait_id": null,
+    "portrait_search": {
+     "state": "not_yet",
+     "last_searched": null
+    },
+    "record_version": 1
+   }
+  ],
+  "next_cursor": "t_2",
+  "more": true
+ },
+ "teacher": {
+  "teacher_id": "charles-fillmore",
+  "name": "Charles Fillmore",
+  "born": 1854,
+  "died": 1948,
+  "wikidata_qid": "Q1065536",
+  "on_list": true,
+  "portraits": {
+   "waiting": 1,
+   "approved": 1,
+   "turned_down": 0,
+   "replaced": 0
+  },
+  "main_portrait_id": "charles-fillmore-1",
+  "portrait_search": {
+   "state": "found",
+   "last_searched": "2026-11-01T03:00:00Z"
+  },
+  "record_version": 6,
+  "aliases": [
+   "Charles S. Fillmore"
+  ],
+  "dates_from": "both",
+  "portrait_list": [
+   {
+    "portrait_id": "charles-fillmore-1",
+    "teacher_id": "charles-fillmore",
+    "status": "approved",
+    "main": true,
+    "thumbnail": "/api/v1/portraits/charles-fillmore-1/files/white-500",
+    "record_version": 4
+   },
+   {
+    "portrait_id": "charles-fillmore-2",
+    "teacher_id": "charles-fillmore",
+    "status": "waiting",
+    "main": false,
+    "thumbnail": "/api/v1/portraits/charles-fillmore-2/files/white-500",
+    "record_version": 1
+   }
+  ]
+ },
+ "portrait": {
+  "portrait_id": "charles-fillmore-1",
+  "teacher_id": "charles-fillmore",
+  "status": "approved",
+  "main": true,
+  "thumbnail": "/api/v1/portraits/charles-fillmore-1/files/white-500",
+  "record_version": 4,
+  "photograph_id": "cand-loc-2004672143",
+  "replaces": null,
+  "replaced_by": null,
+  "approx_date": {
+   "value": 1895,
+   "precision": "circa",
+   "from": "source"
+  },
+  "best_known": {
+   "value": true,
+   "from": "tool"
+  },
+  "source": {
+   "source": "loc",
+   "item_url": "https://www.loc.gov/item/2004672143/",
+   "file_url": "https://tile.loc.gov/storage-services/service/pnp/example.tif",
+   "title": "Charles Fillmore, head-and-shoulders portrait",
+   "creator": null,
+   "date": "c. 1895",
+   "licence": "Public domain",
+   "licence_url": "https://www.loc.gov/rr/print/res/rights.html",
+   "credit": "Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division.",
+   "match_rule": "R3",
+   "match_evidence": "Catalogue name and life dates match the teacher (1854-1948)."
+  },
+  "files": [
+   {
+    "kind": "original",
+    "href": "/api/v1/portraits/charles-fillmore-1/files/original",
+    "format": "tiff",
+    "width": 3200,
+    "height": 4100,
+    "bytes": 39400112,
+    "sha256": "0000000000000000000000000000000000000000000000002199ca15a13e9fa6",
+    "licence": "Public domain",
+    "credit": "Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+   },
+   {
+    "kind": "original-view",
+    "href": "/api/v1/portraits/charles-fillmore-1/files/original-view",
+    "format": "png",
+    "width": 1249,
+    "height": 1600,
+    "bytes": 2810444,
+    "sha256": "00000000000000000000000000000000000000000000000063b0b9fa10dddd4f",
+    "licence": "Public domain",
+    "credit": "Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+   },
+   {
+    "kind": "white-1000",
+    "href": "/api/v1/portraits/charles-fillmore-1/files/white-1000",
+    "format": "png",
+    "width": 1000,
+    "height": 1000,
+    "bytes": 156082,
+    "sha256": "00000000000000000000000000000000000000000000000043acda00c6046ce8",
+    "licence": "Public domain",
+    "credit": "Stylized by New Thought Nexus from: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+   },
+   {
+    "kind": "white-500",
+    "href": "/api/v1/portraits/charles-fillmore-1/files/white-500",
+    "format": "png",
+    "width": 500,
+    "height": 500,
+    "bytes": 90113,
+    "sha256": "0000000000000000000000000000000000000000000000002c23169d2bc00d58",
+    "licence": "Public domain",
+    "credit": "Stylized by New Thought Nexus from: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+   },
+   {
+    "kind": "bw-1000",
+    "href": "/api/v1/portraits/charles-fillmore-1/files/bw-1000",
+    "format": "png",
+    "width": 1000,
+    "height": 1000,
+    "bytes": 170646,
+    "sha256": "0000000000000000000000000000000000000000000000002f8f35c068ce38a1",
+    "licence": "Public domain",
+    "credit": "Stylized by New Thought Nexus from: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+   },
+   {
+    "kind": "bw-500",
+    "href": "/api/v1/portraits/charles-fillmore-1/files/bw-500",
+    "format": "png",
+    "width": 500,
+    "height": 500,
+    "bytes": 117533,
+    "sha256": "00000000000000000000000000000000000000000000000003d1137f0c36aa0e",
+    "licence": "Public domain",
+    "credit": "Stylized by New Thought Nexus from: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+   },
+   {
+    "kind": "enhanced",
+    "href": "/api/v1/portraits/charles-fillmore-1/files/enhanced",
+    "format": "png",
+    "width": 2048,
+    "height": 2624,
+    "bytes": 4120332,
+    "sha256": "0000000000000000000000000000000000000000000000005a028e564c924b5d",
+    "licence": "Public domain",
+    "credit": "AI-assisted restoration by New Thought Nexus of: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+   },
+   {
+    "kind": "mask",
+    "href": "/api/v1/portraits/charles-fillmore-1/files/mask",
+    "format": "png",
+    "width": 3200,
+    "height": 4100,
+    "bytes": 61210,
+    "sha256": "0000000000000000000000000000000000000000000000000c12710e822e9bef",
+    "licence": "Public domain",
+    "credit": "Cut-out mask of: Charles Fillmore, c. 1890s. Library of Congress, Prints and Photographs Division."
+   }
+  ],
+  "enhanced_used": true,
+  "recipe_version": "0.4.0",
+  "created": "2026-11-01T03:12:44Z",
+  "updated": "2026-11-02T14:06:10Z"
+ },
+ "portrait_page": {
+  "portraits": [
+   {
+    "portrait_id": "charles-fillmore-1",
+    "teacher_id": "charles-fillmore",
+    "status": "approved",
+    "main": true,
+    "thumbnail": "/api/v1/portraits/charles-fillmore-1/files/white-500",
+    "record_version": 4
+   },
+   {
+    "portrait_id": "charles-fillmore-2",
+    "teacher_id": "charles-fillmore",
+    "status": "waiting",
+    "main": false,
+    "thumbnail": "/api/v1/portraits/charles-fillmore-2/files/white-500",
+    "record_version": 1
+   }
+  ],
+  "next_cursor": null,
+  "more": false
+ },
+ "history": {
+  "portrait_id": "charles-fillmore-1",
+  "events": [
+   {
+    "at": "2026-11-01T03:12:44Z",
+    "by": "tool",
+    "what": "made",
+    "detail": {
+     "recipe_version": "0.4.0"
+    }
+   },
+   {
+    "at": "2026-11-01T03:12:45Z",
+    "by": "tool",
+    "what": "waiting",
+    "detail": {}
+   },
+   {
+    "at": "2026-11-02T14:05:00Z",
+    "by": "library",
+    "what": "approved",
+    "detail": {
+     "decision_id": "lib-dec-0041",
+     "by": "admin-1"
+    }
+   },
+   {
+    "at": "2026-11-02T14:06:00Z",
+    "by": "library",
+    "what": "set_main",
+    "detail": {
+     "decision_id": "lib-dec-0043",
+     "by": "admin-1"
+    }
+   }
+  ]
+ },
+ "change_feed": {
+  "since": "2026-11-01T00:00:00Z",
+  "until": "2026-11-02T15:00:00Z",
+  "changes": [
+   {
+    "seq": 1201,
+    "changed_at": "2026-11-01T03:12:45Z",
+    "object": "portrait",
+    "id": "charles-fillmore-1",
+    "change": "added",
+    "record_version": 2
+   },
+   {
+    "seq": 1202,
+    "changed_at": "2026-11-01T03:40:10Z",
+    "object": "portrait",
+    "id": "charles-fillmore-2",
+    "change": "added",
+    "record_version": 1
+   },
+   {
+    "seq": 1240,
+    "changed_at": "2026-11-02T14:06:10Z",
+    "object": "portrait",
+    "id": "charles-fillmore-1",
+    "change": "updated",
+    "record_version": 4
+   },
+   {
+    "seq": 1241,
+    "changed_at": "2026-11-02T14:06:10Z",
+    "object": "teacher",
+    "id": "charles-fillmore",
+    "change": "updated",
+    "record_version": 6
+   }
+  ],
+  "next_cursor": "c_1241",
+  "more": false
+ },
+ "decision_approve": {
+  "decision_id": "lib-dec-0041",
+  "portrait_id": "charles-fillmore-1",
+  "kind": "approve",
+  "by": "admin-1",
+  "at": "2026-11-02T14:05:00Z"
+ },
+ "decision_turn_down": {
+  "decision_id": "lib-dec-0042",
+  "portrait_id": "charles-fillmore-3",
+  "kind": "turn_down",
+  "reason": "not_this_teacher",
+  "note": "This is his brother.",
+  "by": "admin-1",
+  "at": "2026-11-02T14:05:30Z"
+ },
+ "decision_set_main": {
+  "decision_id": "lib-dec-0043",
+  "portrait_id": "charles-fillmore-1",
+  "kind": "set_main",
+  "by": "admin-1",
+  "at": "2026-11-02T14:06:00Z"
+ },
+ "decision_correct": {
+  "decision_id": "lib-dec-0044",
+  "portrait_id": "charles-fillmore-2",
+  "kind": "correct",
+  "field": "approx_date",
+  "value": 1920,
+  "by": "admin-1",
+  "at": "2026-11-02T14:07:00Z"
+ },
+ "decision_result": {
+  "decision_id": "lib-dec-0043",
+  "applied": true,
+  "duplicate": false,
+  "portrait": {
+   "portrait_id": "charles-fillmore-1",
+   "teacher_id": "charles-fillmore",
+   "status": "approved",
+   "main": true,
+   "thumbnail": "/api/v1/portraits/charles-fillmore-1/files/white-500",
+   "record_version": 4
+  }
+ },
+ "new_request_try_again": {
+  "request_id": "lib-req-0007",
+  "teacher_id": "charles-fillmore",
+  "portrait_id": "charles-fillmore-2",
+  "kind": "try_again",
+  "note": "The line cuts off the left ear.",
+  "by": "admin-1",
+  "at": "2026-11-02T14:10:00Z"
+ },
+ "new_request_try_link": {
+  "request_id": "lib-req-0008",
+  "teacher_id": "emma-curtis-hopkins",
+  "portrait_id": null,
+  "kind": "try_link",
+  "link": "https://commons.wikimedia.org/wiki/File:Example.jpg",
+  "by": "admin-1",
+  "at": "2026-11-02T14:11:00Z"
+ },
+ "request": {
+  "request_id": "lib-req-0007",
+  "teacher_id": "charles-fillmore",
+  "portrait_id": "charles-fillmore-2",
+  "kind": "try_again",
+  "note": "The line cuts off the left ear.",
+  "by": "admin-1",
+  "at": "2026-11-02T14:10:00Z",
+  "status": "done",
+  "refused_reason": null,
+  "result_portrait_id": "charles-fillmore-2",
+  "updated": "2026-11-02T14:14:20Z",
+  "record_version": 3
+ },
+ "request_page": {
+  "requests": [],
+  "next_cursor": null,
+  "more": false
+ },
+ "error": {
+  "kind": "invalid",
+  "message": "A turn-down needs a reason.",
+  "field": "/reason"
+ }
+}

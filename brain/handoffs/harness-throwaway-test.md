@@ -134,4 +134,8 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
   - backups are the database only, at first. HT-12 (restore one database backup) stays as is;
   - the bucket isn't backed up, so HT-13 needs nothing more.
   - The admin page is read-only, which HT-21 already covers.
+- **2026-10-19 (night):** D-44 (the library API):
+  - one bearer key, which HT-20 already covers (401 without it, 200 with it, rotation without a deploy);
+  - the library's requests are queued for the worker at once, which HT-15 covers (queued jobs survive a redeploy);
+  - pull only, so the app makes no outbound call to the library. The test needs no new requirement.
 

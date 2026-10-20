@@ -73,7 +73,7 @@ Everything the library sends back through the API (D-38). Append-only.
 |---|---|
 | `decision_id` | Given by the library, so a repeated send is recognised and not applied twice |
 | `portrait_id` | The portrait it's about |
-| `kind` | `approve` · `turn_down` · `set_main` · `swap` (approve a better copy in place of the old one) · `correct` (date or best-known flag) |
+| `kind` | `approve` · `turn_down` · `set_main` · `correct` (date or best-known flag). Approving a better copy is the swap (refined at T-08) |
 | `reason` | For a turn-down: `not_this_teacher` · `do_not_use` · `quality` · `other`, with an optional note (PIP-17) |
 | `value` | For a correction: the new value |
 | `by` | A label for the library admin who decided, never an email or other personal detail |
@@ -87,8 +87,8 @@ The library's asks (IN-06, IN-07), now through the API instead of `requests.json
 |---|---|
 | `request_id` | Given by the library |
 | `teacher_id`, `portrait_id` | Who it's about, and which portrait if any |
-| `kind` | `try_again` (with an optional note, Q-08) · `find_another` · `use_link` (a pasted link to a picture, checked by the same match rules) |
-| `status`, `result` | `open`, `done` or `refused` (and why); the portrait it produced |
+| `kind` | `try_again` (with an optional note, Q-08) · `another_original` · `try_link` (a pasted link, checked by the same match rules); IN-06's names |
+| `status`, `result` | `queued`, `working`, `done` or `refused` (and why); the portrait it produced |
 
 ### Run and spend
 

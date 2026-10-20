@@ -1,0 +1,1901 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Nexus Portraits API",
+  "version": "1.0.0-draft.1",
+  "summary": "What the library reads from the portraits tool, and the decisions and requests it sends back.",
+  "description": "Defined by this project and adopted by the library (D-37). Draft for T-08, 2026-10-19.\n\n- **Pull only** (D-44): the library reads the change feed on its own schedule; the tool never calls the library.\n- **One key** (D-44) for the library, for reading and sending. Made and switched off by the owner; stored only as a hash.\n- **Requests are handled right away** (D-44): a request answers 202, and its result appears in the change feed.\n- The library keeps its own copy of every file it pulls (D-42); each file carries its SHA-256.\n- Conventions mirror the library's own API (Rev1 `brain/contracts/api.openapi.json`): bearer keys, the same error object, the same change-feed pattern.\n- Within v1, changes are additive only: new optional fields and new routes. Response objects may gain fields; readers must ignore unknown ones."
+ },
+ "servers": [
+  {
+   "url": "https://portraits.example.up.railway.app",
+   "description": "Illustrative; the real address is set at deploy (T-23)."
+  }
+ ],
+ "security": [
+  {
+   "libraryKey": []
+  }
+ ],
+ "tags": [
+  {
+   "name": "teachers"
+  },
+  {
+   "name": "portraits"
+  },
+  {
+   "name": "changes"
+  },
+  {
+   "name": "decisions"
+  },
+  {
+   "name": "requests"
+  },
+  {
+   "name": "health"
+  }
+ ],
+ "paths": {
+  "/api/v1/health": {
+   "get": {
+    "tags": [
+     "health"
+    ],
+    "summary": "Is the service up",
+    "security": [],
+    "operationId": "health",
+    "description": "No key. Used by the host's healthcheck and the harness's smoke tests.",
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Health"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/teachers": {
+   "get": {
+    "tags": [
+     "teachers"
+    ],
+    "summary": "All teachers",
+    "operationId": "listTeachers",
+    "description": "Every teacher the tool knows, including those with no portrait yet and those who have left the list (`on_list` false).",
+    "parameters": [
+     {
+      "$ref": "#/components/parameters/after"
+     },
+     {
+      "$ref": "#/components/parameters/limit"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TeacherPage"
+        }
+       }
+      }
+     },
+     "401": {
+      "$ref": "#/components/responses/KeyOff"
+     },
+     "422": {
+      "$ref": "#/components/responses/Invalid"
+     },
+     "429": {
+      "$ref": "#/components/responses/RateLimited"
+     }
+    }
+   }
+  },
+  "/api/v1/teachers/{teacher_id}": {
+   "get": {
+    "tags": [
+     "teachers"
+    ],
+    "summary": "One teacher, with their portraits",
+    "operationId": "getTeacher",
+    "parameters": [
+     {
+      "$ref": "#/components/parameters/teacher_id"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Teacher"
+        }
+       }
+      }
+     },
+     "401": {
+      "$ref": "#/components/responses/KeyOff"
+     },
+     "404": {
+      "$ref": "#/components/responses/NotFound"
+     },
+     "429": {
+      "$ref": "#/components/responses/RateLimited"
+     }
+    }
+   }
+  },
+  "/api/v1/portraits": {
+   "get": {
+    "tags": [
+     "portraits"
+    ],
+    "summary": "Portraits, optionally by teacher or status",
+    "operationId": "listPortraits",
+    "parameters": [
+     {
+      "name": "teacher_id",
+      "in": "query",
+      "schema": {
+       "type": "string",
+       "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+       "description": "Stable slug (D-22), e.g. `charles-fillmore`.",
+       "examples": [
+        "charles-fillmore"
+       ]
+      }
+     },
+     {
+      "name": "status",
+      "in": "query",
+      "schema": {
+       "type": "string",
+       "enum": [
+        "waiting",
+        "approved",
+        "turned_down",
+        "replaced"
+       ]
+      }
+     },
+     {
+      "$ref": "#/components/parameters/after"
+     },
+     {
+      "$ref": "#/components/parameters/limit"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PortraitPage"
+        }
+       }
+      }
+     },
+     "401": {
+      "$ref": "#/components/responses/KeyOff"
+     },
+     "422": {
+      "$ref": "#/components/responses/Invalid"
+     },
+     "429": {
+      "$ref": "#/components/responses/RateLimited"
+     }
+    }
+   }
+  },
+  "/api/v1/portraits/{portrait_id}": {
+   "get": {
+    "tags": [
+     "portraits"
+    ],
+    "summary": "One portrait: record, rights and files",
+    "operationId": "getPortrait",
+    "parameters": [
+     {
+      "$ref": "#/components/parameters/portrait_id"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Portrait"
+        }
+       }
+      }
+     },
+     "401": {
+      "$ref": "#/components/responses/KeyOff"
+     },
+     "404": {
+      "$ref": "#/components/responses/NotFound"
+     },
+     "429": {
+      "$ref": "#/components/responses/RateLimited"
+     }
+    }
+   }
+  },
+  "/api/v1/portraits/{portrait_id}/files/{kind}": {
+   "get": {
+    "tags": [
+     "portraits"
+    ],
+    "summary": "Download one file",
+    "operationId": "getPortraitFile",
+    "description": "Redirects to a signed link to the bucket, valid for 15 minutes. Call this route again for a fresh link.",
+    "parameters": [
+     {
+      "$ref": "#/components/parameters/portrait_id"
+     },
+     {
+      "name": "kind",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "original",
+        "original-view",
+        "white-1000",
+        "white-500",
+        "bw-1000",
+        "bw-500",
+        "enhanced",
+        "mask"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "302": {
+      "description": "Redirect to the signed download.",
+      "headers": {
+       "Location": {
+        "schema": {
+         "type": "string",
+         "format": "uri"
+        }
+       }
+      }
+     },
+     "401": {
+      "$ref": "#/components/responses/KeyOff"
+     },
+     "404": {
+      "$ref": "#/components/responses/NotFound"
+     },
+     "429": {
+      "$ref": "#/components/responses/RateLimited"
+     }
+    }
+   }
+  },
+  "/api/v1/portraits/{portrait_id}/history": {
+   "get": {
+    "tags": [
+     "portraits"
+    ],
+    "summary": "Everything that happened to a portrait",
+    "operationId": "getPortraitHistory",
+    "parameters": [
+     {
+      "$ref": "#/components/parameters/portrait_id"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/History"
+        }
+       }
+      }
+     },
+     "401": {
+      "$ref": "#/components/responses/KeyOff"
+     },
+     "404": {
+      "$ref": "#/components/responses/NotFound"
+     },
+     "429": {
+      "$ref": "#/components/responses/RateLimited"
+     }
+    }
+   }
+  },
+  "/api/v1/changes": {
+   "get": {
+    "tags": [
+     "changes"
+    ],
+    "summary": "What changed since",
+    "operationId": "listChanges",
+    "description": "Every change since a point, in sequence order. The first call passes `since`; each later call passes the previous `next_cursor` as `after` (one of the two is required).",
+    "parameters": [
+     {
+      "name": "since",
+      "in": "query",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      },
+      "description": "First call: changes after this time."
+     },
+     {
+      "$ref": "#/components/parameters/after"
+     },
+     {
+      "$ref": "#/components/parameters/limit"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ChangeFeed"
+        }
+       }
+      }
+     },
+     "401": {
+      "$ref": "#/components/responses/KeyOff"
+     },
+     "410": {
+      "$ref": "#/components/responses/CursorTooOld"
+     },
+     "422": {
+      "$ref": "#/components/responses/Invalid"
+     },
+     "429": {
+      "$ref": "#/components/responses/RateLimited"
+     }
+    }
+   }
+  },
+  "/api/v1/decisions": {
+   "post": {
+    "tags": [
+     "decisions"
+    ],
+    "summary": "Send a decision about a portrait",
+    "operationId": "sendDecision",
+    "description": "Approve, turn down (with a reason), choose the main portrait, or correct a value (D-38). Safe to resend: a repeated `decision_id` is applied once.",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Decision"
+       },
+       "examples": {
+        "turn_down": {
+         "value": {
+          "decision_id": "lib-dec-0042",
+          "portrait_id": "charles-fillmore-2",
+          "kind": "turn_down",
+          "reason": "quality",
+          "note": "Too blurred",
+          "by": "admin-1",
+          "at": "2026-11-02T14:05:00Z"
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DecisionResult"
+        }
+       }
+      }
+     },
+     "401": {
+      "$ref": "#/components/responses/KeyOff"
+     },
+     "404": {
+      "$ref": "#/components/responses/NotFound"
+     },
+     "409": {
+      "$ref": "#/components/responses/Conflict"
+     },
+     "422": {
+      "$ref": "#/components/responses/Invalid"
+     },
+     "429": {
+      "$ref": "#/components/responses/RateLimited"
+     }
+    }
+   }
+  },
+  "/api/v1/requests": {
+   "post": {
+    "tags": [
+     "requests"
+    ],
+    "summary": "Ask for work on a teacher",
+    "operationId": "sendRequest",
+    "description": "Try again, another original, or try a link (IN-06). Handled right away by the worker (D-44). Safe to resend: a repeated `request_id` returns the existing request.",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NewRequest"
+       }
+      }
+     }
+    },
+    "responses": {
+     "202": {
+      "description": "Queued.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Request"
+        }
+       }
+      }
+     },
+     "200": {
+      "description": "Already known: the existing request.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Request"
+        }
+       }
+      }
+     },
+     "401": {
+      "$ref": "#/components/responses/KeyOff"
+     },
+     "404": {
+      "$ref": "#/components/responses/NotFound"
+     },
+     "409": {
+      "$ref": "#/components/responses/Conflict"
+     },
+     "422": {
+      "$ref": "#/components/responses/Invalid"
+     },
+     "429": {
+      "$ref": "#/components/responses/RateLimited"
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "requests"
+    ],
+    "summary": "Requests, optionally by status",
+    "operationId": "listRequests",
+    "parameters": [
+     {
+      "name": "status",
+      "in": "query",
+      "schema": {
+       "type": "string",
+       "enum": [
+        "queued",
+        "working",
+        "done",
+        "refused"
+       ]
+      }
+     },
+     {
+      "$ref": "#/components/parameters/after"
+     },
+     {
+      "$ref": "#/components/parameters/limit"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RequestPage"
+        }
+       }
+      }
+     },
+     "401": {
+      "$ref": "#/components/responses/KeyOff"
+     },
+     "422": {
+      "$ref": "#/components/responses/Invalid"
+     },
+     "429": {
+      "$ref": "#/components/responses/RateLimited"
+     }
+    }
+   }
+  },
+  "/api/v1/requests/{request_id}": {
+   "get": {
+    "tags": [
+     "requests"
+    ],
+    "summary": "One request",
+    "operationId": "getRequest",
+    "parameters": [
+     {
+      "name": "request_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Request"
+        }
+       }
+      }
+     },
+     "401": {
+      "$ref": "#/components/responses/KeyOff"
+     },
+     "404": {
+      "$ref": "#/components/responses/NotFound"
+     },
+     "429": {
+      "$ref": "#/components/responses/RateLimited"
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "securitySchemes": {
+   "libraryKey": {
+    "type": "http",
+    "scheme": "bearer",
+    "description": "The library's key (D-44): `Authorization: Bearer <key>`. One key reads and sends. Stored only as a hash; can be switched off or replaced without a deploy (HT-20)."
+   }
+  },
+  "parameters": {
+   "after": {
+    "name": "after",
+    "in": "query",
+    "schema": {
+     "type": "string"
+    },
+    "description": "The opaque `next_cursor` of the previous page."
+   },
+   "limit": {
+    "name": "limit",
+    "in": "query",
+    "schema": {
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 500,
+     "default": 100
+    }
+   },
+   "teacher_id": {
+    "name": "teacher_id",
+    "in": "path",
+    "required": true,
+    "schema": {
+     "type": "string",
+     "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+     "description": "Stable slug (D-22), e.g. `charles-fillmore`.",
+     "examples": [
+      "charles-fillmore"
+     ]
+    }
+   },
+   "portrait_id": {
+    "name": "portrait_id",
+    "in": "path",
+    "required": true,
+    "schema": {
+     "type": "string",
+     "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$",
+     "description": "`<teacher_id>-<n>`, never reused (OUT-11).",
+     "examples": [
+      "charles-fillmore-1"
+     ]
+    }
+   }
+  },
+  "responses": {
+   "KeyOff": {
+    "description": "The key is missing, unknown or switched off.",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      },
+      "example": {
+       "kind": "key_off",
+       "message": "The key is missing, unknown or switched off."
+      }
+     }
+    }
+   },
+   "NotFound": {
+    "description": "No such teacher, portrait, file or request.",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      },
+      "example": {
+       "kind": "not_found",
+       "message": "No such teacher, portrait, file or request."
+      }
+     }
+    }
+   },
+   "Conflict": {
+    "description": "The decision or request can't apply in the portrait's current state, or its id was reused with different content.",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      },
+      "example": {
+       "kind": "conflict",
+       "message": "The decision or request can't apply in the portrait's current state, or its id was reused with different content."
+      }
+     }
+    }
+   },
+   "CursorTooOld": {
+    "description": "That point in the change feed is older than 30 days; re-sync from /teachers and /portraits.",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      },
+      "example": {
+       "kind": "cursor_too_old",
+       "message": "That point in the change feed is older than 30 days; re-sync from /teachers and /portraits."
+      }
+     }
+    }
+   },
+   "Invalid": {
+    "description": "A field is missing or invalid; `field` names it.",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      },
+      "example": {
+       "kind": "invalid",
+       "message": "A field is missing or invalid; `field` names it."
+      }
+     }
+    }
+   },
+   "RateLimited": {
+    "description": "Too many calls; try again after Retry-After seconds.",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      },
+      "example": {
+       "kind": "rate_limited",
+       "message": "Too many calls; try again after Retry-After seconds."
+      }
+     }
+    },
+    "headers": {
+     "Retry-After": {
+      "schema": {
+       "type": "integer",
+       "minimum": 1
+      }
+     }
+    }
+   }
+  },
+  "schemas": {
+   "Error": {
+    "type": "object",
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "key_off",
+       "out_of_scope",
+       "not_found",
+       "invalid",
+       "conflict",
+       "cursor_too_old",
+       "rate_limited"
+      ]
+     },
+     "message": {
+      "type": "string",
+      "description": "Plain words, for a person."
+     },
+     "field": {
+      "type": "string",
+      "description": "For `invalid`: the field that failed, as a JSON pointer."
+     }
+    },
+    "required": [
+     "kind",
+     "message"
+    ],
+    "description": "The same shape and kinds as the library's own API (Rev1 `api.openapi.json`, `Error`), plus `conflict`. key_off 401, out_of_scope 403, not_found 404, conflict 409, cursor_too_old 410, invalid 400 or 422, rate_limited 429 (with Retry-After)."
+   },
+   "Page": {
+    "type": "object",
+    "properties": {
+     "next_cursor": {
+      "oneOf": [
+       {
+        "type": "string",
+        "description": "Opaque; pass as `after`."
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "more": {
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "next_cursor",
+     "more"
+    ]
+   },
+   "PortraitSearch": {
+    "type": "object",
+    "properties": {
+     "state": {
+      "type": "string",
+      "enum": [
+       "not_yet",
+       "found",
+       "none_found"
+      ],
+      "description": "not_yet: not searched yet; found: at least one portrait made; none_found: searched, and no candidate passed."
+     },
+     "last_searched": {
+      "oneOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "required": [
+     "state",
+     "last_searched"
+    ],
+    "description": "Where the search for this teacher's portraits stands, so the library can tell 'coming' from 'none exists'."
+   },
+   "TeacherSummary": {
+    "type": "object",
+    "properties": {
+     "teacher_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Stable slug (D-22), e.g. `charles-fillmore`.",
+      "examples": [
+       "charles-fillmore"
+      ]
+     },
+     "name": {
+      "type": "string"
+     },
+     "born": {
+      "oneOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "died": {
+      "oneOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "wikidata_qid": {
+      "oneOf": [
+       {
+        "type": "string",
+        "pattern": "^Q[0-9]+$"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "on_list": {
+      "type": "boolean"
+     },
+     "portraits": {
+      "type": "object",
+      "properties": {
+       "waiting": {
+        "type": "integer",
+        "minimum": 0
+       },
+       "approved": {
+        "type": "integer",
+        "minimum": 0
+       },
+       "turned_down": {
+        "type": "integer",
+        "minimum": 0
+       },
+       "replaced": {
+        "type": "integer",
+        "minimum": 0
+       }
+      },
+      "required": [
+       "waiting",
+       "approved",
+       "turned_down",
+       "replaced"
+      ],
+      "description": "Counts by status."
+     },
+     "main_portrait_id": {
+      "oneOf": [
+       {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$",
+        "description": "`<teacher_id>-<n>`, never reused (OUT-11).",
+        "examples": [
+         "charles-fillmore-1"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "portrait_search": {
+      "$ref": "#/components/schemas/PortraitSearch"
+     },
+     "record_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Goes up by one whenever the record changes."
+     }
+    },
+    "required": [
+     "teacher_id",
+     "name",
+     "born",
+     "died",
+     "wikidata_qid",
+     "on_list",
+     "portraits",
+     "main_portrait_id",
+     "portrait_search",
+     "record_version"
+    ]
+   },
+   "Teacher": {
+    "allOf": [
+     {
+      "$ref": "#/components/schemas/TeacherSummary"
+     },
+     {
+      "type": "object",
+      "properties": {
+       "aliases": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
+       },
+       "dates_from": {
+        "type": "string",
+        "enum": [
+         "list",
+         "wikidata",
+         "both"
+        ],
+        "description": "Where born and died came from (IN-13)."
+       },
+       "portrait_list": {
+        "type": "array",
+        "items": {
+         "$ref": "#/components/schemas/PortraitSummary"
+        }
+       }
+      },
+      "required": [
+       "aliases",
+       "dates_from",
+       "portrait_list"
+      ]
+     }
+    ]
+   },
+   "TeacherPage": {
+    "allOf": [
+     {
+      "$ref": "#/components/schemas/Page"
+     },
+     {
+      "type": "object",
+      "properties": {
+       "teachers": {
+        "type": "array",
+        "items": {
+         "$ref": "#/components/schemas/TeacherSummary"
+        }
+       }
+      },
+      "required": [
+       "teachers"
+      ]
+     }
+    ]
+   },
+   "ApproxDate": {
+    "type": "object",
+    "properties": {
+     "value": {
+      "oneOf": [
+       {
+        "type": "integer",
+        "description": "Year."
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "precision": {
+      "type": "string",
+      "enum": [
+       "year",
+       "circa",
+       "decade",
+       "unknown"
+      ]
+     },
+     "from": {
+      "type": "string",
+      "enum": [
+       "source",
+       "estimate",
+       "library"
+      ],
+      "description": "The source's own date, the pre-check's age estimate plus the birth year, or the library's correction (PIP-18)."
+     }
+    },
+    "required": [
+     "value",
+     "precision",
+     "from"
+    ]
+   },
+   "PortraitSummary": {
+    "type": "object",
+    "properties": {
+     "portrait_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$",
+      "description": "`<teacher_id>-<n>`, never reused (OUT-11).",
+      "examples": [
+       "charles-fillmore-1"
+      ]
+     },
+     "teacher_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Stable slug (D-22), e.g. `charles-fillmore`.",
+      "examples": [
+       "charles-fillmore"
+      ]
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "waiting",
+       "approved",
+       "turned_down",
+       "replaced"
+      ],
+      "description": "waiting: in the library's queue; approved; turned_down; replaced: a better copy was approved in its place. Portraits still being made, or that failed, never appear."
+     },
+     "main": {
+      "type": "boolean"
+     },
+     "thumbnail": {
+      "type": "string",
+      "format": "uri-reference",
+      "description": "The `white-500` file's link (see /files/{kind})."
+     },
+     "record_version": {
+      "type": "integer",
+      "minimum": 1
+     }
+    },
+    "required": [
+     "portrait_id",
+     "teacher_id",
+     "status",
+     "main",
+     "thumbnail",
+     "record_version"
+    ]
+   },
+   "File": {
+    "type": "object",
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "original",
+       "original-view",
+       "white-1000",
+       "white-500",
+       "bw-1000",
+       "bw-500",
+       "enhanced",
+       "mask"
+      ]
+     },
+     "href": {
+      "type": "string",
+      "format": "uri-reference",
+      "description": "Stable link to /api/v1/portraits/{portrait_id}/files/{kind}, which redirects to a short-lived signed download."
+     },
+     "format": {
+      "type": "string",
+      "examples": [
+       "png",
+       "jpeg",
+       "tiff"
+      ]
+     },
+     "width": {
+      "type": "integer"
+     },
+     "height": {
+      "type": "integer"
+     },
+     "bytes": {
+      "type": "integer"
+     },
+     "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "So the library can check its own copy (D-42)."
+     },
+     "licence": {
+      "type": "string",
+      "description": "This file's own licence (T-13)."
+     },
+     "credit": {
+      "type": "string",
+      "description": "This file's credit line (T-13)."
+     }
+    },
+    "required": [
+     "kind",
+     "href",
+     "format",
+     "width",
+     "height",
+     "bytes",
+     "sha256",
+     "licence",
+     "credit"
+    ]
+   },
+   "Source": {
+    "type": "object",
+    "properties": {
+     "source": {
+      "type": "string",
+      "examples": [
+       "wikimedia-commons",
+       "loc"
+      ]
+     },
+     "item_url": {
+      "type": "string",
+      "format": "uri"
+     },
+     "file_url": {
+      "type": "string",
+      "format": "uri"
+     },
+     "title": {
+      "type": "string"
+     },
+     "creator": {
+      "oneOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "date": {
+      "oneOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "licence": {
+      "type": "string"
+     },
+     "licence_url": {
+      "oneOf": [
+       {
+        "type": "string",
+        "format": "uri"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "credit": {
+      "type": "string"
+     },
+     "match_rule": {
+      "type": "string",
+      "description": "SRC-03 rule, e.g. R1."
+     },
+     "match_evidence": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "source",
+     "item_url",
+     "file_url",
+     "title",
+     "creator",
+     "date",
+     "licence",
+     "licence_url",
+     "credit",
+     "match_rule",
+     "match_evidence"
+    ],
+    "description": "The original's record (SRC-08, D-14)."
+   },
+   "Portrait": {
+    "allOf": [
+     {
+      "$ref": "#/components/schemas/PortraitSummary"
+     },
+     {
+      "type": "object",
+      "properties": {
+       "photograph_id": {
+        "type": "string",
+        "description": "All copies of one photograph share it (PIP-15)."
+       },
+       "replaces": {
+        "oneOf": [
+         {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$",
+          "description": "`<teacher_id>-<n>`, never reused (OUT-11).",
+          "examples": [
+           "charles-fillmore-1"
+          ]
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "replaced_by": {
+        "oneOf": [
+         {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$",
+          "description": "`<teacher_id>-<n>`, never reused (OUT-11).",
+          "examples": [
+           "charles-fillmore-1"
+          ]
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "approx_date": {
+        "$ref": "#/components/schemas/ApproxDate"
+       },
+       "best_known": {
+        "type": "object",
+        "properties": {
+         "value": {
+          "type": "boolean"
+         },
+         "from": {
+          "type": "string",
+          "enum": [
+           "tool",
+           "library"
+          ]
+         }
+        },
+        "required": [
+         "value",
+         "from"
+        ],
+        "description": "Wikidata's main image or a copy of it (PIP-16)."
+       },
+       "source": {
+        "$ref": "#/components/schemas/Source"
+       },
+       "files": {
+        "type": "array",
+        "items": {
+         "$ref": "#/components/schemas/File"
+        }
+       },
+       "enhanced_used": {
+        "type": "boolean"
+       },
+       "recipe_version": {
+        "type": "string",
+        "examples": [
+         "0.4.0"
+        ]
+       },
+       "created": {
+        "type": "string",
+        "format": "date-time"
+       },
+       "updated": {
+        "type": "string",
+        "format": "date-time"
+       }
+      },
+      "required": [
+       "photograph_id",
+       "replaces",
+       "replaced_by",
+       "approx_date",
+       "best_known",
+       "source",
+       "files",
+       "enhanced_used",
+       "recipe_version",
+       "created",
+       "updated"
+      ]
+     }
+    ]
+   },
+   "PortraitPage": {
+    "allOf": [
+     {
+      "$ref": "#/components/schemas/Page"
+     },
+     {
+      "type": "object",
+      "properties": {
+       "portraits": {
+        "type": "array",
+        "items": {
+         "$ref": "#/components/schemas/PortraitSummary"
+        }
+       }
+      },
+      "required": [
+       "portraits"
+      ]
+     }
+    ]
+   },
+   "HistoryEvent": {
+    "type": "object",
+    "properties": {
+     "at": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "by": {
+      "type": "string",
+      "enum": [
+       "tool",
+       "library"
+      ]
+     },
+     "what": {
+      "type": "string",
+      "examples": [
+       "made",
+       "waiting",
+       "approved",
+       "turned_down",
+       "set_main",
+       "replaced",
+       "corrected"
+      ]
+     },
+     "detail": {
+      "type": "object",
+      "properties": {}
+     }
+    },
+    "required": [
+     "at",
+     "by",
+     "what",
+     "detail"
+    ]
+   },
+   "History": {
+    "type": "object",
+    "properties": {
+     "portrait_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$",
+      "description": "`<teacher_id>-<n>`, never reused (OUT-11).",
+      "examples": [
+       "charles-fillmore-1"
+      ]
+     },
+     "events": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/HistoryEvent"
+      }
+     }
+    },
+    "required": [
+     "portrait_id",
+     "events"
+    ]
+   },
+   "Change": {
+    "type": "object",
+    "properties": {
+     "seq": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Stable, increasing sequence number."
+     },
+     "changed_at": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "object": {
+      "type": "string",
+      "enum": [
+       "teacher",
+       "portrait",
+       "request"
+      ]
+     },
+     "id": {
+      "type": "string",
+      "description": "The teacher_id, portrait_id or request_id."
+     },
+     "change": {
+      "type": "string",
+      "enum": [
+       "added",
+       "updated"
+      ],
+      "description": "Nothing is ever removed (D-42); a portrait's status says what became of it."
+     },
+     "record_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Re-read the object if this is newer than your copy."
+     }
+    },
+    "required": [
+     "seq",
+     "changed_at",
+     "object",
+     "id",
+     "change",
+     "record_version"
+    ],
+    "description": "One entry of the change feed. A portrait changes when its status, main flag, corrections or files change; its files' sha256 tell the library which files to fetch again."
+   },
+   "ChangeFeed": {
+    "type": "object",
+    "properties": {
+     "since": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "until": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "changes": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/Change"
+      }
+     },
+     "next_cursor": {
+      "type": "string",
+      "description": "Opaque; pass as `after`."
+     },
+     "more": {
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "since",
+     "until",
+     "changes",
+     "next_cursor",
+     "more"
+    ],
+    "description": "The feed is kept for 30 days. An older `since` or `after` answers 410; the library then re-syncs from /teachers and /portraits. Same pattern as the library's own /changes."
+   },
+   "Decision": {
+    "type": "object",
+    "properties": {
+     "decision_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Given by the library. Sending the same decision twice is safe: it is applied once."
+     },
+     "portrait_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$",
+      "description": "`<teacher_id>-<n>`, never reused (OUT-11).",
+      "examples": [
+       "charles-fillmore-1"
+      ]
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "approve",
+       "turn_down",
+       "set_main",
+       "correct"
+      ],
+      "description": "approve: a waiting portrait goes live in the library. Approving a better copy (one with `replaces`) is the swap: the old portrait becomes `replaced` (PIP-17). turn_down: a waiting or approved portrait; needs `reason`. set_main: an approved portrait becomes the teacher's main one; the previous main is unset. correct: replaces the tool's value of `field` with `value`; never overwritten by a later run (PIP-18)."
+     },
+     "reason": {
+      "type": "string",
+      "enum": [
+       "not_this_teacher",
+       "do_not_use",
+       "quality",
+       "other"
+      ],
+      "description": "For turn_down. not_this_teacher and do_not_use mean no copy of the photograph ever comes back; quality and other allow one clearly better copy (PIP-17)."
+     },
+     "field": {
+      "type": "string",
+      "enum": [
+       "approx_date",
+       "best_known"
+      ],
+      "description": "For correct."
+     },
+     "value": {
+      "description": "For correct: a year (integer) or null for approx_date; a boolean for best_known."
+     },
+     "note": {
+      "type": "string",
+      "maxLength": 2000
+     },
+     "by": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "A label for the admin who decided. Never an email or other personal detail."
+     },
+     "at": {
+      "type": "string",
+      "format": "date-time"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "decision_id",
+     "portrait_id",
+     "kind",
+     "by",
+     "at"
+    ],
+    "allOf": [
+     {
+      "if": {
+       "properties": {
+        "kind": {
+         "const": "turn_down"
+        }
+       }
+      },
+      "then": {
+       "required": [
+        "reason"
+       ]
+      }
+     },
+     {
+      "if": {
+       "properties": {
+        "kind": {
+         "const": "correct"
+        }
+       }
+      },
+      "then": {
+       "required": [
+        "field",
+        "value"
+       ]
+      }
+     }
+    ]
+   },
+   "DecisionResult": {
+    "type": "object",
+    "properties": {
+     "decision_id": {
+      "type": "string"
+     },
+     "applied": {
+      "type": "boolean"
+     },
+     "duplicate": {
+      "type": "boolean",
+      "description": "True if this decision_id was already applied; nothing changed this time."
+     },
+     "portrait": {
+      "$ref": "#/components/schemas/PortraitSummary"
+     }
+    },
+    "required": [
+     "decision_id",
+     "applied",
+     "duplicate",
+     "portrait"
+    ]
+   },
+   "NewRequest": {
+    "type": "object",
+    "properties": {
+     "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Given by the library. Sending the same request twice is safe."
+     },
+     "teacher_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Stable slug (D-22), e.g. `charles-fillmore`.",
+      "examples": [
+       "charles-fillmore"
+      ]
+     },
+     "portrait_id": {
+      "oneOf": [
+       {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$",
+        "description": "`<teacher_id>-<n>`, never reused (OUT-11).",
+        "examples": [
+         "charles-fillmore-1"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "try_again",
+       "another_original",
+       "try_link"
+      ],
+      "description": "IN-06. try_again: a new draft from the same original, with the note (Q-08). another_original: set aside this portrait's original and use the next candidate. try_link: try the pasted link (SRC-04)."
+     },
+     "note": {
+      "type": "string",
+      "maxLength": 2000
+     },
+     "link": {
+      "type": "string",
+      "format": "uri",
+      "description": "For try_link."
+     },
+     "by": {
+      "type": "string",
+      "maxLength": 100
+     },
+     "at": {
+      "type": "string",
+      "format": "date-time"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "request_id",
+     "teacher_id",
+     "kind",
+     "by",
+     "at"
+    ],
+    "allOf": [
+     {
+      "if": {
+       "properties": {
+        "kind": {
+         "const": "try_link"
+        }
+       }
+      },
+      "then": {
+       "required": [
+        "link"
+       ]
+      }
+     },
+     {
+      "if": {
+       "properties": {
+        "kind": {
+         "enum": [
+          "try_again",
+          "another_original"
+         ]
+        }
+       }
+      },
+      "then": {
+       "required": [
+        "portrait_id"
+       ],
+       "properties": {
+        "portrait_id": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "Request": {
+    "allOf": [
+     {
+      "$ref": "#/components/schemas/RequestFields"
+     },
+     {
+      "type": "object",
+      "properties": {
+       "status": {
+        "type": "string",
+        "enum": [
+         "queued",
+         "working",
+         "done",
+         "refused"
+        ]
+       },
+       "refused_reason": {
+        "oneOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "result_portrait_id": {
+        "oneOf": [
+         {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$",
+          "description": "`<teacher_id>-<n>`, never reused (OUT-11).",
+          "examples": [
+           "charles-fillmore-1"
+          ]
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "updated": {
+        "type": "string",
+        "format": "date-time"
+       },
+       "record_version": {
+        "type": "integer",
+        "minimum": 1
+       }
+      },
+      "required": [
+       "status",
+       "refused_reason",
+       "result_portrait_id",
+       "updated",
+       "record_version"
+      ]
+     }
+    ]
+   },
+   "RequestFields": {
+    "description": "The fields of NewRequest, as returned (responses may gain fields).",
+    "type": "object",
+    "required": [
+     "request_id",
+     "teacher_id",
+     "kind",
+     "by",
+     "at"
+    ],
+    "properties": {
+     "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Given by the library. Sending the same request twice is safe."
+     },
+     "teacher_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Stable slug (D-22), e.g. `charles-fillmore`.",
+      "examples": [
+       "charles-fillmore"
+      ]
+     },
+     "portrait_id": {
+      "oneOf": [
+       {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$",
+        "description": "`<teacher_id>-<n>`, never reused (OUT-11).",
+        "examples": [
+         "charles-fillmore-1"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "try_again",
+       "another_original",
+       "try_link"
+      ],
+      "description": "IN-06. try_again: a new draft from the same original, with the note (Q-08). another_original: set aside this portrait's original and use the next candidate. try_link: try the pasted link (SRC-04)."
+     },
+     "note": {
+      "type": "string",
+      "maxLength": 2000
+     },
+     "link": {
+      "type": "string",
+      "format": "uri",
+      "description": "For try_link."
+     },
+     "by": {
+      "type": "string",
+      "maxLength": 100
+     },
+     "at": {
+      "type": "string",
+      "format": "date-time"
+     }
+    }
+   },
+   "RequestPage": {
+    "allOf": [
+     {
+      "$ref": "#/components/schemas/Page"
+     },
+     {
+      "type": "object",
+      "properties": {
+       "requests": {
+        "type": "array",
+        "items": {
+         "$ref": "#/components/schemas/Request"
+        }
+       }
+      },
+      "required": [
+       "requests"
+      ]
+     }
+    ]
+   },
+   "Health": {
+    "type": "object",
+    "properties": {
+     "status": {
+      "type": "string",
+      "enum": [
+       "ok"
+      ]
+     },
+     "version": {
+      "type": "string"
+     },
+     "commit": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "status",
+     "version",
+     "commit"
+    ]
+   }
+  }
+ }
+}

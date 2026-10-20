@@ -28,8 +28,8 @@
 | T-04 | Categories for each portrait | 1 Shape | T-03 | **decided** (D-41): no category scheme; an approximate date for the spread; the library can correct |
 | T-05 | Approval: what the library approves, and the main portrait | 1 Shape | T-01, T-03 | **decided** (D-38): in the library's queue, reported back |
 | T-06 | Storage and organisation by teacher | 2 Data | T-01, T-02, T-03 | **decided** (D-42): tool's bucket; library keeps its own copies; history kept; database backups; read-only admin page |
-| T-07 | The records: what we keep about teachers, portraits, versions and sources | 2 Data | T-02 – T-05 | **in discussion**: proposed in full ([notes](topics/T-07-records.md)), waiting for the owner's look |
-| T-08 | The library API | 2 Data | T-01, T-06, T-07 | open (D-28 sets "an API") |
+| T-07 | The records: what we keep about teachers, portraits, versions and sources | 2 Data | T-02 – T-05 | **decided** (D-43): as proposed ([notes](topics/T-07-records.md)) |
+| T-08 | The library API | 2 Data | T-01, T-06, T-07 | **decided** (D-44): one key, pull only, requests at once; [OpenAPI draft 1](contracts/portraits-api.openapi.json) |
 | T-09 | The contract with Library-AI (Rev1) | 2 Data | T-08 | **mostly decided** (D-37): this project owns the API and its OpenAPI file; the library adopts it |
 | T-10 | The teacher list (from the pipeline's authors) | 3 Finding | none | mostly decided (D-22) |
 | T-11 | Picture sources | 3 Finding | T-07 | open (D-24, D-29) |
@@ -175,7 +175,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Written into:** OUT-12, OUT-13; OUT-01 and OUT-09 withdrawn; OUT-08 to be confirmed at T-09.
 - **Linked:** Q-03 (superseded), OUT-01..OUT-08 (the run-based layout).
 
-### T-07 · The records: what we keep · **in discussion**
+### T-07 · The records: what we keep · **decided**
 - **Depends on:** T-02 – T-05.
 - **To decide:**
   1. **Teacher:** id, names, dates, Wikidata id, link to the authors list.
@@ -185,24 +185,44 @@ Topics within a stage can move in parallel when they don't depend on each other.
   5. **Checks and costs.**
   6. **Ids:** stable across runs.
 - **Decided so far:** complete credit metadata for every portrait (D-14). Every original considered is logged (SRC-12, proposed).
-- **Proposed in full** in [topics/T-07-records.md](topics/T-07-records.md): the teacher, candidate (rights log), portrait, file, library decision, request, run and spend records, and the portrait history.
+- **Decided (D-43), as proposed** in [topics/T-07-records.md](topics/T-07-records.md): the teacher, candidate (rights log), portrait, file, library decision, request, run and spend records, and the portrait history.
 - **Linked:** OUT-02 (the Rev1 manifest schema, probably replaced; see T-09), SRC-08, SRC-11, SRC-12.
 
-### T-08 · The library API · open
+### T-08 · The library API · **decided**
 - **Depends on:** T-01, T-06, T-07.
 - **To decide:**
   1. **What the library can read:** teachers; portraits by teacher; the eight files of each portrait (OUT-11, D-39, the AI-enhanced copy and mask included); credits and rights; what's changed since a date.
   2. **What the library can send** (if T-01 allows): approvals, turn-downs, requests, the main-portrait choice.
   3. **Access:** a key per client, and read-only versus read and write.
   4. Versioning of the API, and its documentation (an OpenAPI file).
-- **Decided so far:** an API, for the library to pull records (D-28).
+  5. Whether the tool tells the library when something is new, or the library only pulls. *(Added 2026-10-19.)*
+  6. How quickly the library's requests are handled: at once, or at the next scheduled run. *(Added 2026-10-19; it shapes the API's answer to a request.)*
+- **Decided so far:**
+  - an API, for the library to pull records (D-28);
+  - the library adopts this project's OpenAPI file, pulls, and sends decisions back (D-37);
+  - it keeps its own copy of what it pulls, so a change listing with checksums is needed (D-42).
+- **Claude's choices** (technical), mirroring the library's own API (Rev1 `brain/contracts/api.openapi.json` at 3e444eb) so its builders find the same patterns:
+  - OpenAPI 3.1, paths under `/api/v1/`;
+  - bearer keys stored only as hashes;
+  - the same error object (`kind`, `message`) and error kinds;
+  - a change feed with `since` / `after` / `next_cursor` / `more`, kept for 30 days;
+  - files served by short-lived signed links;
+  - within v1, changes are additive only.
+- **Decided (D-44):**
+  - one key for reading and sending;
+  - the library checks the change feed on its own schedule, and the tool never calls it;
+  - requests are handled right away.
+- **Written into:**
+  - `contracts/portraits-api.openapi.json` (draft 1), with samples, a plain-words page and an offline check;
+  - OUT-14; IN-06 and IN-07 amended.
 
 ### T-09 · The contract with Library-AI (Rev1) · **mostly decided**
 - **Depends on:** T-08.
 - **To decide:**
   1. ~~Who owns the contract now~~. **Decided (D-37):** this project defines the API and the records and publishes an OpenAPI file. The library adopts it, pulls, and sends its decisions back. The library has also adopted the three-portrait scope.
-  2. What to tell the Rev1 planning: a short hand-off note from here.
-  3. **Whether we still need Rev1's portrait files (O-1).** Probably only to see which of the PORT requirements still apply.
+  2. ~~What to tell the Rev1 planning~~. **Done:** [handoffs/library-api.md](handoffs/library-api.md), for the owner to pass to the library chat.
+  3. **Whether we still need Rev1's portrait files (O-1).** Probably only to see which of the PORT requirements still apply. Rev1 is now readable here, so Claude copies them once the library's latest planning is pushed (Rev1's GitHub is still at 3e444eb, 2026-10-18, before it adopted this API).
+  4. **OUT-08, the bulk-upload zip:** still needed now that the library pulls through the API? Proposed: withdraw it.
 - **Linked:** Q-09, Q-16, O-1, OUT-10, AC-02, AC-03.
 
 ## Stage 3: Finding pictures
@@ -454,4 +474,13 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - no personal details of library admins.
 
   Waiting for the owner's look.
+- **2026-10-19 21:05.** **T-07 decided** (D-43): the owner raised nothing on the proposal and moved on. T-08 opened. Claude's technical choices mirror the library's own API conventions. Owner choices asked: keys, notifying the library, and how fast requests are handled.
+- **2026-10-19 21:20.** **T-08 decided** (D-44): one key, pull only, requests at once.
+  - OpenAPI draft 1 written (11 routes, 23 schemas). Its conventions copy the library's own API.
+  - Samples and an offline check are included, and the check passes, refused payloads included.
+  - The T-07 note is aligned: the request kinds take IN-06's names, and approving a better copy is the swap.
+  - Hand-off note for the library chat: `handoffs/library-api.md`.
+  - T-09 waits on Rev1's push for O-1.
+
+  Next: T-10.
 

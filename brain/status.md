@@ -2,7 +2,7 @@
 
 **Phase 0: planning.** There is no code yet. Last updated 2026-10-19 by Claude.
 
-**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **T-01 decided:** fully hosted on Railway, two-way API (D-31..D-36). **T-05 decided** in the library (D-38). **T-09 mostly decided:** this project owns the OpenAPI contract (D-37). **T-02 decided** (D-39): the original and a PNG viewing copy; white and black-and-white (black edge) versions at 1,000 and 500 px; AI files offered to the library. **T-03 decided** (D-40): up to 3 different photographs, best-known first, then spread across life; better copies offered to the library. **T-04 decided** (D-41): no category scheme; an approximate date for the spread, correctable by the library. **T-06 decided** (D-42): files in the tool's bucket, the library keeps its own copies, history kept, database backups, a read-only admin page. **Now: T-07, the records** (proposed in full: [notes](topics/T-07-records.md)). Then T-08, the library API. Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated).
+**Planning now follows [tracker.md](tracker.md)** (D-30): 27 topics in dependency order. **T-01 decided:** fully hosted on Railway, two-way API (D-31..D-36). **T-05 decided** in the library (D-38). **T-09 mostly decided:** this project owns the OpenAPI contract (D-37). **T-02 decided** (D-39): the original and a PNG viewing copy; white and black-and-white (black edge) versions at 1,000 and 500 px; AI files offered to the library. **T-03 decided** (D-40): up to 3 different photographs, best-known first, then spread across life; better copies offered to the library. **T-04 decided** (D-41): no category scheme; an approximate date for the spread, correctable by the library. **T-06 decided** (D-42): files in the tool's bucket, the library keeps its own copies, history kept, database backups, a read-only admin page. **T-07 decided** (D-43, as proposed). **T-08 decided** (D-44): one key, pull only, requests at once; [OpenAPI draft 1](contracts/portraits-api.openapi.json). T-09 waits on Rev1's push (O-1). **Now: T-10, the teacher list.** Throwaway test requirements for the harness: `handoffs/harness-throwaway-test.md` (kept updated).
 
 ## Where things stand
 
@@ -16,7 +16,7 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 | Contracts | Teacher list (now generated from library-pipeline's `authors.csv`, D-22), requests and status, and the delivery folder are drafted. The manifest schema waits for O-1 |
 | Sources | Planned (D-29): Wikidata/Commons, LoC, Wellcome, Smithsonian, NYPL, DPLA leads. Internet Archive omitted (D-24). Details at the formal review (tracker T-11) |
 | Build plan and features | 35 feature cards across phases 1–6, with checks, dependencies, live/stub, parkable |
-| Decisions | D-01..D-42 |
+| Decisions | D-01..D-44 |
 | Open questions | Q-01..Q-26. Still open and marked *now*: Q-16 (needs O-1). Resolved: Q-04, Q-10, Q-17, Q-18, Q-20, Q-21, Q-22, Q-23, Q-25. Superseded: Q-03, Q-09 |
 | Examples | The three targets and their originals are in `design/portraits/`. Test use only (D-13) |
 | Style prototype | Recipe 0.4.0 adds the black-and-white version (option C) and the 500 px copies (D-39). Recipe 0.3.1 added the local drift check and the blur on the AI copy: descreen (D-17), AI-enhanced blend with the cut-out from its green background (D-18, D-19), and prompts for every model step (D-20). Real AI copies are first tried in F-27 and F-28 |
@@ -25,7 +25,7 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 ## Waiting on the owner (*now*)
 
 1. **O-1:** copy Rev1's `brain/spec/portraits.md`, `brain/contracts/portraits.manifest.schema.json` with its sample, and `validate.py` into `brain/reference/rev1/`, and note the Rev1 commit. Rev1 is now readable here through GitHub, so Claude can copy them once the latest Rev1 work is pushed, including `brain/reference/hosting-railway-review.md`.
-2. **Tracker topic T-07** (now), then the rest of the tracker in order.
+2. **Tracker topic T-10** (now), then the rest of the tracker in order. T-09 finishes once Rev1's latest planning is on GitHub.
 3. The *build* questions, in one pass (each is linked from its tracker topic): Q-01..Q-03, Q-05..Q-08, Q-12, Q-15.
 
 ## Next planning steps, in order
@@ -122,4 +122,10 @@ The planning notes now exist. The plan is drafted, but it isn't ready for review
 
   OUT-12 and OUT-13 added; OUT-01 and OUT-09 withdrawn. Next: T-07.
 - **2026-10-19 (evening):** T-07 drafted as a full proposal (`topics/T-07-records.md`). Waiting for the owner's look; then T-08.
+- **2026-10-19 (night):** T-07 accepted as proposed (D-43). T-08 opened, with the API's conventions mirroring the library's own.
+- **2026-10-19 (night):** **T-08 decided** (D-44): one key, pull only, requests handled right away.
+  - Wrote the OpenAPI contract (draft 1), its samples, a plain-words page, an offline check, and a hand-off note for the library chat.
+  - OUT-14 added; IN-06 and IN-07 amended.
+
+  Next: T-10.
 

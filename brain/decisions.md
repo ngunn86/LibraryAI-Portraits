@@ -285,3 +285,26 @@ Claude's proposals carried with this decision (not objected to):
 
 → T-06, T-08, T-19, T-21, T-23, OUT-01, OUT-09, OUT-12, OUT-13
 
+**D-43 · 2026-10-19 · The records, as proposed** · owner · *closes T-07*
+The owner reviewed the T-07 proposal (`topics/T-07-records.md`), raised nothing, and moved on to the next step ("Please guide me to the next planning step"). So the proposal stands:
+- teacher, candidate (the rights log), portrait, file, library decision, request, run and spend records, and each portrait's history;
+- stable ids;
+- turn-down reasons;
+- library decisions applied once even if sent twice;
+- no personal details of the library's admins.
+
+→ T-07, T-08, T-13, T-19
+
+**D-44 · 2026-10-19 · The library API: one key, pull only, requests at once** · owner · *closes T-08*
+1. **One key** for the library, for reading and for sending decisions and requests. The owner can switch it off or replace it at any time.
+2. **The library checks on its own schedule.** It reads the change feed; the tool never calls the library, and holds no library key.
+3. **Requests are handled right away.** The worker picks them up within minutes, and the result shows in the change feed.
+
+Claude's technical choices carried with this decision (OpenAPI draft 1, `contracts/portraits-api.openapi.json`):
+- conventions copied from the library's own API;
+- resending a decision or request is safe;
+- signed 15-minute file links;
+- additive changes within v1.
+
+→ T-08, T-09, T-19, T-21, IN-06, IN-07, OUT-14
+
