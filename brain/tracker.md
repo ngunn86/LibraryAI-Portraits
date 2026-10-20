@@ -45,8 +45,8 @@
 | T-21 | Security | 5 Running | T-01, T-08 | **decided** (D-55): one admin password; the same AI key everywhere, with low caps off production |
 | T-22 | The trial | 5 Running | T-14 – T-18, T-20 | **decided** (D-56): three enhance models; the checker picks, the owner can veto; no-blend shown beside |
 | T-23 | Stack and architecture | 6 Build | T-01, T-06, T-08 | **decided** (D-57): TypeScript like the library; [architecture v2](spec/architecture.md) proposed |
-| T-24 | Testing approach | 6 Build | T-23 | mostly decided (D-09) · **next** |
-| T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | open |
+| T-24 | Testing approach | 6 Build | T-23 | **proposed in full** (D-09; [build plan §5](plan/build-plan.md)): node:test, PGlite, contract tests, smoke tests on PR copies |
+| T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | **next** |
 | T-26 | Outside reviews and plan freeze | 6 Build | T-25 | open |
 | T-27 | What the harness must do for a hosted app (hand-off to the harness chat) | 6 Build | T-01 | in discussion: [throwaway test requirements](handoffs/harness-throwaway-test.md) v1 |
 
@@ -452,12 +452,21 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - a refresh of `spec/architecture.md`.
 - **Decided (D-57):** TypeScript on Node 24, like the library, so the harness rehearses its toolchain. The image steps are ported from the Python prototype to OpenCV.js and `sharp`, with a porting spike first. **Written:** `spec/architecture.md` v2 (hosted, proposed). Q-15 resolved.
 
-### T-24 · Testing approach · **next**
+### T-24 · Testing approach · **proposed in full**
 - **Depends on:** T-23.
 - **Decided so far:** the owner's standard (D-09): simple, offline fixtures, live tests only where needed.
 - **To decide:** how to test the API, and what fixtures the distinctness check needs.
+- **Proposed** (`plan/build-plan.md` §5, rewritten for TypeScript):
+  - `npm test` with `node:test`, offline;
+  - PGlite for the database;
+  - fixtures including the Python reference outputs and same-photograph pairs;
+  - API contract tests with `ajv` against the OpenAPI file;
+  - smoke tests on PR copies and staging;
+  - live tests only on *live* cards.
 
-### T-25 · Feature cards for the harness · open
+  Nothing here needs the owner unless a reviewer objects.
+
+### T-25 · Feature cards for the harness · **next**
 - **Depends on:** all topics above, and the harness's input format (from the other chat, D-15).
 - **To decide:** rewrite `plan/features.md` from the decisions. The current 35 cards predate D-24..D-29.
 
@@ -595,4 +604,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - the Python prototype as the reference.
 
   Next: T-24.
+- **2026-10-20 00:50.** T-24 proposed in full (build plan §5, for TypeScript): `node:test`, PGlite, contract tests against the OpenAPI file, smoke tests on deployed copies, live tests only on live cards. Next: T-25, rewriting the feature cards. It needs the harness's card format if the harness chat has settled one (D-15).
 

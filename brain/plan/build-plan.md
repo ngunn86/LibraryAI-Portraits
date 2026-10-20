@@ -78,19 +78,28 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 
 ## 5. Testing approach (D-09: features work reasonably well and without bugs)
 
-- **One command:** `uv run pytest`. It runs offline, with networking blocked by a test fixture, and with no keys.
-- **Per-feature checks:**
-  - every check on a card is a pytest test marked with the feature (`@pytest.mark.f12`), in a file named after it (`tests/test_f12_crop.py`);
-  - so `uv run pytest -m f12` runs one feature's checks.
+*Rewritten 2026-10-20 for the TypeScript, hosted app (D-57, T-24). Proposed by Claude.*
+
+- **One command:** `npm test` (`tsx --test`, Node's own test runner). It runs offline: the outbound client refuses all hosts in tests, and no keys are set. `npm run check` (`tsc`) and `npm run build` run beside it, as in the library.
+- **The database in tests:** PGlite (Postgres compiled to WebAssembly, in-process). The same Drizzle migrations run against it, so tests need no database server. The PR copy's real Postgres is covered by the smoke tests.
+- **Per-feature checks:** every check on a card is a test named after the feature, in a file named after it (`test/f12-crop.test.ts`). So `npm test -- --test-name-pattern=F-12` runs one feature's checks.
 - **Fixtures:**
-  - recorded HTTP responses from Wikidata, Commons and loc.gov, recorded once from the free public APIs and committed;
-  - small images, synthetic ones generated in tests plus a handful of real public-domain images;
-  - canned model responses, as JSON for the checks and synthetic images for model-drawn outlines;
-  - teacher lists;
-  - requests and status files;
-  - the sample run.
-- **Live tests** are marked `@pytest.mark.live`. They are skipped unless `PORTRAITS_LIVE=1` is set and the keys are present, and they are used only by F-27..F-29.
-- **Not machine-tested:** whether a portrait looks good. That is judged by the trial's board, the owner's veto and, in the end, the admin's approval in the library.
+  - recorded responses from Wikidata, Commons, loc.gov, id.loc.gov and Wellcome, recorded once and committed;
+  - canned model responses: JSON for the checks, and images for the AI copy (made from the prototype's synthetic keyed copies);
+  - small images: synthetic ones generated in tests, the owner's three originals (test only, D-13), and a few public-domain images;
+  - **the Python prototype's reference outputs** (`prototype/out/`, `prototype/fixtures/`). The TypeScript port must match them within the tolerances in `spec/architecture.md` (F-16);
+  - **same-photograph pairs:** the prototype's doctored copies, plus the real pairs the coverage survey records (two sittings of one teacher included), for PIP-20;
+  - an `authors.csv` sample.
+- **API tests:**
+  - **contract:** every route's answers in tests are validated with `ajv` against `contracts/portraits-api.openapi.json`, and the samples in `portraits-api.sample.json` must validate too;
+  - **behaviour:** the library's flows are tested in-process against PGlite: pull the feed, fetch a portrait, send each decision and request, resend safely, key refused when off.
+- **Smoke tests on deployed copies** (HT-26): against the PR copy, then staging:
+  - `/api/v1/health`;
+  - 401 without the key and 200 with it;
+  - one fixture teacher end to end in stub mode;
+  - the admin page behind its login.
+- **Live tests** run only on cards marked *live* (the coverage survey, the trial, the first run), under the caps (D-54, RUN-10), with `PORTRAITS_LIVE=1`.
+- **Not machine-tested:** whether a portrait looks good. The trial's board, the owner's veto and the library's approval judge that.
 - **Not wanted:** coverage targets, evaluation suites, statistical scoring.
 
 ## 6. Spend plan

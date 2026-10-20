@@ -835,9 +835,9 @@ The tool has these commands:
 
 *Verify:* each command has at least one test.
 
-**RUN-06 · Offline mode for tests** *proposed* · C
+**RUN-06 · Offline mode for tests** *proposed* · C (T-24)
 - Every network and model call goes through clients that can be swapped for fixtures and stubs.
-- The whole suite runs with no keys and no network.
+- The whole suite runs with no keys and no network. The database in tests is PGlite, running the same migrations (`plan/build-plan.md` §5).
 
 *Verify:* the CI or harness test command runs with networking disabled.
 
