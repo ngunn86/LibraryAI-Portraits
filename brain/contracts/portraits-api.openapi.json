@@ -2,7 +2,7 @@
  "openapi": "3.1.0",
  "info": {
   "title": "Nexus Portraits API",
-  "version": "1.0.0-draft.3",
+  "version": "1.0.0-draft.4",
   "summary": "What the library reads from the portraits tool, and the decisions and requests it sends back.",
   "description": "Defined by this project and adopted by the library (D-37). Draft for T-08, 2026-10-19.\n\n- **Pull only** (D-44): the library reads the change feed on its own schedule; the tool never calls the library.\n- **One key** (D-44) for the library, for reading and sending. Made and switched off by the owner; stored only as a hash.\n- **Requests are handled right away** (D-44): a request answers 202, and its result appears in the change feed.\n- The library keeps its own copy of every file it pulls (D-42); each file carries its SHA-256.\n- Conventions mirror the library's own API (Rev1 `brain/contracts/api.openapi.json`): bearer keys, the same error object, the same change-feed pattern.\n- Within v1, changes are additive only: new optional fields and new routes. Response objects may gain fields; readers must ignore unknown ones."
  },
@@ -441,7 +441,7 @@
     ],
     "summary": "Ask for work on a teacher",
     "operationId": "sendRequest",
-    "description": "Try again, another original, or try a link (IN-06). Handled right away by the worker (D-44). Safe to resend: a repeated `request_id` returns the existing request.",
+    "description": "Try again, another original, or try a link (IN-06). Accepted with 202 and handled right away by the worker (D-44); the result, or `refused` with its reason, appears in the request and the change feed. Unknown teacher or portrait: 404. A link outside the adopted sources, or a try_again/another_original without a portrait: 422. Safe to resend: a repeated `request_id` returns the existing request.",
     "requestBody": {
      "required": true,
      "content": {
@@ -758,7 +758,7 @@
      "kind",
      "message"
     ],
-    "description": "The same shape and kinds as the library's own API (Rev1 `api.openapi.json`, `Error`), plus `conflict`. key_off 401, out_of_scope 403, not_found 404, conflict 409, cursor_too_old 410, invalid 400 or 422, rate_limited 429 (with Retry-After)."
+    "description": "The same shape and kinds as the library's own API (Rev1 `api.openapi.json`, `Error`), plus `conflict`. key_off 401, out_of_scope 403, not_found 404, conflict 409, cursor_too_old 410, invalid 400 or 422, rate_limited 429 (with Retry-After). `out_of_scope` is reserved, as in the library's API; v1 doesn't use it."
    },
    "Page": {
     "type": "object",
@@ -791,9 +791,10 @@
       "enum": [
        "not_yet",
        "found",
-       "none_found"
+       "none_found",
+       "skipped"
       ],
-      "description": "not_yet: not searched yet; found: at least one portrait made; none_found: searched, and no candidate passed."
+      "description": "not_yet: not searched yet; found: at least one portrait published; none_found: searched, and no candidate passed; skipped: not searchable, because the teacher has no Wikidata id, LoC name id or both years (IN-04). The owner can add them to authors.csv."
      },
      "last_searched": {
       "oneOf": [
@@ -805,11 +806,22 @@
         "type": "null"
        }
       ]
+     },
+     "skip_reason": {
+      "oneOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "required": [
      "state",
-     "last_searched"
+     "last_searched",
+     "skip_reason"
     ],
     "description": "Where the search for this teacher's portraits stands, so the library can tell 'coming' from 'none exists'."
    },
@@ -957,21 +969,31 @@
         "type": "string",
         "enum": [
          "list",
-         "wikidata",
-         "both"
+         "wikidata_and_loc",
+         "none"
         ],
-        "description": "Where born and died came from (IN-13)."
+        "description": "Where born and died came from: the authors list, or Wikidata and the LoC name authority agreeing (IN-13); none if unknown."
        },
        "portrait_list": {
         "type": "array",
         "items": {
          "$ref": "#/components/schemas/PortraitSummary"
         }
+       },
+       "ids_from": {
+        "type": "string",
+        "enum": [
+         "list",
+         "resolved_by_tool",
+         "none"
+        ],
+        "description": "Where wikidata_qid and lcnaf_id came from: the authors list, or found by the tool when Wikidata and the LoC name authority agreed (SRC-06b); none if there are none."
        }
       },
       "required": [
        "aliases",
        "dates_from",
+       "ids_from",
        "portrait_list"
       ]
      }
@@ -1064,7 +1086,7 @@
        "turned_down",
        "replaced"
       ],
-      "description": "waiting: in the library's queue; approved; turned_down; replaced: a better copy was approved in its place. Portraits still being made, or that failed, never appear."
+      "description": "waiting: in the library's queue; approved; turned_down (by the library, or by its another_original request); replaced: superseded by another portrait of the same photograph, either a better copy the library approved in its place or a newer draft that replaced a waiting one (OUT-07). Portraits still being made, or that failed, never appear."
      },
      "main": {
       "type": "boolean"
@@ -1142,7 +1164,7 @@
      },
      "credit": {
       "type": "string",
-      "description": "This file's credit line (SRC-11). Adaptations read 'Portrait by New Thought Nexus, adapted from: <original credit>' (D-48)."
+      "description": "This file's credit line (SRC-11). The versions read 'Portrait by New Thought Nexus, adapted from: <original credit>'; `enhanced` reads 'AI-assisted restoration by New Thought Nexus, adapted from: …'; `mask` reads 'Cut-out mask by New Thought Nexus, adapted from: …' (D-48)."
      },
      "licence_url": {
       "oneOf": [
@@ -1168,17 +1190,41 @@
      "licence",
      "licence_url",
      "credit"
-    ]
+    ],
+    "description": "One file of a portrait (OUT-11). Seven kinds are always present; `enhanced` is missing only when the AI copy couldn't be made at all (the call failed), and `enhanced_used` on the portrait is then false."
    },
    "Source": {
     "type": "object",
+    "description": "The original's record (SRC-08, D-14).",
+    "required": [
+     "source",
+     "source_id",
+     "item_url",
+     "file_url",
+     "title",
+     "creator",
+     "date",
+     "licence",
+     "licence_url",
+     "licence_tier",
+     "credit",
+     "matched_by",
+     "matched_to",
+     "match_evidence",
+     "medium"
+    ],
     "properties": {
      "source": {
       "type": "string",
-      "examples": [
-       "wikimedia-commons",
-       "loc"
+      "enum": [
+       "commons",
+       "loc",
+       "wellcome"
       ]
+     },
+     "source_id": {
+      "type": "string",
+      "description": "The source's own id: the Commons file name, the LoC item id or the Wellcome work id."
      },
      "item_url": {
       "type": "string",
@@ -1212,7 +1258,8 @@
       ]
      },
      "licence": {
-      "type": "string"
+      "type": "string",
+      "description": "As the source gives it."
      },
      "licence_url": {
       "oneOf": [
@@ -1225,31 +1272,47 @@
        }
       ]
      },
+     "licence_tier": {
+      "type": "integer",
+      "enum": [
+       1,
+       2
+      ],
+      "description": "SRC-02: 1 = public domain, CC0 or 'no known restrictions'; 2 = CC BY or CC BY-SA."
+     },
      "credit": {
       "type": "string"
      },
-     "match_rule": {
+     "matched_by": {
       "type": "string",
-      "description": "SRC-03 rule, e.g. R1."
+      "enum": [
+       "wikidata_p18",
+       "commons_p180",
+       "name_dates",
+       "lcnaf_id",
+       "owner_link"
+      ],
+      "description": "SRC-03: R1 = wikidata_p18, R2 = commons_p180, R3 = name_dates or lcnaf_id; owner_link = a library try_link (SRC-04)."
+     },
+     "matched_to": {
+      "type": "string",
+      "description": "The Wikidata id, LoC name id or name heading that matched."
      },
      "match_evidence": {
       "type": "string"
+     },
+     "medium": {
+      "type": "string",
+      "enum": [
+       "photograph",
+       "engraving",
+       "drawing",
+       "painting",
+       "other"
+      ],
+      "description": "From the pre-check (PIP-02, D-47)."
      }
-    },
-    "required": [
-     "source",
-     "item_url",
-     "file_url",
-     "title",
-     "creator",
-     "date",
-     "licence",
-     "licence_url",
-     "credit",
-     "match_rule",
-     "match_evidence"
-    ],
-    "description": "The original's record (SRC-08, D-14)."
+    }
    },
    "Portrait": {
     "allOf": [
@@ -1688,7 +1751,7 @@
        "another_original",
        "try_link"
       ],
-      "description": "IN-06. try_again: a new draft from the same original, with the note (Q-08). another_original: set aside this portrait's original and use the next candidate. try_link: try the pasted link (SRC-04)."
+      "description": "IN-06. try_again: a new draft from the same original; the note guides a fresh AI copy. A note about the crop or the outline can't be applied under one recipe: the request is accepted, then answered `refused` with that reason (classified by a model, prompt note_kind.md). another_original: the portrait becomes turned_down (reason other) and its slot is filled from the next photograph. try_link: try the pasted link; a link outside the adopted sources is refused at once with 422 `invalid`."
      },
      "note": {
       "type": "string",
@@ -1919,12 +1982,22 @@
      },
      "commit": {
       "type": "string"
+     },
+     "opencv": {
+      "type": "boolean",
+      "description": "OpenCV.js loaded."
+     },
+     "sharp": {
+      "type": "boolean",
+      "description": "sharp loaded."
      }
     },
     "required": [
      "status",
      "version",
-     "commit"
+     "commit",
+     "opencv",
+     "sharp"
     ]
    }
   }

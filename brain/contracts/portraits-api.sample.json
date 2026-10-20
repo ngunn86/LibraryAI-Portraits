@@ -3,7 +3,9 @@
  "health": {
   "status": "ok",
   "version": "1.0.0",
-  "commit": "31e2a9e"
+  "commit": "31e2a9e",
+  "opencv": true,
+  "sharp": true
  },
  "teacher_page": {
   "teachers": [
@@ -24,7 +26,8 @@
     "main_portrait_id": "charles-fillmore-1",
     "portrait_search": {
      "state": "found",
-     "last_searched": "2026-11-01T03:00:00Z"
+     "last_searched": "2026-11-01T03:00:00Z",
+     "skip_reason": null
     },
     "record_version": 6
    },
@@ -44,8 +47,9 @@
     },
     "main_portrait_id": null,
     "portrait_search": {
-     "state": "not_yet",
-     "last_searched": null
+     "state": "skipped",
+     "last_searched": "2026-11-01T03:00:00Z",
+     "skip_reason": "No Wikidata id, LoC name id or both years; add one to authors.csv"
     },
     "record_version": 1
    }
@@ -70,13 +74,14 @@
   "main_portrait_id": "charles-fillmore-1",
   "portrait_search": {
    "state": "found",
-   "last_searched": "2026-11-01T03:00:00Z"
+   "last_searched": "2026-11-01T03:00:00Z",
+   "skip_reason": null
   },
   "record_version": 6,
   "aliases": [
    "Charles S. Fillmore"
   ],
-  "dates_from": "both",
+  "dates_from": "list",
   "portrait_list": [
    {
     "portrait_id": "charles-fillmore-1",
@@ -94,7 +99,8 @@
     "thumbnail": "/api/v1/portraits/charles-fillmore-2/files/white-500",
     "record_version": 1
    }
-  ]
+  ],
+  "ids_from": "resolved_by_tool"
  },
  "portrait": {
   "portrait_id": "charles-fillmore-1",
@@ -117,6 +123,7 @@
   },
   "source": {
    "source": "loc",
+   "source_id": "2004672143",
    "item_url": "https://www.loc.gov/item/2004672143/",
    "file_url": "https://tile.loc.gov/storage-services/service/pnp/example.tif",
    "title": "Charles Fillmore",
@@ -124,9 +131,12 @@
    "date": "c. 1895",
    "licence": "No known restrictions on publication",
    "licence_url": "https://www.loc.gov/rr/print/res/rights.html",
+   "licence_tier": 1,
    "credit": "Charles Fillmore, c. 1895. Photographer unknown. Library of Congress, Prints & Photographs Division. No known restrictions on publication.",
-   "match_rule": "R3",
-   "match_evidence": "Catalogue name and life dates match the teacher (1854-1948)."
+   "matched_by": "name_dates",
+   "matched_to": "Fillmore, Charles, 1854-1948",
+   "match_evidence": "The catalogue's name heading and life dates match the teacher (1854-1948).",
+   "medium": "photograph"
   },
   "files": [
    {

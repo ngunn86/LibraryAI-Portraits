@@ -13,7 +13,7 @@
 | **3 · Imaging (ported from the Python prototype)** | Porting spike, face and crop, descreen, halftone, mask and outline, blend, versions, same-photo check, parity with the prototype | F-39, F-12, F-13, F-14, F-15, F-30, F-41, F-42, F-16 | Harness | none |
 | **4 · Model steps** | OpenRouter client and caps, pre-check, AI copy and cut-out, draft check, same-photo tie-break, candidates | F-17, F-18, F-19, F-21, F-43, F-11 | Harness | none (stubbed) |
 | **5 · Pipeline and service** | Publishing, the per-teacher pipeline, queue and schedule, the API, decisions and requests, later runs, admin site, commands, the library stub, the offline end-to-end run | F-24, F-23, F-25, F-44, F-45, F-48, F-46, F-22, F-05, F-26 | Harness | none |
-| **6 · Live** | Smoke test on staging, the trial and its board, the examples reproduced, production release and first nightly run | F-27, F-28, F-29, F-47 | Harness, with the owner's veto | ≤ $2 + ≤ $30 (trial, F-29 included) + ≤ $100 (first full run) |
+| **6 · Live** | Smoke test on staging; the trial and its board, and the examples, in production before the release (schedule off, no library key); production release and first nightly run | F-27, F-28, F-29, F-47 | Harness, with the owner's veto | ≤ $2 + ≤ $30 (trial, F-29 included) + ≤ $100 (first full run) |
 
 The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requirements.md) are met.
 
@@ -113,7 +113,7 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 | Coding and reviewing during the build | The owner's subscriptions, through the harness | Subscription limits |
 | The throwaway test | A separate low-limit OpenRouter key (HT-18) | ≤ $0.50 |
 | F-27 live smoke test (one teacher) | The tool's OpenRouter key | ≤ $2 |
-| F-28 trial (three enhance models on about 20 originals) and F-29 (the examples, reusing the trial's cache) | The tool's key | $30 trial budget (D-54); estimate $5–10 |
+| F-28 trial (three enhance models on about 23 originals) and F-29 (the examples, reusing the trial's cache) | The tool's key | $30 trial budget (D-54), as $27 + $3 sub-budgets; estimate about $11 |
 | F-47 first full run | The tool's key | $100 cap (D-54); estimate $40–80 |
 | After that | The tool's key | $10 a night, $30 a month (D-54) |
 | Hosting | Railway | About $8–15 a month (T-01 notes) |

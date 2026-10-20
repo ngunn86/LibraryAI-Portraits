@@ -112,7 +112,7 @@ F-16 also checks that the recipe re-creates `out/*.png` from `fixtures/` within 
 
 ## What's still different, and why
 
-- **The cut-out decides the line.** Holmes's left shoulder and Cady's right side bulge, because the prototype's stand-in cut-out is two small public models merged. It struggles with a dark suit on a dark background. The production cut-out (Bria RMBG 2.0 or similar) should do better, and the draft check's "cut-out clean" criterion exists to catch it. **Risk for the trial:** include dark-on-dark originals.
+- **The cut-out decides the line.** Holmes's left shoulder and Cady's right side bulge, because the prototype's stand-in cut-out is two small public models merged. It struggles with a dark suit on a dark background. The production cut-out comes from the AI copy's green background (PIP-03, D-19) and should do better, and the draft check's "cut-out clean" criterion exists to catch it. **Risk for the trial:** include dark-on-dark originals.
 - **The owner's portraits were each adjusted by hand** (different levels per image, finer dots and a heavier line on Cady). One recipe for every teacher (STY-05) can't match all three exactly. It matches Fillmore and Holmes most closely.
 
 ## Evidence for open questions

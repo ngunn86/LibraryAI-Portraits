@@ -11,8 +11,9 @@ Conventions are in [../README.md](../README.md).
 
 > **Consolidated 2026-10-20** after tracker topics T-01..T-23 (D-31..D-57). Each requirement now states what is to be built, and its origin names the decisions behind it. The history of each change is in [../decisions.md](../decisions.md) and in git.
 >
-> **Two things are still open:**
-> - **Q-27 (owner):** the B2 items restated here for the hosted API (OUT-08's zip, and AC-01..AC-03) wait for the owner's OK.
+> **Three things are still open:**
+> - **Q-27 (owner):** the B2 items restated here for the hosted API (OUT-08's zip, OUT-10's acceptance check, and AC-01..AC-03) wait for the owner's OK.
+> - **Q-28 (owner):** whether teachers whose three slots are full are still searched monthly, so better copies can be found (D-40 against D-53), and the reading of the first-run cap (D-54). The text below follows Claude's proposals, marked *(Q-28)*.
 > - **PORT reconciliation (section 10):** Library-AI---Rev1's `tool`-tagged lines must each map to a requirement here. This waits for the library's latest planning to reach GitHub (O-1, tracker T-09).
 
 ---
@@ -75,7 +76,7 @@ These are Library-AI's build, not this project:
   - lacks the `name`, `status` or `dates` column;
   - has no active rows.
 
-*Verify:* fixtures; no source or model client is called (F-02).
+*Verify:* fixtures: the read stops before any other client is called (F-02); the previous teachers stay unchanged (F-31).
 
 **IN-04 · Which teachers can be searched, and by which rules** *fixed* · B2, D-45, D-47
 
@@ -89,14 +90,18 @@ These are Library-AI's build, not this project:
 
 **IN-05 · Notes are never used for matching** *fixed* · B2
 `notes` is for the owner only. No code path reads it for searching or matching.
-*Verify:* a test proves that changing a teacher's notes doesn't change their candidates (F-02).
+*Verify:* a test proves that changing a teacher's notes doesn't change their candidates (F-11).
 
 **IN-06 · Requests from the library** *fixed* · B2, D-44, D-53; format *proposed* · C
 - Requests arrive through `POST /api/v1/requests` (OUT-14) and are queued for the worker at once. There are three kinds:
   - `try_again`: a new draft from the same original. The note guides a fresh AI copy, through the enhance prompt and the draft check. A note about the crop or the outline can't change one portrait under one recipe (STY-05), so such a request is answered `refused` with that reason, suggesting `another_original`.
-  - `another_original`: set this portrait's original aside and use the next candidate.
+    - The note's kind (restoration, crop, outline or other) is judged by Claude Haiku with the prompt `note_kind.md`, stubbed in tests.
+  - `another_original`: the portrait becomes `turned_down` (reason `other`), its photograph is set aside, and the slot is filled from the next photograph.
   - `try_link`: try a pasted link on an adopted source (SRC-04).
-- A request naming an unknown teacher or portrait is refused with the reason.
+- **Rejected at once:**
+  - an unknown teacher or portrait: 404;
+  - a link outside the adopted sources, or `try_again` or `another_original` without a portrait: 422.
+- Accepted requests answer 202. Their outcome (`done`, or `refused` with the reason) appears on the request and in the change feed.
 
 *Verify:* API and scenario tests (F-45, F-26).
 
@@ -132,7 +137,7 @@ A request or decision sent again with the same `request_id` or `decision_id` cha
 *Verify:* unit tests (F-01).
 
 **IN-11 · Keys live outside the repo** *fixed* · B2, D-55
-- Keys are Railway variables per environment (RUN-10): the OpenRouter key, the GitHub token, the admin password hash, the session secret, and the database and bucket credentials.
+- Keys are Railway variables per environment (RUN-10): the OpenRouter key, the GitHub token, the session secret, and the database and bucket credentials. The admin password's hash is stored in the database (RUN-10).
 - They are never written to the repo, logs, reports, the admin page or API answers.
 
 *Verify:* a test scans every file and answer a stubbed run produces and finds no key value (F-01, F-26).
@@ -178,7 +183,8 @@ A request or decision sent again with the same `request_id` or `decision_id` cha
 - The outbound client may contact only these hosts, listed in settings:
   - the adopted sources' hosts;
   - `openrouter.ai`;
-  - `api.github.com`, for the teacher list only (IN-12).
+  - `api.github.com`, for the teacher list only (IN-12);
+  - the environment's own bucket endpoint (from Railway's variables, OUT-12).
 
   Any other host is refused before a request leaves the process. This also enforces SRC-10.
 
@@ -259,12 +265,15 @@ A heading without dates or id never matches.
 **SRC-08 · The original's record** *fixed* · B2, D-14
 Every original considered keeps, enough to credit it properly:
 
-- `source` (`commons`, `loc` or `wellcome`), the source's own id, the item link and the file link;
+- `source` (`commons`, `loc` or `wellcome`), `source_id` (the source's own id), the item link and the file link;
 - title, creator and date as given;
-- the licence as given, its tier and its link;
+- the licence as given, its link and its tier (1 or 2);
 - the credit line (SRC-11);
-- `matched_by` (`wikidata_p18`, `commons_p180`, `name_dates`, `lcnaf_id` or `owner_link`) and `matched_to`;
+- `matched_by` (`wikidata_p18`, `commons_p180`, `name_dates`, `lcnaf_id` or `owner_link`), `matched_to` and the match evidence;
+- the medium (from the pre-check, D-47);
 - size in bytes, pixel dimensions and SHA-256.
+
+These are the field names of the API's `Source` record (OUT-14).
 
 The creator may be recorded as unknown when the source says so. The source, item link, licence and credit line are **never blank**; a candidate without them is refused.
 *Verify:* every record in the end-to-end run is complete, and a candidate without a credit line is refused (F-32, F-26).
@@ -279,7 +288,7 @@ The creator may be recorded as unknown when the source says so. The source, item
 
 *Verify:*
 - the client's headers;
-- pacing: 30 LoC calls take at least a minute on a fake clock;
+- pacing: calls to the LoC are spaced evenly, one every 3 seconds, so 30 calls take at least 87 seconds on a fake clock;
 - retries: a 429 and a CAPTCHA page both back off (F-06).
 
 **SRC-10 · Never the library's own scans or the reference shelf** *fixed* · B2
@@ -501,7 +510,7 @@ Code lays the line over the dots and writes the master (STY-06).
   - at most **12** are pre-checked. Pre-check failures don't count toward the 6.
 - Slots still empty stay empty until a later run.
 - A turn-down from the library (IN-07) sets aside every copy of that photograph. A clearly better copy may come back once (PIP-17).
-- A teacher is tried again on a later run only when new candidates exist or a month has passed (RUN-08).
+- On a later run, only new candidates are tried. The monthly search (RUN-08) is what finds them.
 
 *Verify:* scenarios (F-23).
 
@@ -537,6 +546,7 @@ Code lays the line over the dots and writes the master (STY-06).
 **PIP-14 · Up to three portraits per teacher** *fixed* · D-25, D-40; setting *proposed* · C
 - A teacher has at most `maxPortraitsPerTeacher` (3) portraits that are being made, waiting or approved.
 - Turned-down and replaced portraits don't count; their slot is filled from the next photograph.
+- A waiting portrait with `replaces` set (an offer under PIP-17) doesn't count either. If the library approves it, the portrait it replaces becomes `replaced`, so the count stays at most 3.
 
 *Verify:* scenario: 5 different photographs give 3 portraits; a turn-down frees a slot for the 4th (F-23).
 
@@ -555,7 +565,7 @@ When more different photographs pass than there are free slots:
 *Verify:* unit test: P18 is kept; of two similar photographs from the same years and one from another decade, the other decade's wins (F-23).
 
 **PIP-17 · Later runs: better copies and turn-downs** *fixed* · D-40; details *proposed* · C
-- **A clearly better copy of an approved portrait** is offered as a new waiting portrait with `replaces` set. The approved one stays until the library approves the new one, which is the swap.
+- **A clearly better copy of an approved portrait** is offered as a new waiting portrait with `replaces` set. The approved one stays until the library approves the new one, which is the swap. *(Q-28)* Finding one needs the teacher to be searched again even when their slots are full (RUN-08).
 - *Proposed:* a clearly better copy of a portrait still waiting replaces it (OUT-07).
 - *Proposed:* when all slots are full, a new photograph that ranks above one of them is offered as a draft with `replaces` set. The library decides.
 - **A turned-down photograph** may come back only as a clearly better copy, offered once. It never comes back when the reason was `not_this_teacher` or `do_not_use`.
@@ -599,7 +609,7 @@ Each new candidate is compared with the teacher's other candidates and with all 
 3. **In between, the vision model decides** (Sonnet, `same_photo.md`).
 4. **If it is unsure, they are the same photograph** (D-50).
 
-The prototype (`prototype/same_photo.py`) scored doctored copies 56–330 and different photographs 19 or less. The thresholds are checked on the survey's real pairs, two sittings of one teacher included, before the build relies on them.
+The prototype (`prototype/same_photo.py`) scored doctored copies 56–330 and different photographs 19 or less. The thresholds are checked on the survey's real pairs, two sittings of one teacher included, before the build relies on them. They assume SIFT. If the porting spike (F-39) has to fall back to another detector, the thresholds are measured again on the same fixtures, and the change is recorded as a recipe change (STY-05).
 
 *Verify:*
 - copies (crop, rescale, rotation, JPEG, blur, reprint screen, mirror, noise) are the same;
@@ -620,7 +630,7 @@ The prototype (`prototype/same_photo.py`) scored doctored copies 56–330 and di
   - the photograph id;
   - the approximate date and best-known flag (PIP-18);
   - the original's record (SRC-08);
-  - the eight files with their sizes, SHA-256, licences and credits (OUT-11, SRC-11);
+  - its files with their sizes, SHA-256, licences and credits (OUT-11, SRC-11);
   - whether the AI copy was used;
   - the recipe version.
 - The check's notes, the attempts and any set-asides are in its history and on the admin page.
@@ -661,7 +671,7 @@ Each run's report is a page on the admin site (RUN-09). It says, in plain words:
 
 **OUT-07 · Replacing a waiting draft** *fixed* · B2, D-40, D-42
 - A new draft of the same photograph replaces the one still waiting (a remake on a library `try_again`, or a better copy under PIP-17).
-- The old one becomes `replaced` and keeps its files.
+- The old one becomes `replaced`, with `replaced_by` set, and keeps its files. `replaced` always means "superseded by another portrait of the same photograph".
 - The library sees both changes in the change feed.
 
 *Verify:* scenario (F-48, F-26).
@@ -676,7 +686,7 @@ Each run's report is a page on the admin site (RUN-09). It says, in plain words:
 **OUT-10 · Samples for the library** *fixed* · B2, D-37; mechanism *proposed* · C
 - The repo keeps sample payloads for every route (`contracts/portraits-api.sample.json`). They validate against the contract (`check_api.py`).
 - A staging copy, seeded with fixture portraits in stub mode, lets the library's builders pull end to end before any real portrait exists.
-- The library's acceptance check of the hand-off is to pull from staging and send one decision of each kind (Q-27).
+- *(Q-27)* The library's acceptance check of the hand-off is to pull from staging and send one decision of each kind.
 
 *Verify:* `check_api.py` passes (F-03); the library stub completes against the seeded staging copy (F-05, F-27).
 
@@ -692,10 +702,11 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 | `enhanced.png` | The AI copy as the model returned it, kept even if refused (PIP-13) |
 | `mask.png` | The cut-out mask: 8-bit grey, white is the person, at the original's size and position |
 
-- All eight are offered to the library (D-39).
+- All are offered to the library (D-39).
+- Seven are always present. `enhanced.png` is missing only when the AI copy couldn't be made at all; `enhanced_used` is then false, and the history says why.
 - Download names for people read like `Charles Fillmore - portrait 1 - white 1000.png`.
 
-*Verify:* the fixture run produces all eight per portrait, each passing its own check (F-24).
+*Verify:* the fixture run produces every file per portrait, each passing its own check, and a fixture whose enhance call failed has the other seven (F-24).
 
 **OUT-12 · Storage** *fixed* · D-42; layout *proposed* · C
 - Files live in the tool's own private bucket (Railway, S3-compatible), one per environment. There is no Drive copy.
@@ -716,7 +727,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - **API keys:** the list, by label and last use. Keys are made and switched off by command.
 - No approvals here: they happen in the library (D-38).
 
-*Verify:* a smoke test opens each page after logging in and finds no form that changes data except logging in and out (F-46).
+*Verify:* offline, each page renders from a fixture database and has no form that changes data except logging in and out (F-46); on staging, a smoke test logs in and opens the teacher list (F-27).
 
 **OUT-14 · The library API** *fixed* · D-28, D-37, D-44; details *proposed* · C
 - The tool serves the API in [../contracts/portraits-api.openapi.json](../contracts/portraits-api.openapi.json), explained in [../contracts/portraits-api.md](../contracts/portraits-api.md). The library adopts it.
@@ -748,16 +759,18 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - It is built in **TypeScript on Node 24**, like the library (D-57). See [architecture.md](architecture.md).
 - A command-line tool runs steps by hand for the harness and the owner (`railway run`, RUN-05).
 
-**RUN-02 · What a run does, in order** *fixed* · B2, D-44, D-53
+**RUN-02 · What a run does, in order** *fixed* · B2, D-44, D-53; full teachers *proposed (Q-28)* · C
 1. The library's requests come first, as they arrive.
-2. Then teachers with an open slot (PIP-14).
+2. Then the queued teachers.
 
-A run skips:
-- teachers whose slots are full, unless a request names them;
-- teachers with no new candidates since their last try;
-- teachers searched within the last month, unless a request names them.
+**Who is queued:**
+- A teacher is queued when they haven't been searched in the last month. That covers:
+  - teachers with an open slot (PIP-14, D-53);
+  - *(Q-28)* teachers whose slots are full, but only to look for better copies and higher-ranked photographs (PIP-17), behind the setting `researchFullTeachers` (default on).
+- A request queues its teacher at once, whenever they were last searched.
 
-Teachers are processed one at a time.
+**What a queued teacher gets:** the sources are searched, and only new candidates are tried (PIP-11). Set-aside photographs aren't tried, except as PIP-17 allows. Teachers are processed one at a time.
+
 *Verify:* run scenarios (F-25, F-26).
 
 **RUN-03 · Resumable without paying twice** *fixed* · B2
@@ -769,16 +782,18 @@ Teachers are processed one at a time.
 
 **RUN-04 · Spend caps and ledger** *fixed* · B2, D-54; method *proposed* · C
 - One OpenRouter key, the only AI key (D-19). The owner sets a credit limit on it as a backstop (O-4).
-- **Caps** (D-54):
-  - **$100** for the first full run;
-  - then **$10 a night** and **$30 a calendar month**, whichever comes first;
+- **Caps in production** (D-54):
+  - **$100 for the first full run.** *(Q-28, Claude's reading)* The first full run is the first pass over the list, from the release (F-47) until the queue first empties. Its $100 is a total across the nights it takes, and the night cap doesn't apply during it. If it reaches $100, the rest of the pass carries on from the next night under the regular caps.
+  - **After the first pass: $10 a night and $30 a calendar month**, whichever comes first. The first pass's spend doesn't count toward a month.
   - **$2 per teacher per run** (proposed).
 
-  The library's requests count toward the night and the month. The trial has its own budget (TRI-07).
+  The library's requests count toward the night and the month.
+- **The trial** has its own budget of $30 (TRI-07), split into named sub-budgets that the client enforces: $27 for F-28 and $3 for F-29.
+- **Other environments** (RUN-10): pull-request copies make no paid calls at all; staging has $2 a night and $10 a month.
 - Before each paid call, the client checks that the spend so far, plus the call's estimated maximum, fits under every cap that applies. If it doesn't, the work stops cleanly, finished portraits are published, and the report says so.
 - Each call's actual cost is logged, from OpenRouter's usage data where given and from the settings' estimate otherwise, with its environment.
 
-*Verify:* stubbed costs cross each cap; no call is made past it, and the report says so (F-17).
+*Verify:* stubbed costs cross each cap and sub-budget; no call is made past it, and the report says so (F-17).
 
 **RUN-05 · Commands** *proposed* · C
 `portraits <command>`:
@@ -792,7 +807,7 @@ Teachers are processed one at a time.
 - `password set`: the admin password.
 - `status`: the queue, recent runs and spend.
 
-*Verify:* each command has a test (F-22).
+*Verify:* each command has a test (F-22; `trial` in F-28).
 
 **RUN-06 · Offline tests** *proposed* · C
 - Every network and model call goes through clients that can be swapped for recorded responses and stubs.
@@ -806,12 +821,21 @@ Teachers are processed one at a time.
 
 *Verify:* F-26's key scan covers the logs.
 
-**RUN-08 · Schedule** *fixed* · D-53
-- **Nightly**, the cron job syncs the teacher list, queues every teacher with an open slot who hasn't been searched in the last month, and exits.
-- The worker works through the queue.
-- **The library's requests** are queued as they arrive.
+**RUN-08 · Schedule** *fixed* · D-53; full teachers *proposed (Q-28)* · C
+- **Nightly, in production,** the cron job:
+  - syncs the teacher list;
+  - queues the teachers due a search (RUN-02);
+  - exits.
+- The worker works through the queue. **The library's requests** are queued as they arrive.
+- **Each teacher is searched again monthly:** those with an open slot (D-53) and, *(Q-28)*, those whose slots are full, for better copies.
+- The schedule is off until the release (F-47) and in every other environment. Staging and pull-request copies run only by hand.
 
-*Verify:* fake-clock scenarios: searched 10 days ago, not queued; 35 days ago, queued; a request is queued at once; the cron job exits (F-25).
+*Verify:* fake-clock scenarios (F-25):
+- searched 10 days ago, not queued; searched 35 days ago, queued;
+- a full teacher queued only when `researchFullTeachers` is on;
+- a request queued at once;
+- the cron job exits;
+- with the schedule off, nothing is queued.
 
 **RUN-09 · How the owner hears about it** *fixed* · D-53
 - **The admin page** shows each run (OUT-06).
@@ -819,25 +843,29 @@ Teachers are processed one at a time.
 - **Railway's alerts** cover crashes and failed deploys.
 - The tool sends no email of its own.
 
-*Verify:* the admin page shows the fixture run's report; no mail-sending code exists (F-46).
+*Verify:* the admin page shows the fixture run's report; a dependency check finds no mail-sending package or SMTP code (F-46).
 
 **RUN-10 · Security** *fixed* · D-55; details *proposed* · C
-- **Admin login:** one password, stored only as a slow hash (Argon2 or bcrypt).
-  - A secure, HTTP-only, SameSite session lasts 30 days.
+- **Admin login:** one password, stored in the database only as a slow hash (Argon2 or bcrypt).
+  - A secure, HTTP-only, SameSite session lasts 30 days, signed with the session secret (a Railway variable).
   - Attempts are rate-limited, with a short lockout.
-  - The password is set by command.
+  - The password is set by command (`password set`).
 - **The library's key:** random, at least 32 bytes, stored as a hash. It is made and switched off by command and shown once.
 - **Transport and files:** HTTPS only. The bucket is private; files leave only through 15-minute signed links.
 - **Secrets** are Railway variables (IN-11). The OpenRouter key is the same in every environment (D-55).
 - **Rate limits:** about 600 API calls a minute per key, plus the login limit.
 - **Outbound calls** go only to the adopted sources, OpenRouter and (for the teacher list) GitHub (SRC-01).
-- **Environment caps:** staging and each pull-request copy spend at most $2 a night.
+- **Environments, since the key is shared** (D-55):
+  - **pull-request copies** run in stub mode only: no paid calls, no cron;
+  - **staging** has no cron, runs by hand, and spends at most $2 a night and $10 a month;
+  - **production** has the caps of RUN-04.
+- The environment is read from Railway's `RAILWAY_ENVIRONMENT_NAME`, and its rules come from settings. The key's credit limit (O-4) is the backstop across all of them.
 
 *Verify:*
 - a scan of the repo, test logs and sample answers finds no secret;
 - wrong passwords lock out;
 - a switched-off key gets 401;
-- a pull-request environment stops at its cap (F-17, F-44, F-46).
+- a pull-request environment refuses every paid call, and staging stops at its caps (F-17, F-44, F-46).
 
 ---
 
@@ -875,10 +903,10 @@ The trial runs before the first full run, which then uses its defaults. Nothing 
 **TRI-06 · Defaults come from the trial** *fixed* · B2; mechanism *proposed* · C
 - The trial writes the winning model, and any engraving verdict, into `src/config/settings.ts` with a new `recipeVersion`. The harness commits it, with a note in the digest.
 - The owner's veto reverses it.
-- The first full run reuses every cached paid step from the trial.
+- **The trial runs in production before the release.** Production is deployed with its schedule off and no library key (F-47 switches both on), and trial drafts never appear in the API. So the first full run reuses every cached paid step from the trial, since the cache lives in production's database.
 
 **TRI-07 · Trial budget** *fixed* · B2, D-54
-$30, separate from the run caps. The estimate is $5–10.
+$30, separate from the run caps: $27 for the trial (F-28) and $3 for the examples (F-29), each enforced by the client. The estimate is about $11 (about 23 originals × 3 models, with their checks).
 
 **TRI-08 · The examples are reproduced** *fixed* · B2; measures *proposed* · C
 - The output for the owner's three originals passes the draft check's "compare with target" mode against the hand-made portraits.
@@ -896,12 +924,12 @@ $30, separate from the run caps. The estimate is $5–10.
 
 ## 9. Project acceptance ("done when", from B2)
 
-AC-01..AC-03 restate B2's checks for the hosted API. They wait for the owner's OK (Q-27).
+AC-01..AC-03 restate B2's checks for the hosted API. They wait for the owner's OK (Q-27), as does OUT-10's acceptance check.
 
 | ID | Done when | Checked by |
 |---|---|---|
 | AC-01 | The teacher sync loads the active rows of `authors.csv`; a row with an unreadable or impossible date is reported with its row; a second sync changes nothing | F-02, F-31 |
-| AC-02 | Every published portrait's record validates against the OpenAPI contract, with all eight files present and checked; a record missing its licence is refused, naming the field | F-03, F-24, F-26 |
+| AC-02 | Every published portrait's record validates against the OpenAPI contract, with its files present and checked (all eight, or seven when the AI copy couldn't be made); a record missing its licence is refused, naming the field | F-03, F-24, F-26 |
 | AC-03 | The library stub, run against staging, pulls the change feed, fetches portraits and files (SHA-256 checked) and sends one decision and one request of each kind. The next run then: handles the request first; skips a teacher whose slots are full; sets aside a turned-down photograph; publishes a swap | F-05, F-26, F-27 |
 | AC-04 | The owner's three examples are reproduced closely enough that the check passes them against the hand-made targets | F-29 (TRI-08) |
 | AC-05 | The trial's board exists and the defaults are set from it. One full harness run (plan, build, tests, digest, veto) has completed on this project | F-28, plus the harness's own record |

@@ -29,7 +29,7 @@
 | T-05 | Approval: what the library approves, and the main portrait | 1 Shape | T-01, T-03 | **decided** (D-38): in the library's queue, reported back |
 | T-06 | Storage and organisation by teacher | 2 Data | T-01, T-02, T-03 | **decided** (D-42): tool's bucket; library keeps its own copies; history kept; database backups; read-only admin page |
 | T-07 | The records: what we keep about teachers, portraits, versions and sources | 2 Data | T-02 – T-05 | **decided** (D-43): as proposed ([notes](topics/T-07-records.md)) |
-| T-08 | The library API | 2 Data | T-01, T-06, T-07 | **decided** (D-44): one key, pull only, requests at once; [OpenAPI draft 1](contracts/portraits-api.openapi.json) |
+| T-08 | The library API | 2 Data | T-01, T-06, T-07 | **decided** (D-44): one key, pull only, requests at once; [OpenAPI contract](contracts/portraits-api.openapi.json) (draft 3) |
 | T-09 | The contract with Library-AI (Rev1) | 2 Data | T-08 | **mostly decided** (D-37): this project owns the API and its OpenAPI file; the library adopts it |
 | T-10 | The teacher list (from the pipeline's authors) | 3 Finding | none | **decided** (D-22, D-45): active only; two sources must agree; unknowns skipped and listed |
 | T-11 | Picture sources | 3 Finding | T-07 | **decided** (D-46): Commons, LoC, Wellcome; Smithsonian only if the survey shows gaps; NYPL and DPLA dropped ([notes](topics/T-11-picture-sources.md)) |

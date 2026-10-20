@@ -2,7 +2,7 @@
 
 Starting prompt text for every model step. All of them run through OpenRouter, so the tool needs one key (D-19).
 
-- The harness copies these into `portraits/models/prompts/`, each with a version number. The version is recorded with every attempt.
+- The harness copies these into `src/models/prompts/`, each with a version number. The version is recorded with every attempt.
 - The trial (F-28) tests them on real originals. Any prompt change bumps its version.
 
 | File | Step | Model role | Output |
@@ -13,6 +13,7 @@ Starting prompt text for every model step. All of them run through OpenRouter, s
 | `draftcheck.md` | PIP-09 | Vision | JSON scores on the draft |
 | `compare.md` | TRI-08 | Vision | JSON verdict: draft vs. the owner's hand-made portrait |
 | `same_photo.md` | PIP-20 tie-break | Vision | JSON verdict: the same photograph, different ones, or unsure |
+| `note_kind.md` | IN-06 | Text (Haiku) | JSON: what a Try-again note asks for (restoration, crop, outline, other) |
 | ~~`outline.md`~~ | *withdrawn* (D-49: the outline is drawn by code) | — | — |
 
 Why a green background rather than transparency: image models don't reliably output transparency. A flat, saturated green is trivial to separate from a black-and-white portrait (`key_mask` in `../recipe.py`). Because the copy and its cut-out come from one image, they line up with each other by construction.

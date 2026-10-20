@@ -7,10 +7,10 @@ These are settled by the owner. Each entry gives the date, the source and the re
 **D-01 · 2026-10-17 · A standalone tool, and the harness's first test** · B1
 The portraits tool is built separately from Library-AI, as its own app in its own repo, and it is the first project the autonomous build harness runs end to end (Library-AI readiness gate G10).
 
-**D-02 · 2026-10-19 · No dependency on the library** · B2 · *supersedes B1's API hand-off*
+**D-02 · 2026-10-19 · No dependency on the library** · B2 · *supersedes B1's API hand-off* · *input and output superseded by D-22/D-45 (the authors list) and D-31/D-37/D-42 (hosted, with an API); "no dependency on the library" stands (SCOPE-02)*
 The tool's input is the owner's `teachers.csv`. Its output is a shared Drive folder. It no longer reads teachers or requests from the library's API, and no longer posts portraits to it. The library reads the folder later. → SCOPE-02, IN-01, OUT-01
 
-**D-03 · 2026-10-17 · Sources and rights** · B1, B2
+**D-03 · 2026-10-17 · Sources and rights** · B1, B2 · *sources widened by D-21 and D-46; the rules stand*
 - Originals come from Wikimedia Commons and the Library of Congress only.
 - Public domain comes first (public domain, CC0, "no known restrictions"), then CC BY and CC BY-SA. Nothing else, ever.
 - Only certain matches count, by three rules in order: the Wikidata image (P18), Commons depicts (P180), and Library of Congress name with dates.
@@ -18,7 +18,7 @@ The tool's input is the owner's `teachers.csv`. Its output is a shared Drive fol
 
 → SRC-01..10
 
-**D-04 · 2026-10-17 · The style is the owner's and fixed** · B1, B2
+**D-04 · 2026-10-17 · The style is the owner's and fixed** · B1, B2 · *amended by D-18 (the AI blend), D-39 (the other versions) and D-49 (code outline)*
 - A one-colour halftone, made by code: round white dots on a 45° grid, about 110 across, with dark tones transparent.
 - One thin, smooth white outline.
 - A head-and-shoulders square crop with no background.
@@ -28,28 +28,28 @@ The tool's input is the owner's `teachers.csv`. Its output is a shared Drive fol
 
 → STY-01..07
 
-**D-05 · 2026-10-17 · Starting models** · B1, B2 · *cut-out provider superseded by D-19*
+**D-05 · 2026-10-17 · Starting models** · B1, B2 · *cut-out provider superseded by D-19; outline models superseded by D-49 (code outline); checker by D-52*
 - The outline starts with Gemini 3 Pro Image, with GPT Image 2 and FLUX.2 Pro as challengers.
 - The draft check uses a vision model from a different family than the outline model.
 - The cut-out uses Bria RMBG 2.0 or the like, with a direct fal key if OpenRouter has none.
 
 → PIP-03, PIP-07, PIP-09
 
-**D-06 · 2026-10-17 · Spending** · B1, B2
+**D-06 · 2026-10-17 · Spending** · B1, B2 · *numbers superseded by D-54*
 - The tool has its own OpenRouter key.
 - The cap for the first run is $250. The estimates are about 17 cents per attempt, $100 to $200 for the first run over a few hundred teachers, and about $30 for the trial.
 - The tool stops at the cap and logs spend per attempt.
 
 → RUN-04, TRI-07
 
-**D-07 · 2026-10-17 · The trial sits inside the first run, and nothing waits for the owner** · B1, B2
+**D-07 · 2026-10-17 · The trial sits inside the first run, and nothing waits for the owner** · B1, B2 · *contenders superseded by D-49 and D-56 (the three enhance models)*
 - The trial uses the owner's three originals plus about 20 found originals (screened prints, a tiny original, a group photo, an engraving, a damaged print).
 - The three outline models are compared, and the best one wins (the cheaper one when they're close).
 - A board goes to the owner for a veto.
 
 → TRI-01..08
 
-**D-08 · 2026-10-17 · Failure policy** · B1, B2
+**D-08 · 2026-10-17 · Failure policy** · B1, B2 · *limits superseded by D-40 and D-51 (6 drafted, 12 pre-checked per teacher per run; three slots)*
 - Two failures set an original aside.
 - A turn-down in the library sets it aside at once.
 - At most three originals per teacher.
@@ -203,7 +203,7 @@ The app has admin pages for browsing portraits by teacher; what else they show i
 "I am not opposed to adding other API keys as needed, just trying to keep the complexity to a minimum."
 All AI still goes through OpenRouter (D-19). Other services (GitHub, data sources, the host) may have their own keys where needed, kept to a minimum.
 
-**D-35 · 2026-10-19 · The owner can deploy by hand** · owner · *T-27*
+**D-35 · 2026-10-19 · The owner can deploy by hand** · owner · *T-27* · *Replit superseded by D-36: the owner's own path is Railway's dashboard or app*
 "I am also not opposed to having to deploy myself from Replit. I can access it from my phone if necessary, and the harness is going to keep me updated remotely."
 A deploy may be a one-tap step by the owner, announced in the harness digest. Deploys without clicking are a nice-to-have, not a requirement for choosing the host.
 

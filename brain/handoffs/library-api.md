@@ -1,7 +1,7 @@
 # Hand-off to the library's planning: the portraits API
 
 **From:** Nexus Portraits planning, 2026-10-19 (night). **For:** the Library-AI (Rev1) chat, relayed by the owner.
-**Contract:** `brain/contracts/portraits-api.openapi.json` in ngunn86/LibraryAI-Portraits (draft 1), with `portraits-api.md` (plain words), `portraits-api.sample.json` and `check_api.py`. Copy them unchanged, with the commit, as you would any outside contract.
+**Contract:** `brain/contracts/portraits-api.openapi.json` in ngunn86/LibraryAI-Portraits (draft 4, 2026-10-20), with `portraits-api.md` (plain words), `portraits-api.sample.json` and `check_api.py`. Copy them unchanged, with the commit, as you would any outside contract.
 
 ## What was decided here that the library needs
 
@@ -9,7 +9,7 @@
 |---|---|
 | D-37 | The library adopts this project's OpenAPI file, pulls, and sends decisions back |
 | D-38 | Approval and the main portrait are decided in the library's queue and sent back through `POST /api/v1/decisions` |
-| D-39 | Every portrait has eight files: the original (byte for byte), a PNG viewing copy, the white version and the black-and-white version (black edge) at 1,000 and 500 px, the AI-enhanced copy and the cut-out mask. Each carries its own licence, credit and SHA-256 |
+| D-39 | Every portrait has eight files (seven when the AI copy couldn't be made): the original (byte for byte), a PNG viewing copy, the white version and the black-and-white version (black edge) at 1,000 and 500 px, the AI-enhanced copy and the cut-out mask. Each carries its own licence, credit and SHA-256 |
 | D-40 | Up to 3 portraits per teacher, each a different photograph. A better copy of an approved portrait arrives as a new waiting portrait with `replaces` set; approving it is the swap |
 | D-41 | No categories. Each portrait has an approximate date and a best-known flag, which the library may correct (`kind: correct`) |
 | D-42 | The library keeps its own copy of every file it pulls. The tool's own storage is backed up only through its database |
@@ -23,12 +23,18 @@ Rev1 at commit 3e444eb (2026-10-18) still has the earlier design: the tool pushe
 |---|---|
 | `POST /api/v2/portraits` (the tool sends one manifest record and the master) | The library reads `GET /api/v1/changes`, then `GET /api/v1/portraits/{id}`, and fetches the files it wants through `/files/{kind}` |
 | `GET /api/v2/portraits/requests` (the tool reads Try-again notes from the library) | The library sends `POST /api/v1/requests` |
-| The tool's key, `toolKey` (API-063), and the tool reading `GET /api/v2/teachers` | Retired: the tool holds no library key. Teachers come from library-pipeline's `authors.csv`. The library matches the tool's teachers to its people by `wikidata_qid`, name and dates (`GET /api/v1/teachers`) |
+| The tool's key, `toolKey` (API-063), and the tool reading `GET /api/v2/teachers` | Retired: the tool holds no library key. Teachers come from library-pipeline's `authors.csv`. The library matches the tool's teachers to its people by `wikidata_qid`, `lcnaf_id` (the LoC name id), name and dates (`GET /api/v1/teachers`). `ids_from` and `dates_from` say where those came from |
 | `portraits.manifest.schema.json` (one record, one master per teacher) | The portrait record in the OpenAPI file (`Portrait`, `File`, `Source`) |
 
 Unchanged:
 - Readers see only an approved stylized portrait, or the blank one.
 - Credits go on the Image credits page.
+
+## Statuses worth knowing
+
+- **`replaced`** means superseded by another portrait of the same photograph: either a better copy you approved in its place, or a newer draft that replaced a waiting one.
+- **`another_original`** turns the current portrait down (reason `other`) and fills the slot from the next photograph.
+- A teacher's `portrait_search.state` can be `skipped`, when the teacher has no Wikidata id, LoC name id or dates. The owner adds them to `authors.csv`.
 
 ## Turn-down reasons
 

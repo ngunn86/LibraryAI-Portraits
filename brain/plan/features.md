@@ -45,7 +45,7 @@
 | 13 | F-10 | Library of Congress pictures | 2 | F-07, F-32 | none | network | yes |
 | 14 | F-34 | Wellcome Collection | 2 | F-07, F-32 | none | network | yes |
 | 15 | F-35 | Finding missing dates and ids | 2 | F-08, F-31 | none | network | yes |
-| 16 | F-38 | Coverage survey | 2 | F-09, F-10*, F-34*, F-35*, F-36 | O-9, O-10 | network | yes |
+| 16 | F-38 | Coverage survey | 2 | F-09, F-10*, F-31, F-34*, F-35*, F-36 | O-9, O-10 | network | no |
 | 17 | F-39 | Porting spike: OpenCV.js and sharp | 3 | F-01 | none | none | no |
 | 18 | F-12 | Face landmarks and crop | 3 | F-39 | none | none | no |
 | 19 | F-13 | Descreen and edge-preserving blur | 3 | F-39 | none | none | no |
@@ -63,7 +63,7 @@
 | 31 | F-11 | Candidates: gather, group, order, download | 4 | F-09, F-10*, F-34*, F-32, F-37, F-42, F-43 | none | none | no |
 | 32 | F-24 | Publishing a portrait | 5 | F-03, F-04, F-07, F-37, F-41 | none | none | no |
 | 33 | F-23 | Per-teacher pipeline and failure policy | 5 | F-11, F-16, F-18, F-19, F-21, F-24 | none | none | no |
-| 34 | F-25 | Queue, schedule and run reports | 5 | F-23 | none | none | no |
+| 34 | F-25 | Queue, schedule and run reports | 5 | F-23, F-31 | none | none | no |
 | 35 | F-44 | API: reads, change feed, files, keys | 5 | F-03, F-24 | none | none | no |
 | 36 | F-45 | API: decisions and requests | 5 | F-44, F-25 | none | none | no |
 | 37 | F-48 | Later runs: better copies, turn-downs, corrections | 5 | F-23, F-45 | none | none | no |
@@ -139,7 +139,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Depends on:** F-01
 - **Owner input:** none
 - **Build:**
-  - `src/db/schema.ts` and `src/db/migrations/` (drizzle-kit SQL), with these tables: `teachers`, `candidates`, `photographs`, `portraits`, `files`, `portrait_events`, `library_decisions`, `requests`, `runs`, `spend`, `jobs`, `step_cache`, `api_keys`, `changes`, `sessions`;
+  - `src/db/schema.ts` and `src/db/migrations/` (drizzle-kit SQL), with these tables: `teachers`, `candidates`, `photographs`, `portraits`, `files`, `portrait_events`, `library_decisions`, `requests`, `runs`, `spend`, `jobs`, `step_cache`, `api_keys`, `changes`, `sessions`, `app_settings` (the admin password's hash, the schedule switch);
   - `src/queue.ts`;
   - a PGlite test helper.
 - **Checks:**
@@ -173,13 +173,17 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-36 · Railway setup and deploys
 - **Phase:** 1
 - **Goal:** The app deploys itself to Railway as web, worker and cron services with Postgres and a bucket, in production, staging and per-PR copies, set up as code.
-- **Covers:** RUN-01, RUN-08 (cron frame), RUN-10 (environment caps as variables), HT-02..HT-04, HT-07, HT-08, HT-11
+- **Covers:** RUN-01, RUN-08 (cron frame), RUN-10 (environments), HT-02..HT-04, HT-07, HT-08, HT-11
 - **Depends on:** F-01, F-04, F-37
 - **Owner input:** O-8 (Railway account and project, harness access)
 - **Build:**
   - `.railway/railway.ts`: services, start commands, pre-deploy `drizzle-kit migrate`, healthcheck path, cron schedule, environments;
   - `src/web.ts` with `GET /api/v1/health`, which reports the version, the commit and whether OpenCV.js and `sharp` loaded;
-  - `src/worker.ts` and `src/cron.ts` frames (the cron job exits with "nothing to do").
+  - `src/worker.ts` and `src/cron.ts` frames (the cron job exits with "nothing to do");
+  - environment rules (RUN-10):
+    - the cron service exists only in production, with its schedule switched off until F-47;
+    - pull-request copies run in stub mode;
+    - staging runs by hand.
 - **Checks:**
   - **Smoke:** the PR copy's `/api/v1/health` answers 200 with this commit within a few minutes of the push.
   - **Smoke:** the PR copy's database has the migrations applied; its bucket accepts a put and returns a signed link that downloads.
@@ -220,10 +224,10 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Owner input:** none
 - **Build:** `src/net/client.ts`
 - **Checks:**
-  - A request to a host outside the allowlist (the adopted sources, `api.github.com`, `openrouter.ai`) fails before leaving the process.
+  - A request to a host outside the allowlist fails before leaving the process. The allowlist is the adopted sources, `api.github.com`, `openrouter.ai` and the environment's bucket endpoint.
   - Every request carries the User-Agent from settings: name, version, contact.
   - **Pacing, on a fake clock:**
-    - 30 LoC calls take at least 90 seconds (20 a minute);
+    - LoC calls are spaced evenly, one every 3 seconds, so 30 take at least 87 seconds;
     - Wikimedia and Wellcome calls never overlap.
   - **Retries:** a 429, a 503 and an HTML CAPTCHA page each back off and retry up to the limit; a 404 isn't retried.
   - A second identical GET within the cache's lifetime is served from the cache.
@@ -236,7 +240,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-31 · Teacher sync through GitHub
 - **Phase:** 2
 - **Goal:** Sync the active authors from the private library-pipeline repo into the database, with stable teacher ids, nightly and by command.
-- **Covers:** IN-01, IN-04 (eligibility), IN-12, AC-01
+- **Covers:** IN-01, IN-03, IN-04 (eligibility), IN-12, AC-01
 - **Depends on:** F-02, F-04, F-06
 - **Owner input:** O-9 (the read-only GitHub token), needed for the live check only
 - **Build:** `src/teachers/sync.ts`; the `sync` command; the cron job calls it.
@@ -245,6 +249,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - A second sync with the same file changes nothing (no new rows, no `record_version` bumps, no change-feed entries).
   - Renaming an author keeps the `teacher_id`. A clashing slug gets `-2` and is reported. An author no longer active gets `on_list = false`, and their portraits are untouched.
   - Each teacher's eligibility (IN-04) is set: `qid`, `lcnaf_or_years` or `none`.
+  - A broken file (F-02's whole-file refusals) leaves the existing teachers exactly as they were (IN-03).
   - The only GitHub call is a GET of `collection/authors.csv`. No write method exists in the client.
   - **Live:** with O-9 present, `portraits sync` reads the real file and reports 182 ± 20 active authors.
 - **Test data:** a recorded contents response with a fixture CSV.
@@ -377,7 +382,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Phase:** 2
 - **Goal:** Search every active teacher on every adopted source without downloading or spending, and report coverage, so Smithsonian, the trial set and PIP-20's real pairs can be decided.
 - **Covers:** SRC-14, TRI-02 (input), PIP-20 (real pairs)
-- **Depends on:** F-09, F-10*, F-34*, F-35*, F-36
+- **Depends on:** F-09, F-10*, F-31, F-34*, F-35*, F-36
 - **Owner input:** O-9 (GitHub token, for the teacher list), O-10 (User-Agent contact)
 - **Build:** `src/sources/survey.ts`; the `survey` command; a report stored in the database and shown on the admin site later (F-46).
 - **Checks:**
@@ -387,7 +392,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - **Live:** `railway run portraits survey` on staging completes for all active teachers within the sources' limits. It writes the report and records the responses used for the trial set as fixtures.
 - **Test data:** recorded responses for five teachers.
 - **Live calls:** network (free)
-- **Parkable:** yes (the trial waits for it)
+- **Parkable:** no (the trial set and the real same-photo pairs come from it; it is free)
 - **Size:** M
 
 ---
@@ -433,7 +438,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Owner input:** none
 - **Build:** `src/imaging/face.ts` (YuNet ONNX, MIT, committed with its source and licence noted); `src/imaging/crop.ts`
 - **Checks:**
-  - On the owner's three originals, the landmarks fall within 3% of the face width of the prototype's fixtures (`prototype/fixtures/*.json`).
+  - On the owner's three originals, the landmarks fall within 5% of the face width of the prototype's fixtures (`prototype/fixtures/*.json`). Those were made with a different detector (SCRFD), hence the margin.
   - The crop puts the eye line at 0.443 of the side and the eye-to-mouth distance at 0.237 of the side, with the face centred, each within 1%.
   - With no face found, the pre-check's box is used and the eye line is estimated from it (synthetic case).
   - A face narrower than `minFacePx` is reported as too small.
@@ -541,6 +546,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - Exact duplicates are caught by the fingerprint alone.
   - A pair between the thresholds is returned as "unclear", for F-43.
   - When the survey's real pairs exist (F-38), they're added as fixtures. Two sittings of one teacher must come out "different" or "unclear", never "same".
+  - If F-39 chose a fallback detector (AKAZE or ORB), `sameMinInliers` and `diffMaxInliers` are measured again on the same fixtures and recorded as a recipe change. The 25% check then compares against the new measures.
 - **Test data:** the three originals and the generator; the survey's pairs when recorded.
 - **Live calls:** none
 - **Parkable:** no
@@ -559,7 +565,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
     - mean alpha difference ≤ 0.02;
     - dots across 110 ± 1.
   - The same for `bw-1000`, and for both 500 px copies.
-  - The recipe version and settings hash are equal to the prototype's 0.4.0 values.
+  - The test runs with a frozen copy of the recipe 0.4.0 settings (in `test/fixtures/reference/`), not the live settings, so a later recipe version from the trial doesn't break it.
 - **Test data:** `prototype/fixtures/`, `prototype/out/`.
 - **Live calls:** none
 - **Parkable:** no (a failure goes to the digest with the measures)
@@ -578,14 +584,14 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Build:** `src/models/openrouter.ts`
 - **Checks:**
   - **Stub mode:** canned answers come back with no key and no network.
-  - **Caps,** each crossed mid-run with stubbed costs, stop the next call before it is made:
-    - the first-run cap ($100);
-    - the night ($10) and month ($30) caps;
+  - **Caps,** each crossed mid-run with stubbed costs, stop the next call before it is made, and the stop is reported cleanly:
+    - the first pass's $100 total (no night cap during it);
+    - after it, the night ($10) and month ($30) caps;
     - $2 per teacher per run;
-    - $2 a night in staging and PR copies;
-    - the trial budget ($30).
-
-    The stop is reported cleanly.
+    - the trial's sub-budgets ($27 and $3);
+    - staging's $2 a night and $10 a month.
+  - In a pull-request environment, every paid call is refused (stub mode only).
+  - The environment's rules are chosen from `RAILWAY_ENVIRONMENT_NAME` through settings.
   - Each call's cost is logged with run, teacher, step, model, environment and whether it is actual or estimated.
   - A model whose family equals the enhance model's is refused for checking.
   - Model ids and prices come from settings. An unknown model id is refused before any call.
@@ -666,7 +672,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-11 · Candidates: gather, group, order, download
 - **Phase:** 4
 - **Goal:** Gather a teacher's candidates from every adopted source, drop refused licences, group copies of one photograph, order the copies, and download the chosen ones with a checksum.
-- **Covers:** SRC-07, SRC-08, PIP-15, PIP-01 (part), OUT-12 (originals)
+- **Covers:** SRC-07, SRC-08, PIP-15, PIP-01 (part), OUT-12 (originals), IN-05
 - **Depends on:** F-09, F-10*, F-34*, F-32, F-37, F-42, F-43
 - **Owner input:** none
 - **Build:** `src/sources/candidates.ts`
@@ -675,10 +681,11 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
     - two photographs;
     - the refused one logged;
     - the duplicate merged;
-    - the right best copy per photograph (licence tier, then size).
+    - the right best copy per photograph (licence tier, then size, then damage rating; SRC-07).
   - Downloads are checked against their SHA-256 on a second fetch, and stored as `original.<ext>`.
   - Set-aside photographs are excluded.
   - The best-known flag is set on the P18 photograph and its copies.
+  - Changing a teacher's notes changes none of their candidates (IN-05).
 - **Test data:** recorded responses; small image fixtures, including doctored copies.
 - **Live calls:** none
 - **Parkable:** no
@@ -690,13 +697,14 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 
 ### F-24 · Publishing a portrait
 - **Phase:** 5
-- **Goal:** Write a portrait's eight files and its record atomically, with each file's licence and credit, and add it to the change feed.
+- **Goal:** Write a portrait's files (OUT-11) and its record atomically, with each file's licence and credit, and add it to the change feed.
 - **Covers:** OUT-02, OUT-03, OUT-04, OUT-11, OUT-12, SRC-11, AC-02
 - **Depends on:** F-03, F-04, F-07, F-37, F-41
 - **Owner input:** none
 - **Build:** `src/pipeline/portrait.ts`
 - **Checks:**
   - A fixture portrait produces all eight files under its key, each passing its checker, plus `record.json`. The record validates against the contract's `Portrait`.
+  - A fixture whose enhance call failed produces the other seven, with `enhanced_used` false.
   - Each file's licence and credit follow SRC-11's table, for a public-domain, a CC BY and a CC BY-SA fixture.
   - Stopping the work after the files but before the database commit leaves no visible portrait, and no change-feed entry.
   - A record missing a licence isn't published. The failure names the field.
@@ -731,14 +739,15 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Phase:** 5
 - **Goal:** Run the nightly schedule and the queue: sync, queue teachers with open slots not searched for a month, take requests first, resume after a crash, stop at a cap, and write each run's report.
 - **Covers:** RUN-02, RUN-03, RUN-04 (stop and report), RUN-08, OUT-06
-- **Depends on:** F-23
+- **Depends on:** F-23, F-31
 - **Owner input:** none
 - **Build:** `src/cron.ts`, `src/worker.ts`; `src/pipeline/run.ts`
 - **Checks (fake clock):**
-  - **Queueing:**
+  - **Queueing (RUN-02, RUN-08):**
     - a teacher searched 10 days ago isn't queued; one searched 35 days ago is;
-    - a full teacher isn't queued;
-    - a request goes ahead of queued teachers.
+    - a full teacher is queued only when `researchFullTeachers` is on (Q-28), and then only new candidates are looked at;
+    - a request goes ahead of queued teachers;
+    - with the schedule switched off, the cron job queues nothing.
   - The cron job exits after queueing.
   - Killing the worker mid-teacher and restarting it resumes with no repeated paid call (stub call counts).
   - Reaching a cap stops the run cleanly. Finished portraits stay published, and the report says so.
@@ -776,7 +785,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Covers:** IN-06, IN-07, IN-08, SRC-04
 - **Depends on:** F-44, F-25
 - **Owner input:** none
-- **Build:** `src/api/decisions.ts`, `requests.ts`
+- **Build:** `src/api/decisions.ts`, `requests.ts`; `src/models/noteKind.ts` with prompt `note_kind.md`
 - **Checks:**
   - **Decisions:**
     - approve, turn_down (each reason), set_main and correct change the portrait as IN-07 says, and appear in its history and the change feed;
@@ -786,7 +795,9 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - **Requests:**
     - a `try_link` to an adopted source is queued;
     - a link elsewhere is refused with the reason;
-    - a `try_again` asking to change the crop is answered `refused`, suggesting `another_original`.
+    - a `try_again` whose note Claude Haiku (stubbed, prompt `note_kind.md`) judges to be about the crop or the outline is answered `refused`, suggesting `another_original`; a restoration note is passed on;
+    - `another_original` makes the portrait `turned_down` (reason `other`) and queues the teacher;
+    - an unknown teacher or portrait gets 404; a link outside the adopted sources gets 422.
   - Every answer validates against the contract.
 - **Test data:** the fixture database.
 - **Live calls:** none
@@ -823,7 +834,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Build:** `src/admin/` (server-rendered templates); `password set`
 - **Checks:**
   - **Login:**
-    - each page needs a login, and the password is stored only as a slow hash;
+    - each page needs a login, and the password is stored in the database only as a slow hash;
     - a wrong password locks out after the set number of tries;
     - the session cookie is secure, HTTP-only and SameSite, and lasts 30 days.
   - **Pages:** the teacher list, one teacher (all versions, rights, the library's decisions), the runs and one run's report all render from the fixture database.
@@ -831,6 +842,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - No page has a form that changes data, except logging in and out.
   - Every page renders at 390 px wide without horizontal scrolling (a layout test).
   - No key or secret appears on any page.
+  - A dependency check finds no mail-sending package and no SMTP code (RUN-09).
 - **Test data:** the fixture database.
 - **Live calls:** none
 - **Parkable:** no
@@ -917,6 +929,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
     - a call without the key gets 401, and one with it gets 200;
     - the library stub completes against staging, SHA-256s included.
   - **Live:** the spend ledger shows each call's actual cost, and the night's total is under the staging cap.
+  - **Smoke:** logging in to the admin site on staging works, and the teacher list opens (OUT-13).
   - The seeded fixture portraits are visible to the library stub. They're marked as fixtures in their record's history, and never published in production.
 - **Test data:** none (live)
 - **Live calls:** paid (≤ $2)
@@ -932,14 +945,15 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Build:**
   - `src/pipeline/trial.ts`;
   - `test/fixtures/trial/trial-set.json`, picked from the survey: about 20 originals plus the owner's three, with expected outcomes;
-  - the board page on the admin site.
+  - the board page on the admin site;
+  - **where it runs:** in production, before the release. The schedule is off and there's no library key yet, so the trial's cached AI copies are reused by the first full run (TRI-06).
 - **Checks:**
   - The trial set covers every case in TRI-02, and each item's expected outcome holds. For example, the group photo is refused at the pre-check.
   - Every result is shown on the board with its original, its no-blend version, the examples, scores and cost. The board is readable at 390 px.
   - The winner follows TRI-04: the best score, or the cheaper within 5%. It is written to settings with a new `recipeVersion`, committed through the harness, and reversible by the veto.
   - PIP-20's thresholds are re-measured on the survey's real pairs. If two sittings of one teacher would be judged "same", the thresholds are adjusted (with a new `recipeVersion`) and the digest says so.
   - The engraving results are reported for the owner's verdict on `allowedMedia`.
-  - The total spend is within $27, leaving $3 of the trial budget for F-29.
+  - The run is under the client's `trial` sub-budget ($27), and stops cleanly if it's reached. That leaves $3 for F-29.
 - **Test data:** the trial set.
 - **Live calls:** paid (≤ $27)
 - **Parkable:** no
@@ -955,7 +969,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Checks:**
   - **Live:** for each example, "compare with target" passes against the hand-made portrait.
   - The code measures at the owner's framing (500 px) meet TRI-08: overlap ≥ 0.85, tone error ≤ 0.08, dots across 110 ± 2, no STY-06 problems.
-  - It reuses the trial's cached AI copies; new spend stays within $3.
+  - It reuses the trial's cached AI copies (it runs in production too), under the client's `trial-examples` sub-budget ($3).
   - The examples are never published (D-13): the test runs them outside the publishing path.
 - **Test data:** `design/portraits/`
 - **Live calls:** paid (≤ $3)
@@ -968,10 +982,11 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Covers:** RUN-01, RUN-08 (live), RUN-04 (first-run cap), AC-05
 - **Depends on:** F-27, F-28, F-29*
 - **Owner input:** O-11 (the library's key, made with `portraits keys new` and handed to the library); the veto window
-- **Build:** a release checklist in the digest; no new code unless something is found.
+- **Build:** a release checklist in the digest. It switches the production schedule on and makes the library's key (O-11). No new code unless something is found.
 - **Checks:**
   - **Live:** production's `/api/v1/health` shows the released commit, and `doctor` passes there.
-  - **Live:** the first nightly run starts on schedule and publishes portraits. It stays under $100 in total across the nights it takes, and each run's report is on the admin site.
+  - **Live:** the first nightly run starts on schedule and publishes portraits.
+  - **Live:** the first pass over the list stays under $100 in total across the nights it takes (RUN-04), and each night's report is on the admin site.
   - **Live:** the library's first pull, if the library is ready, appears in the API's access log. Otherwise the library stub's pull against production does.
   - The digest reports portraits published, teachers with none, teachers skipped for missing ids (with the CSV link), and spend.
 - **Test data:** none (live)

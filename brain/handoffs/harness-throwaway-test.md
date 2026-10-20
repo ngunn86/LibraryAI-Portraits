@@ -148,4 +148,10 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
   - the real app's admin page uses one password with a 30-day session. HT-21's login can be the same kind;
   - the same OpenRouter key is used in every environment, with low caps for staging and pull-request copies. HT-18's separate low-limit test key remains right for the throwaway test, since it is a different project.
 - **2026-10-20:** D-57 (TypeScript, like the library). The throwaway app is now a tiny Node 24 TypeScript app with the real app's stack: Express, Drizzle migrations, `node:test` and the S3 SDK. HT-02 now also proves that OpenCV.js (WebAssembly) and `sharp` build and load on Railway, since the real app's image work depends on them.
+- **2026-10-20 (consistency review):** the real app's environment rules (RUN-10):
+  - pull-request copies make no paid calls and have no cron;
+  - staging has no cron and runs by hand;
+  - production's nightly schedule is switched on only at the release.
+
+  The throwaway test can mirror this. HT-16's cron belongs in production, or in one chosen environment, rather than in every PR copy. The trial runs in production before the release.
 

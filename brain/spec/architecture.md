@@ -26,7 +26,7 @@ The aim is the simplest structure that meets the requirements, and that rehearse
 | Image input and output | `sharp` (libvips): decode, colour to sRGB, resize, PNG and JPEG out | Fast and robust; the library already uses it |
 | Image processing | **OpenCV.js** (`@techstark/opencv-js`, WebAssembly). It provides: bilateral filter, DFT, warps, ECC alignment, Farneback optical flow, distance transform, connected components, SIFT, RANSAC | The prototype's steps map onto OpenCV functions one to one. See "Porting risks" |
 | Face box and landmarks | YuNet (MIT, a small ONNX file, committed), run through OpenCV.js's `FaceDetectorYN` if present, otherwise `onnxruntime-node` | Free, local and the same every time (PIP-04) |
-| HTTP out | Node's `fetch` (undici), wrapped in one client with a host allowlist, User-Agent, pacing, retries and a response cache (SRC-01, SRC-09) | One place to enforce rule 5 |
+| HTTP out | Node's `fetch` (undici), wrapped in one client with a host allowlist (the adopted sources, OpenRouter, GitHub, the bucket endpoint), User-Agent, pacing, retries and a response cache (SRC-01, SRC-09) | One place to enforce rule 5 |
 | AI | OpenRouter only (D-19), through `fetch`, with a spend ledger and caps (RUN-04, D-54) | One key |
 | Admin pages | Server-rendered HTML (a few templates, no client framework), behind one password (RUN-10) | Read-only browsing doesn't need React. The library's React and Vite stay the library's |
 | Tests | `node:test` through `tsx --test`, offline by default (RUN-06); `tsc` for types; esbuild for the build | As the library uses |
@@ -51,7 +51,7 @@ All three services are built from the same repo and image, each with its own sta
 ```
 src/
   web.ts · worker.ts · cron.ts        entry points
-  cli.ts                              commands for the harness and owner (railway run): doctor, survey, teacher, keys, password, trial
+  cli.ts                              commands for the harness and owner (railway run): doctor, sync, survey, run, trial, keys, password, status (RUN-05)
   config/settings.ts                  the typed, committed settings (no keys); recipe hash vs recipe_version (STY-05)
   config/env.ts                       secrets from the environment (zod); never logged (IN-11, RUN-10)
   db/schema.ts · db/migrations/       Drizzle schema (the records of T-07) and SQL migrations
@@ -75,7 +75,7 @@ src/
     prompts/                          the prompt files, versioned (from prototype/prompts/)
   pipeline/
     teacher.ts                        one teacher end to end: slots, candidates, drafts, failure policy (PIP-01..PIP-20)
-    portrait.ts                       one portrait: the eight files and the record (OUT-11, SRC-11)
+    portrait.ts                       one portrait: its files (OUT-11) and the record (SRC-11)
     trial.ts                          TRI-01..TRI-08
   api/                                routes, auth, change feed, decisions, requests (OUT-14)
   admin/                              pages and templates (OUT-13)
@@ -143,11 +143,23 @@ A test fails if the recipe values change without a new `recipeVersion` (STY-05).
 |---|---|
 | `OPENROUTER_API_KEY` | The tool's one AI key, the same in every environment (D-55); credit limit set at OpenRouter (O-4) |
 | `GITHUB_TOKEN` | Read-only, fine-grained, library-pipeline contents only (D-32, O-9) |
-| `ADMIN_PASSWORD_HASH`, `SESSION_SECRET` | The admin login (RUN-10) |
+| `SESSION_SECRET` | Signs the admin session (RUN-10). The admin password's hash is in the database, set by `password set` |
 | `DATABASE_URL` | From Railway's Postgres |
 | Bucket variables | From Railway's bucket (endpoint, name, access key, secret) |
 
 `doctor` reports only whether each one is present, never its value.
+
+## Environments (RUN-10)
+
+`RAILWAY_ENVIRONMENT_NAME` picks the rules from settings:
+
+| Environment | Paid calls | Cron | Caps |
+|---|---|---|---|
+| Pull-request copies | none (stub mode) | none | — |
+| Staging | yes, by hand only | none | $2 a night, $10 a month |
+| Production | yes | nightly, switched on at the release (F-47) | RUN-04 |
+
+The trial runs in production before the release, so its cached AI copies are reused by the first full run (TRI-06).
 
 ## The Python prototype is the reference
 

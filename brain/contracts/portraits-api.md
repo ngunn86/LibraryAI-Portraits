@@ -1,6 +1,9 @@
 # The portraits API (T-08)
 
-**Status: draft 3 (2026-10-20).** Draft 2 added each file's `licence_url` (D-48); draft 3 adds the teacher's LoC name id, `lcnaf_id` (IN-13). Defined by this project and adopted by the library (D-37). The machine contract is [portraits-api.openapi.json](portraits-api.openapi.json) (OpenAPI 3.1). [portraits-api.sample.json](portraits-api.sample.json) holds example payloads, and [check_api.py](check_api.py) checks the two against each other offline.
+**Status: draft 4 (2026-10-20).**
+- Draft 2 added each file's `licence_url` (D-48).
+- Draft 3 added the teacher's LoC name id, `lcnaf_id` (IN-13).
+- Draft 4 unifies the original's `Source` record with SRC-08: `source`, `source_id`, `licence_tier`, `matched_by`, `matched_to` and `medium`. It also adds `ids_from`, the `skipped` search state, and the health fields, and defines `replaced` and `another_original`. Defined by this project and adopted by the library (D-37). The machine contract is [portraits-api.openapi.json](portraits-api.openapi.json) (OpenAPI 3.1). [portraits-api.sample.json](portraits-api.sample.json) holds example payloads, and [check_api.py](check_api.py) checks the two against each other offline.
 
 ## In plain words
 
@@ -19,12 +22,12 @@
 | `GET /api/v1/teachers` | All teachers, with portrait counts, the main portrait and where the search stands |
 | `GET /api/v1/teachers/{teacher_id}` | One teacher and their portraits |
 | `GET /api/v1/portraits` | Portraits, by teacher or status |
-| `GET /api/v1/portraits/{portrait_id}` | One portrait: status, date, best-known flag, the original's source and rights, and its eight files with checksums, licences and credits |
+| `GET /api/v1/portraits/{portrait_id}` | One portrait: status, date, best-known flag, the original's source and rights, and its files (eight, or seven without an AI copy) with checksums, licences and credits |
 | `GET /api/v1/portraits/{portrait_id}/files/{kind}` | Redirects to a 15-minute signed download of one file |
 | `GET /api/v1/portraits/{portrait_id}/history` | Everything that happened to it |
 | `GET /api/v1/changes` | What changed since a time or cursor (kept 30 days) |
 | `POST /api/v1/decisions` | Approve, turn down, set main, correct |
-| `POST /api/v1/requests` · `GET /api/v1/requests[/{id}]` | Ask for work on a teacher, and follow it |
+| `POST /api/v1/requests` · `GET /api/v1/requests[/{id}]` | Ask for work on a teacher, and follow it. Accepted with 202; an unknown teacher gets 404 and a bad link 422 |
 
 ## Conventions (Claude's choices)
 

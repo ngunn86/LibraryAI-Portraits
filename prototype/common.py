@@ -56,7 +56,7 @@ def cutout(rgb, model_path, size=320):
 
 # ---------- face box and eyes ----------
 # Prototype: SCRFD-500M (insightface "buffalo_sc", research licence) used ONLY to measure the examples here.
-# Production proposal: OpenCV YuNet (MIT), which gives the same box + 5 landmarks. The model file stays outside the repo.
+# Production: OpenCV YuNet (MIT), which gives the same box + 5 landmarks. The TypeScript app commits its model file (F-12); this prototype keeps SCRFD outside the repo.
 FACE_MODEL = "/tmp/claude-0/-home-claude/27dc5434-a5bc-5b9d-b2a3-302381507a91/scratchpad/models/buffalo_sc/det_500m.onnx"
 
 def detect_face(rgb, model_path=FACE_MODEL, thresh=0.4):

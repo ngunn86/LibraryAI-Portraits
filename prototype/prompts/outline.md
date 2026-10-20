@@ -1,4 +1,4 @@
-# outline v1 (PIP-07: image-model contenders in the trial only; the default line is drawn by code)
+# outline v1 · *withdrawn* (D-49: the outline is drawn by code only; this prompt is kept for the record)
 
 Send: the cut-out on black (as an image), then this text.
 

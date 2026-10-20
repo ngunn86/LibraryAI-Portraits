@@ -15,11 +15,11 @@
 | Briefs | v1 (2026-10-17) and v2 (2026-10-19), in `brief/`. v2 is the brief; decisions D-24 onwards extend it |
 | Requirements | [spec/requirements.md](spec/requirements.md), consolidated 2026-10-20: every ID kept, every item current. Open: Q-27 (B2 items restated for the API) and the PORT reconciliation (needs O-1) |
 | Architecture | [spec/architecture.md](spec/architecture.md) v2 (proposed): TypeScript on Node 24 (D-57); Railway web, worker and cron; Postgres with a queue table; an S3 bucket; `sharp` and OpenCV.js, with a porting spike. The Python prototype is the reference |
-| API contract | [contracts/portraits-api.openapi.json](contracts/portraits-api.openapi.json), draft 3, with samples and an offline check (`check_api.py`, passing). The library adopts it (D-37); hand-off note in [handoffs/library-api.md](handoffs/library-api.md) |
+| API contract | [contracts/portraits-api.openapi.json](contracts/portraits-api.openapi.json), draft 4, with samples and an offline check (`check_api.py`, passing). The library adopts it (D-37); hand-off note in [handoffs/library-api.md](handoffs/library-api.md) |
 | Sources | [spec/sources.md](spec/sources.md): Wikidata/Commons, the LoC and Wellcome (D-46); Smithsonian only if the survey shows gaps |
 | Build plan and features | [plan/build-plan.md](plan/build-plan.md) (rewritten 2026-10-20) and [plan/features.md](plan/features.md) (cards redrafted 2026-10-20 for the hosted TypeScript app; the format stays provisional until the harness settles its own, D-15) |
 | Decisions | D-01..D-57 |
-| Open questions | Only **Q-27** is open (the zip and the restated acceptance checks). All others are resolved, superseded or withdrawn |
+| Open questions | **Q-27** (the zip and the restated acceptance checks) and **Q-28** (searching full teachers for better copies; the first-run cap's reading). All others are resolved, superseded or withdrawn |
 | Style prototype | Recipe 0.4.0 (`prototype/`), accepted as the starting point (D-49): descreen, AI-enhanced blend with safeguards, code outline, black-and-white and 500 px versions, and the same-photo check prototype. Prompts in `prototype/prompts/` |
 | Harness | Planned in its own chat (D-15). This project's requirements for its proof run: [handoffs/harness-throwaway-test.md](handoffs/harness-throwaway-test.md) (kept updated) |
 | Reviews | Format and prompt ready ([reviews/README.md](reviews/README.md)). First rounds due 2026-10-20 |
@@ -27,7 +27,7 @@
 ## Waiting on the owner
 
 1. **Pass [handoffs/library-api.md](handoffs/library-api.md) to the library chat** and have Rev1's latest planning pushed to GitHub (O-1). That unblocks T-09 and the PORT reconciliation.
-2. **Q-27:** withdraw the zip, and accept the restated acceptance checks?
+2. **Q-27 and Q-28:** the zip and the restated acceptance checks; searching full teachers monthly, and the first-run cap's reading.
 3. **The outside reviews** (P0-6): point the reviewing tools at `brain/reviews/README.md`.
 4. Later: the harness's card format (D-15) and the throwaway test; then the owner inputs O-4, O-8..O-11 as the build reaches them.
 
@@ -180,3 +180,18 @@
   - `plan/build-plan.md` rewritten: phases, Phase 0 states, harness workflow in TypeScript, spend, risks (R-13 porting, R-14 retired APIs, R-15 the library's readiness).
   - Feature cards redrafted (`plan/features.md`).
   - The API contract (draft 3) adds the teacher's LoC name id.
+- **2026-10-20 (overnight, later):** A fresh-eyes consistency review (a separate agent) found 25 issues, all fixed.
+  - **The biggest:**
+    - full teachers would never be searched for better copies (raised as Q-28);
+    - the trial's environment, now production before the release, so its cache carries over;
+    - the environment rules: pull-request copies stubbed, staging by hand.
+  - **The contract (draft 4):** the source and match vocabulary unified, a `skipped` search state, where ids and dates came from, `replaced` and `another_original` defined, and the health fields.
+  - **Elsewhere:**
+    - the outbound allowlist gains the bucket endpoint;
+    - the admin password moves to the database;
+    - LoC pacing is set at 87 s for 30 calls;
+    - the trial gets sub-budgets;
+    - stale decisions are marked superseded;
+    - the library hand-off note is updated;
+    - a prompt is added for classifying Try-again notes.
+
