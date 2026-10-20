@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -147,7 +147,7 @@ One settings file, committed to the repo, holds everything except keys:
 An invalid setting stops the tool with a message naming the setting. The layout is in [architecture.md](architecture.md).
 *Verify:* unit tests.
 
-**IN-12 · Teacher list from the pipeline's authors** *proposed* · D-22
+**IN-12 · Teacher list from the pipeline's authors** *fixed* · D-22, D-45; details *proposed* · C
 - `portraits teachers sync` reads `authors.csv` from the private library-pipeline repo through the GitHub API (D-32), with a read-only token limited to that repo. It is never written to.
 - **Which authors:** only `active` rows (182 on 2026-10-19, the same rule the pipeline uses; Q-26).
 - **How it builds or updates `data/teachers.csv`:**
@@ -158,15 +158,21 @@ An invalid setting stops the tool with a message naming the setting. The layout 
 - **Stable ids:** a `teacher_id` is made once, as a slug of the name, and kept in `data/teacher-ids.csv`. A renamed author keeps their id. Authors no longer active are flagged in the report, not deleted.
 - **Enrichment (IN-13)** fills `wikidata_qid` and missing dates. Only 71 of the 182 active authors have dates.
 
-*Verify:* a fixture `authors.csv` syncs to the expected `teachers.csv`. A rename keeps the id. A second sync changes nothing.
+*Amended by D-45 (hosted app):*
+- the sync writes the app's database, not `data/teachers.csv`, and the stable ids live there too;
+- `active` rows only;
+- dates are read in the `authors.csv` forms (`YYYY-YYYY`, `d. YYYY`, `b. YYYY`). Any other form is unknown and reported;
+- a clashing slug gets `-2` and is reported.
 
-**IN-13 · Finding missing dates and Wikidata ids** *proposed* · C
+*Verify:* a fixture `authors.csv` syncs to the expected teachers. A rename keeps the id. A second sync changes nothing.
+
+**IN-13 · Finding missing dates and Wikidata ids** *fixed* · D-45; method *proposed* · C
 - For each teacher without them, the tool proposes a Wikidata id and life dates from two independent places:
   - the Wikidata search under SRC-06b;
   - the author headings in the catalogue records of the teacher's own books (for example `Fillmore, Charles, 1854-1948`).
-- It accepts them automatically only when both agree on the person and both years.
-- Anything else goes to `data/teachers-proposed.csv` with the evidence, for the owner to accept, and is listed in the report.
-- The catalogue headings come from the picture sources' own records and the LoC name authority, not from books (D-24).
+- It accepts them automatically only when both agree on the person and both years (D-45). The second source is the **LoC name authority** (id.loc.gov), whose headings carry life dates. Other catalogue headings may support it, but never come from books (D-24).
+- Anything else is listed on the admin page with the evidence. It can be downloaded as a CSV of suggested additions for `authors.csv`, which the owner makes there. The tool never writes to library-pipeline.
+- **A teacher still without a Wikidata id or both years is skipped** and listed. Once the owner adds them to `authors.csv`, the next sync picks them up (D-45).
 
 *Verify:* fixtures where both sources agree (accepted), disagree (proposed only), or only one has data (proposed only).
 

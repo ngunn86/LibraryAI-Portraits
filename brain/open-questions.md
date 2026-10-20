@@ -15,7 +15,7 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 
 | Q | Question | Priority | Proposal in one line | Status |
 |---|---|---|---|---|
-| Q-01 | What is an "authority match"? | build | With both years, the tool may find the Wikidata id itself (one unique human match); with neither id nor both years, skip and report | open |
+| Q-01 | What is an "authority match"? | — | — | resolved → D-45 (two sources must agree: Wikidata and the LoC name authority; otherwise skip and list) |
 | Q-02 | Re-runs: skip teachers whose draft is already waiting? | build | Yes, using the tool's own delivery record until `status.json` exists | open |
 | Q-03 | Deliver through a synced folder or the Drive API? | — | — | superseded by D-31 (hosted app; the library pulls through the API; storage is T-06) |
 | Q-04 | Prove the style in planning, before the harness builds? | — | Yes: prototype the recipe here against the three examples | resolved → D-16 |
@@ -26,9 +26,9 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q-09 | Who defines `requests.json` and `status.json`? | — | — | superseded by D-37 (decisions come back through this project's API, defined in its OpenAPI file) |
 | Q-10 | Where did the owner's three originals come from, and are those teachers delivered? | — | Use them as style targets only | resolved → D-13 (source unknown; never delivered) |
 | Q-11 | Are engravings and drawings acceptable originals? | trial | Yes, if they pass the pre-check, with the medium recorded; the trial shows how they look | open |
-| Q-12 | How are dates validated? | build | Year, year-month or full date; reject circa dates, future dates, death before birth and lifespans over 120 years | open |
-| Q-13 | What happens to duplicate `teacher_id`s? | later | Refuse every row that shares the id | open |
-| Q-14 | Where does `teachers.csv` live? | later | `data/teachers.csv` in this repo | open |
+| Q-12 | How are dates validated? | — | — | resolved → D-45 (the `authors.csv` forms; anything else is unknown and reported) |
+| Q-13 | What happens to duplicate `teacher_id`s? | — | — | resolved → D-45 (a clashing slug gets `-2` and is reported) |
+| Q-14 | Where does `teachers.csv` live? | — | — | superseded by D-31, D-45 (teachers live in the app's database, synced from `authors.csv`) |
 | Q-15 | Which stack? | build | Python 3.12 + uv, in WSL | open |
 | Q-16 | Does the manifest carry the portrait's own licence (CC BY-SA share-alike)? | **now** | Check the schema; if it's missing, raise it with Rev1 | open |
 | Q-17 | Where is the harness planned and built, and what format does it read? | — | Its own repo; this repo supplies feature cards in a fixed format | resolved → D-15 (a separate chat; format provisional) |
@@ -40,13 +40,13 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 | Q-23 | Which image sources to adopt? | — | — | resolved → D-24 (no Internet Archive) and D-29 (plan the others; details at the formal review, tracker T-11) |
 | Q-24 | Accept uncaptioned portraits at the front of a teacher's own book? | — | — | withdrawn (D-24: no book plates) |
 | Q-25 | Free data keys (Smithsonian, NYPL, DPLA) later, if coverage is low? | — | — | resolved → D-34 (keys are fine where needed, kept to a minimum) |
-| Q-26 | Which authors become teachers: `active` only, or `proposed` too? | build | `active` only, as the pipeline does | open |
+| Q-26 | Which authors become teachers: `active` only, or `proposed` too? | — | — | resolved → D-45 (`active` only) |
 
 ---
 
 ## Details
 
-### Q-01 · What is an "authority match"? · build
+### Q-01 · What is an "authority match"? · resolved → D-45
 - **Background.** B2 says a teacher with neither a Wikidata id nor both years "can still be searched, but only an authority match (below) counts". Nothing below defines one.
   - Rules 1 and 2 need a Wikidata id.
   - Rule 3 needs both years.
@@ -127,16 +127,16 @@ Each question waits for the owner and carries Claude's proposal. **The order we 
 - **Background.** B2 says "photograph", but the trial set includes an engraving on purpose.
 - **Proposal.** Accept any medium that passes the pre-check, and record the medium. The trial shows whether engravings halftone well. If they don't, a setting turns them off.
 
-### Q-12 · Dates · build
+### Q-12 · Dates · resolved → D-45
 - **Proposal ([contracts/teachers-csv.md](contracts/teachers-csv.md)).**
   - Accept `YYYY`, `YYYY-MM` or `YYYY-MM-DD`.
   - "Impossible" means any of: an invalid calendar date, death before birth, a date in the future, or a lifespan over 120 years.
   - Reject circa and approximate forms. Leave the field blank and give a Wikidata id instead.
 
-### Q-13 · Duplicate `teacher_id`s · later
+### Q-13 · Duplicate `teacher_id`s · resolved → D-45
 - **Proposal.** Refuse every row that shares the id, and name them all, because the tool can't know which row is meant.
 
-### Q-14 · Where `teachers.csv` lives · later
+### Q-14 · Where `teachers.csv` lives · superseded by D-31, D-45
 - **Proposal.** `data/teachers.csv` in this repo, so it is versioned and its changes are visible. Alternative: in the Drive folder, beside `requests.json`.
 
 ### Q-15 · Stack · build
@@ -214,7 +214,7 @@ The owner installed the Claude GitHub App on this repo, and Claude's push works.
 ### Q-25 · Free data keys later · resolved → D-34
 - **Proposal.** Don't add Smithsonian, NYPL or DPLA until the first run's report shows how many teachers stay blank. Each key is a free registration and is kept outside the repo like the OpenRouter key.
 
-### Q-26 · Which authors become teachers · build
+### Q-26 · Which authors become teachers · resolved → D-45
 - **Background.** `authors.csv` has 406 rows: 182 active, 146 proposed, 46 undecided, 32 excluded (2026-10-19).
 - **Proposal.** Take `active` only, as the pipeline does. A proposed author gets a portrait once the owner makes them active.
 

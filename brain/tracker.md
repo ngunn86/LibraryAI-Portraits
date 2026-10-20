@@ -31,8 +31,8 @@
 | T-07 | The records: what we keep about teachers, portraits, versions and sources | 2 Data | T-02 – T-05 | **decided** (D-43): as proposed ([notes](topics/T-07-records.md)) |
 | T-08 | The library API | 2 Data | T-01, T-06, T-07 | **decided** (D-44): one key, pull only, requests at once; [OpenAPI draft 1](contracts/portraits-api.openapi.json) |
 | T-09 | The contract with Library-AI (Rev1) | 2 Data | T-08 | **mostly decided** (D-37): this project owns the API and its OpenAPI file; the library adopts it |
-| T-10 | The teacher list (from the pipeline's authors) | 3 Finding | none | mostly decided (D-22) |
-| T-11 | Picture sources | 3 Finding | T-07 | open (D-24, D-29) |
+| T-10 | The teacher list (from the pipeline's authors) | 3 Finding | none | **decided** (D-22, D-45): active only; two sources must agree; unknowns skipped and listed |
+| T-11 | Picture sources | 3 Finding | T-07 | **next**: the formal review (D-24, D-29) |
 | T-12 | Match rules: when a picture certainly shows the teacher | 3 Finding | T-10, T-11 | mostly decided |
 | T-13 | Rights, licences and credits | 3 Finding | T-02, T-07, T-11 | mostly decided |
 | T-14 | The white-dot version: processing recipe | 4 Processing | T-02 | mostly decided (recipe 0.3.1) |
@@ -227,7 +227,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
 ## Stage 3: Finding pictures
 
-### T-10 · The teacher list · mostly decided
+### T-10 · The teacher list · **decided**
 - **Depends on:** nothing.
 - **Decided so far:**
   - The list comes from library-pipeline's `authors.csv`, read-only (D-22).
@@ -237,8 +237,14 @@ Topics within a stage can move in parallel when they don't depend on each other.
   1. `active` authors only? (Q-26)
   2. Date forms (Q-12) and duplicate ids (Q-13).
   3. With book plates dropped (D-24), what fills dates for the ~110 active authors without them? Wikidata, plus the LoC name authority (Q-01)?
+- **Decided (D-45):**
+  - active authors only;
+  - gaps filled only when Wikidata and the LoC name authority agree. The rest are listed with evidence, as a CSV of suggestions for `authors.csv`;
+  - a teacher still without an id or dates is skipped and listed;
+  - teachers live in the app's database (Claude's choice). Date forms and id clashes are Claude's choices too.
+- **Resolved:** Q-01, Q-12, Q-13, Q-26; Q-14 superseded. **Written into:** IN-12, IN-13.
 
-### T-11 · Picture sources · open
+### T-11 · Picture sources · **next**
 - **Depends on:** T-07 (what each source must supply).
 - **Decided so far:**
   - The Internet Archive and book plates are omitted (D-24).
@@ -483,4 +489,10 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - T-09 waits on Rev1's push for O-1.
 
   Next: T-10.
+- **2026-10-19 21:35.** **T-10 decided** (D-45):
+  - active only;
+  - two sources must agree (Wikidata and the LoC name authority);
+  - unknowns skipped and listed, with a CSV of suggestions for `authors.csv`.
+
+  Q-01, Q-12, Q-13 and Q-26 resolved; Q-14 superseded. Next: T-11, the formal review of the picture sources.
 

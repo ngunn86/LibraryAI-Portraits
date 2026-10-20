@@ -308,3 +308,15 @@ Claude's technical choices carried with this decision (OpenAPI draft 1, `contrac
 
 → T-08, T-09, T-19, T-21, IN-06, IN-07, OUT-14
 
+**D-45 · 2026-10-19 · The teacher list** · owner · *closes T-10; resolves Q-01, Q-26*
+1. **Active authors only** (182 today), the same rule as the pipeline. A proposed author gets portraits once the owner makes them active in `authors.csv`.
+2. **Missing life dates and Wikidata ids are filled automatically only when two sources agree:** Wikidata and the Library of Congress name authority (id.loc.gov). The rest are listed for the owner with the evidence, as a CSV of suggested additions for `authors.csv`. The tool never writes to library-pipeline.
+3. **A teacher with no Wikidata id and no dates after that is skipped** and listed on the admin page. They get no portrait until the owner adds an id or dates to `authors.csv`.
+
+Claude's choices carried with this decision:
+- **Teachers and their stable ids live in the app's database.** There is no `data/teachers.csv` in the repo; Q-14 is superseded by D-31.
+- **Date forms:** the `authors.csv` forms are read (`YYYY-YYYY`, `d. YYYY`, `b. YYYY`, blank). Any other form is treated as unknown and reported. This resolves Q-12.
+- **Clashing ids:** a clashing slug gets a `-2` suffix and is reported. There are no duplicate names today. This resolves Q-13.
+
+→ T-10, T-12, IN-12, IN-13, SRC-06, Q-01, Q-12, Q-13, Q-14, Q-26
+
