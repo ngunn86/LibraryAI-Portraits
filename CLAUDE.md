@@ -33,7 +33,7 @@ The project serves two purposes:
 - an API for the library;
 - no extraction from books.
 
-T-01..T-08, T-10..T-14, T-16 and T-17 are decided (D-31..D-51); see the tracker. Spec sections still marked under rework wait for their topics. `brain/spec/architecture.md` still describes the earlier PC-run CLI until T-23.
+T-01..T-08, T-10..T-14 and T-16..T-18 are decided (D-31..D-52); see the tracker. Spec sections still marked under rework wait for their topics. `brain/spec/architecture.md` still describes the earlier PC-run CLI until T-23.
 
 ## Repo map
 

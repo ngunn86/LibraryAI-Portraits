@@ -39,8 +39,8 @@
 | T-15 | The black-and-white version: style and recipe | 4 Processing | T-02, T-14 | **mostly decided** (D-39: option C, made from the master's layers) |
 | T-16 | Telling portraits apart (same photo or a different one) | 4 Processing | T-03, T-14 | **decided** (D-50): fingerprint, feature matching, model tie-break; unsure means the same |
 | T-17 | Checks and failure rules | 4 Processing | T-02, T-03, T-14, T-15 | **decided** (D-51): one remake with a fresh AI copy; one AI check per draft |
-| T-18 | Models and prompts | 4 Processing | T-14 – T-17 | mostly decided (D-19, D-20) · **next** |
-| T-19 | How runs work | 5 Running | T-01, T-05, T-08 | open |
+| T-18 | Models and prompts | 4 Processing | T-14 – T-17 | **decided** (D-52): Haiku pre-checks, Sonnet draft checks and tie-breaks; Nano Banana Pro enhances |
+| T-19 | How runs work | 5 Running | T-01, T-05, T-08 | **next** |
 | T-20 | Spend | 5 Running | T-03, T-18, T-19 | open |
 | T-21 | Security | 5 Running | T-01, T-08 | open |
 | T-22 | The trial | 5 Running | T-14 – T-18, T-20 | open |
@@ -365,7 +365,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   Q-06 and Q-07 resolved.
 - **Linked:** PIP-02, PIP-09, PIP-10, PIP-11.
 
-### T-18 · Models and prompts · **next**
+### T-18 · Models and prompts · **decided**
 - **Depends on:** T-14 – T-17.
 - **Decided so far:**
   - One key: OpenRouter (D-19).
@@ -375,10 +375,15 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - a prompt for the distinctness tie-break (T-16) and for categories (T-04);
   - checker models;
   - the family rule.
+- **Decided (D-52):**
+  - Claude Haiku 5.5 for pre-checks;
+  - Claude Sonnet 5.5 for draft checks and the same-photograph tie-break;
+  - the family rule holds against the Google and OpenAI image models;
+  - prompts: `same_photo.md` added, `precheck.md` v2 (age estimate), `outline.md` withdrawn. Categories need no prompt (D-41).
 
 ## Stage 5: Running, cost and safety
 
-### T-19 · How runs work · open
+### T-19 · How runs work · **next**
 - **Depends on:** T-01, T-05, T-08.
 - **To decide:**
   - on demand or scheduled (daily, like the pipeline);
@@ -555,4 +560,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **2026-10-19 22:45.** **T-14 decided** (D-49): the board is good enough to build on (recipe 0.4.0 is the starting point), and the outline is drawn by code only. Model-drawn outlines are dropped from the method and the trial (F-20 withdrawn, TRI-03 amended). PIP-19 cut-out limits proposed. Next: T-16.
 - **2026-10-19 22:55.** **T-16 decided** (D-50): when unsure, it's the same photograph. The method (PIP-20) was prototyped in `prototype/same_photo.py`: copies scored 56–330 and different photographs at most 19. Next: T-17.
 - **2026-10-19 23:05.** **T-17 decided** (D-51): one remake with a fresh AI copy; the black-and-white version is checked by code only. Per teacher per run, 6 drafts and 12 pre-checks at most. Q-06 and Q-07 resolved. Next: T-18.
+- **2026-10-19 23:15.** **T-18 decided** (D-52): Haiku 5.5 pre-checks, Sonnet 5.5 draft checks and tie-breaks, all through OpenRouter. Prompts updated. Next: T-19.
 

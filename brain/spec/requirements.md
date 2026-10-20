@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11. T-14 is decided (D-49): code outline only (PIP-07), PIP-19, STY-07; TRI-03 amended. T-16 is decided (D-50): PIP-20. T-17 is decided (D-51): PIP-09..PIP-11.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18. T-06 is decided (D-42): storage in the bucket (OUT-12) and the admin page (OUT-13); OUT-01 and OUT-09 withdrawn. T-08 is decided (D-44): the API (OUT-14); IN-06 and IN-07 amended. T-10 is decided (D-45): IN-12 and IN-13. T-11 is decided (D-46): SRC-01, SRC-09, SRC-14. T-12 is decided (D-47): SRC-03..SRC-06. T-13 is decided (D-48): SRC-11. T-14 is decided (D-49): code outline only (PIP-07), PIP-19, STY-07; TRI-03 amended. T-16 is decided (D-50): PIP-20. T-17 is decided (D-51): PIP-09..PIP-11. T-18 is decided (D-52): checking models in PIP-02, PIP-09.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -459,6 +459,8 @@ Take the best candidate that hasn't been set aside (SRC-07).
 - It returns a structured verdict: pass or fail, reasons, an approximate face box, whether the original is a photograph or another medium (Q-11), and any caption or facsimile signature as written, with the person it names (recorded; a caption naming someone else fails the pre-check).
 - A failing original is set aside with its reason. Nothing else is spent on it.
 
+- *Model (D-52):* Claude Haiku 5.5 through OpenRouter. Prompt `precheck.md` v2, which also returns the medium and an age estimate (PIP-18).
+
 *Verify:* stubbed model responses drive the pass and fail paths. Live behaviour is judged in the trial.
 
 **PIP-03 · Cut-out** *fixed* · B2, D-19 (through OpenRouter, one key); method *proposed* · C
@@ -521,6 +523,7 @@ Code lays the line over the dots and writes the master (STY-06).
   - the crop matches the examples.
 - The model sees the draft on the library's page colour, the original and the three examples.
 - It returns, for each criterion, pass or fail with a 1–5 score, plus short notes. A draft passes only when every criterion passes.
+- *Model (D-52):* Claude Sonnet 5.5 through OpenRouter, which is also used for the same-photograph tie-break (PIP-20, prompt `same_photo.md`).
 - The notes go into the manifest record.
 
 *Verify:* stubbed responses. Live behaviour is judged in the trial.

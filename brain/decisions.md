@@ -401,3 +401,23 @@ Claude's proposals carried with this decision:
 
 → T-17, PIP-09..PIP-12, Q-06, Q-07
 
+**D-52 · 2026-10-19 · Checking models** · owner · *closes T-18*
+- **Claude Haiku 5.5 for the pre-checks** (`anthropic/claude-haiku-5.5`), the many cheap calls.
+- **Claude Sonnet 5.5 for the draft check and the same-photograph tie-break** (`anthropic/claude-sonnet-5.5`), where judgement matters.
+- All are called through OpenRouter (D-19). They are a different family from the image models (Google, OpenAI), so the family rule holds.
+
+OpenRouter prices on 2026-10-19:
+- Haiku 5.5: $0.10 per million input tokens, $0.50 output;
+- Sonnet 5.5: $2 in, $10 out.
+
+`doctor` confirms the ids and prices at build time.
+
+Claude's prompts carried with this decision:
+- `same_photo.md` v1 (PIP-20);
+- `precheck.md` v2, which adds the age estimate for PIP-18 and drops book plates;
+- `outline.md` withdrawn (D-49).
+
+The image model is unchanged: Nano Banana Pro, with Nano Banana 2 and GPT Image 2 as the trial's challengers.
+
+→ T-18, PIP-02, PIP-09, PIP-20
+
