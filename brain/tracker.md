@@ -25,9 +25,9 @@
 | T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **decided** (D-31..D-36): fully hosted on **Railway**, two-way API ([notes](topics/T-01-where-it-runs.md)) |
 | T-02 | The three versions of a portrait, exactly | 1 Shape | none | **decided** (D-39): original + PNG viewing copy; white and black-edge B&W at 1,000 and 500 px; AI files offered ([notes](topics/T-02-three-versions.md)) |
 | T-03 | How many portraits per teacher, and what counts as different | 1 Shape | none | **decided** (D-40): different photographs, best-known first, better copies offered |
-| T-04 | Categories for each portrait | 1 Shape | T-03 | **next** |
+| T-04 | Categories for each portrait | 1 Shape | T-03 | **decided** (D-41): no category scheme; an approximate date for the spread; the library can correct |
 | T-05 | Approval: what the library approves, and the main portrait | 1 Shape | T-01, T-03 | **decided** (D-38): in the library's queue, reported back |
-| T-06 | Storage and organisation by teacher | 2 Data | T-01, T-02, T-03 | open (D-27 sets "by teacher") |
+| T-06 | Storage and organisation by teacher | 2 Data | T-01, T-02, T-03 | **next** (D-27 sets "by teacher") |
 | T-07 | The records: what we keep about teachers, portraits, versions and sources | 2 Data | T-02 – T-05 | open |
 | T-08 | The library API | 2 Data | T-01, T-06, T-07 | open (D-28 sets "an API") |
 | T-09 | The contract with Library-AI (Rev1) | 2 Data | T-08 | **mostly decided** (D-37): this project owns the API and its OpenAPI file; the library adopts it |
@@ -121,7 +121,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Written into:** PIP-14..PIP-17; PIP-11 and SRC-07 amended.
 - **Affects:** PIP-01, PIP-11, SRC-07, RUN-02, T-04 (age or date for the spread), T-08 (turn-down reasons), T-16, T-19, T-20.
 
-### T-04 · Categories for each portrait · **next**
+### T-04 · Categories for each portrait · **decided**
 - **Depends on:** T-03.
 - **To decide:**
   1. **Which labels?** Ideas:
@@ -133,7 +133,11 @@ Topics within a stage can move in parallel when they don't depend on each other.
      - source.
   2. **Who assigns them:** source metadata first, the vision pre-check for the rest. Are they checked by anyone?
   3. **Used for what:** choosing which 3 to keep (T-03), the library's display (T-05), search?
-- **Decided so far:** "categorize" is part of the job (D-25).
+- **Decided (D-41):**
+  - "This kind of detail isn't important for my needs." There is no category scheme. "Categorize" is covered by organising by teacher (D-27).
+  - Each portrait records only its source, the best-known flag and an approximate date (for the spread, PIP-16).
+  - These are set automatically. The library can correct them through the API, and a correction is never overwritten.
+- **Written into:** PIP-18.
 
 ### T-05 · Approval: what the library approves, and the main portrait · **decided**
 - **Depends on:** T-01, T-03.
@@ -168,7 +172,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Depends on:** T-02 – T-05.
 - **To decide:**
   1. **Teacher:** id, names, dates, Wikidata id, link to the authors list.
-  2. **Portrait:** id, teacher, categories, status, main or not, history.
+  2. **Portrait:** id, teacher, approximate date and best-known flag (D-41, with the library's corrections), status, main or not, `replaces` (for a better copy), history.
   3. **Version:** the file, its size, checksum and recipe version.
   4. **Source and rights:** from the rights log (SRC-12).
   5. **Checks and costs.**
@@ -426,4 +430,5 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
   Next: T-03.
 - **2026-10-19 19:20.** **T-03 decided** (D-40). The owner took Claude's proposals on what's different, which three, and better copies of approved portraits. On turn-downs the owner chose "only as a clearly better copy", not "never". PIP-14..PIP-17 added. Next: T-04.
+- **2026-10-19 19:35.** **T-04 decided** (D-41): no category scheme ("this kind of detail isn't important for my needs"). An approximate date is kept for the spread across life; the library can correct it (PIP-18). T-05 was already decided, so next: T-06.
 

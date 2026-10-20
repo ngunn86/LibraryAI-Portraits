@@ -258,3 +258,14 @@ Claude's proposals carried with this decision (marked *proposed* in PIP-14..PIP-
 
 → T-03, T-04, T-16, T-19, T-20, PIP-11, PIP-14..PIP-17, SRC-07
 
+**D-41 · 2026-10-19 · No category scheme; the library may correct what's recorded** · owner · *closes T-04*
+- Asked which labels each portrait should carry, the owner said: "This kind of detail isn't important for my needs." So there is **no category scheme**: no pose, medium or quality labels for their own sake.
+- What D-25 meant by "categorize" is covered by organising the portraits by teacher (D-27).
+- A portrait records only what the tool needs anyway:
+  - its source (SRC-08);
+  - whether it is the best-known image (PIP-16);
+  - an **approximate date**, used to spread the three across the teacher's life (PIP-16, D-40). It comes from the source's date, or else from the pre-check's age estimate plus the birth year.
+- **Set automatically; the library can correct it.** A correction sent back through the API replaces the tool's value and is never overwritten by a later run.
+
+→ T-04, T-07, T-08, PIP-16, PIP-18
+

@@ -16,7 +16,7 @@ Conventions are in [../README.md](../README.md).
 > - organised by teacher (D-27);
 > - an API for the library (D-28).
 >
-> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended.
+> T-02 is decided (D-39): the versions are STY-08, STY-09 and OUT-11, and OUT-05 is amended. T-03 is decided (D-40): PIP-14..PIP-17, with PIP-11 and SRC-07 amended. T-04 is decided (D-41): no category scheme, PIP-18.
 >
 > The requirements they touch are under review until the matching tracker topics are decided: SCOPE-01, SCOPE-02, PIP-01, PIP-11, SRC-07, OUT-01..OUT-10, RUN-01, RUN-02, TRI-*, AC-02 and AC-03 (topics T-01..T-09 in [../tracker.md](../tracker.md)). Until then, read them as describing one portrait per teacher, delivered to a folder.
 
@@ -550,6 +550,16 @@ When more different photographs pass the pre-check than there are free slots:
   The threshold is tuned at T-16.
 
 *Verify:* scenario tests: better copy of an approved portrait → marked draft, approved one untouched; turned down for quality → a 2× copy offered once; turned down as "not this teacher" → never again.
+
+**PIP-18 · Approximate date, and the library's corrections** *fixed* · D-41; method *proposed* · C
+- There is no category scheme (D-41). Each portrait records an approximate date, for the spread in PIP-16:
+  - the source's own date, exact or circa, when it has one;
+  - otherwise the pre-check's age estimate (PIP-02) added to the teacher's birth year, marked as estimated;
+  - otherwise unknown. Unknown dates don't block choosing; they rank after dated ones in the spread.
+- Life stage (early, middle or late, by thirds of the teacher's adult life) is worked out from the date when needed. It isn't stored.
+- **The library can correct** the date and the best-known flag through the API. A correction replaces the tool's value and is never overwritten by a later run.
+
+*Verify:* unit tests: a source date wins over an estimate; an estimate uses the birth year; a library correction survives a re-run.
 
 ---
 
