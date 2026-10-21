@@ -1,0 +1,15 @@
+{
+ "op": "flow_in1",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "8-bit: GaussianBlur(norm(warp_linear), 1.0)",
+ "tolerance": "exact",
+ "card": "F-39",
+ "stats": {
+  "min": 12.0,
+  "max": 167.0,
+  "mean": 127.50043487548828
+ }
+}

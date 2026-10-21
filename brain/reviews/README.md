@@ -8,7 +8,7 @@ The plan changed a lot on 2026-10-19 and 2026-10-20. The tool is now:
 - a hosted Railway app in TypeScript, like the library;
 - serving an API the library pulls from, with up to three portraits per teacher and three versions each.
 
-The owner's decisions (D-24..D-57) are settled. Review how well the plan carries them out:
+The owner's decisions (D-24..D-61) are settled. Review how well the plan carries them out:
 
 - [spec/requirements.md](../spec/requirements.md) (consolidated 2026-10-20) against the decisions: anything contradictory, missing or unverifiable;
 - [plan/features.md](../plan/features.md): cards too big for one build step, wrong dependencies, checks that can't run offline, live steps without a cap;
@@ -17,11 +17,14 @@ The owner's decisions (D-24..D-57) are settled. Review how well the plan carries
 - rights, licences and credits (SRC-02, SRC-08, SRC-11);
 - spend and failure paths: anything that could stall an unattended build or spend money unexpectedly.
 
-The open question is Q-27. The Python prototype in `prototype/` is the reference, not the product.
+No questions are open. The Python prototype in `prototype/` is the reference, not the product (recipe 0.5.0; its per-operation references are in `prototype/parity/`).
+
+**Rounds so far:** [2026-10-20-argon-round-2.md](2026-10-20-argon-round-2.md) (Gemini 4 Argon, 19 points, all merged; see its Responses).
 
 ## For a reviewer
 
 1. Read `CLAUDE.md`, then the files in `brain/` in the order given in `brain/README.md`.
+   Read the *Responses* of earlier rounds too, so accepted points aren't raised again.
 2. Write **one file** named `YYYY-MM-DD-<reviewer>-round-<n>.md` (for example `2026-10-20-codex-round-2.md`). If you can't write to the repo, give the file's full content in your reply, and the owner will add it.
 3. **Don't edit any other file.**
 4. Number your points: `<reviewer>-<n>` (for example `codex-3`). For each point, give:
@@ -49,6 +52,6 @@ The open question is Q-27. The Python prototype in `prototype/` is the reference
 >
 > 1. Read CLAUDE.md, then brain/README.md, and follow its reading order. Read brain/reviews/README.md for what to focus on in this round.
 > 2. Write your review as instructed there: a single new file in brain/reviews/, or its full content in your reply if you can't write to the repo. Don't edit any other file.
-> 3. The owner's decisions (brain/decisions.md, D-24..D-57) are settled. Review how well the requirements, feature cards, API contract and architecture carry them out.
+> 3. The owner's decisions (brain/decisions.md, D-24..D-61) are settled. Review how well the requirements, feature cards, API contract and architecture carry them out.
 > 4. Focus on contradictions, requirements that can't be verified, feature cards too big for one build step, missing failure cases, rights and licence gaps, and anything that would make an unattended build stall or waste money.
 > 5. Be concrete and cite IDs (requirements, F-cards, D-numbers).

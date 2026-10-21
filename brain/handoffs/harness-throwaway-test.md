@@ -4,7 +4,7 @@
 
 **Who uses it:** the owner plans and runs this test in the harness chat (D-15). This file is the portraits project's list of what the test must prove. **Claude keeps it updated** as portraits decisions change what the hosted app needs. Every change is logged at the bottom.
 
-**Status:** draft v1, 2026-10-19.
+**Status:** draft v1, 2026-10-19; updated 2026-10-20 (see the change log).
 
 - **Host: Railway, decided** (D-36, 2026-10-19). The Replit spike is skipped, so this test is the harness's own proof on Railway, not a way of choosing a host.
 - Rev1's `brain/reference/hosting-railway-review.md` is written for both projects. Where it sets plan, region or layout, this test follows it.
@@ -39,7 +39,7 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 | ID | What must be shown | Passed when |
 |---|---|---|
 | HT-01 | The harness creates the throwaway repo, or uses one the owner creates, with the project skeleton and an offline test suite | The tests pass locally in WSL and on each pull request |
-| HT-02 | The host builds the Node 24 TypeScript app from the repo with no hand-made build steps *(Railway: Railpack, or a Dockerfile)*. *Since D-57:* include one WebAssembly dependency (OpenCV.js) and `sharp`'s native binary, to prove they build and run on the host | The build log shows success for the commit pushed, and `/health` reports that OpenCV.js and `sharp` loaded |
+| HT-02 | The host builds the Node 24 TypeScript app from the repo with no hand-made build steps *(Railway: Railpack, or a Dockerfile)*. *Since D-57:* include one WebAssembly dependency (OpenCV.js) and `sharp`'s native binary, to prove they build and run on the host. *Since Argon's review:* also `onnxruntime-node`, the real app's fallback for its face detector | The build log shows success for the commit pushed, and `/health` reports that OpenCV.js, `sharp` and `onnxruntime-node` loaded. `onnxruntime-node` runs one small ONNX model (the portraits repo's `models/face_detection_yunet_2026may.onnx`) on a test image |
 
 ### B. Deploying
 
@@ -80,7 +80,7 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 | ID | What must be shown | Passed when |
 |---|---|---|
 | HT-17 | Secrets are set per environment in the host, never in the repo, logs or responses | A scan of the repo, the logs and every API response finds no key value |
-| HT-18 | One OpenRouter call works from the host, under a spend cap of a few cents | `/ai` returns an answer, and the spend is logged |
+| HT-18 | One OpenRouter call works from the host, under a spend cap of a few cents. It also confirms the real app's model ids and answer formats before any feature work | `/ai` returns an answer, and the spend is logged with the actual cost the answer reported (the request sends `"usage": {"include": true}`). OpenRouter's model list (`GET /api/v1/models`) contains all five ids in settings (D-52, D-56). One image-edit call returns an image, and its answer's shape is saved as a fixture |
 | HT-19 | **GitHub integration**: a read-only, single-repo token reads a file from a private repo (D-32) | `/github` returns the file's first line. The same token can't write: a write attempt is refused |
 | HT-20 | The API needs a key | `/secure` answers 401 without a key and 200 with one. The key can be rotated without a deploy |
 | HT-21 | The admin page sits behind a login and is usable on a phone | The owner opens `/admin` on a phone, after logging in |
@@ -155,4 +155,9 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 
   The throwaway test can mirror this. HT-16's cron belongs in production, or in one chosen environment, rather than in every PR copy. The trial runs in production before the release.
 - **2026-10-20 (morning):** D-58 and D-59. The real app's nightly job also queues teachers whose slots are full, for monthly better-copy searches, and the first-run cap spans several nights. Neither changes the throwaway test.
+- **2026-10-20 (Argon's review):**
+  - **HT-18 widened:** it also checks the five OpenRouter model ids, the actual cost in the answer, and one image-edit answer's shape, so a wrong id is caught before the build rather than at the first live card.
+  - **`railway run` from the owner's PC:** Railway's `DATABASE_URL` uses a private hostname that only resolves inside Railway. The real app's command-line tool uses `DATABASE_PUBLIC_URL` when it's set. If the throwaway app has a command run through `railway run`, it should do the same; HT-12's restore check is unaffected.
+  - The real app's outbound client follows redirects by hand and checks each target host, and its allowlist includes the sources' file hosts (`upload.wikimedia.org`, `tile.loc.gov`, `iiif.wellcomecollection.org`). No change to the test.
+  - **The face detector:** the real app commits YuNet (`models/`, about 230 KB). If OpenCV.js lacks `FaceDetectorYN`, the app runs the model with `onnxruntime-node`, a native module. HT-02 now also loads `onnxruntime-node` on Railway and runs that model once, so the fallback is proven on the host too.
 

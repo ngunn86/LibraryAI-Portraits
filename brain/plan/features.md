@@ -1,6 +1,6 @@
 # Feature cards (build order)
 
-**Status: draft 2 (Claude, 2026-10-20),** for the hosted TypeScript app (D-31..D-57). It replaces draft 1, the Python CLI cards, which are in git history.
+**Status: draft 3 (Claude, 2026-10-20),** for the hosted TypeScript app (D-31..D-61). It replaces draft 1, the Python CLI cards, which are in git history. Draft 3 merges Argon's review (`../reviews/2026-10-20-argon-round-2.md`).
 - The harness builds these one at a time, **in the order of the overview table**, respecting *Depends on*. IDs are permanent, so the build order isn't numeric. Retired cards keep their IDs as *withdrawn*.
 - The card format stays provisional until the harness settles its own (D-15). Converting should be mechanical.
 
@@ -36,19 +36,19 @@
 | 4 | F-37 | Storage bucket client | 1 | F-01 | none | none | no |
 | 5 | F-36 | Railway setup and deploys | 1 | F-01, F-04, F-37 | O-8 | deploy | no |
 | 6 | F-02 | Authors list reader and row checks | 2 | F-01 | none | none | no |
-| 7 | F-06 | Outbound client (allowlist, polite, cached, replayable) | 2 | F-01, F-04 | none | none | no |
-| 8 | F-31 | Teacher sync through GitHub | 2 | F-02, F-04, F-06 | O-9 (live only) | network | no |
-| 9 | F-07 | Licence classifier and credit lines | 2 | F-06 | none | network | no |
-| 10 | F-32 | Rights log | 2 | F-04, F-07 | none | none | no |
-| 11 | F-08 | Wikidata: fetch, check, find ids | 2 | F-06 | none | network | no |
-| 12 | F-09 | Commons: P18 and depicts | 2 | F-07, F-08 | none | network | no |
-| 13 | F-10 | Library of Congress pictures | 2 | F-07, F-32 | none | network | yes |
-| 14 | F-34 | Wellcome Collection | 2 | F-07, F-32 | none | network | yes |
-| 15 | F-35 | Finding missing dates and ids | 2 | F-08, F-31 | none | network | yes |
+| 7 | F-06 | Outbound client (allowlist, polite, cached, replayable) | 2 | F-01, F-04 | O-10 (live only) | none | no |
+| 8 | F-08 | Wikidata: fetch, check, find ids | 2 | F-06 | O-10 (to record) | network | no |
+| 9 | F-31 | Teacher sync through GitHub | 2 | F-02, F-04, F-06, F-08 | O-9 (live only) | network | no |
+| 10 | F-07 | Licence classifier and credit lines | 2 | F-06 | O-10 (to record) | network | no |
+| 11 | F-32 | Rights log | 2 | F-04, F-07 | none | none | no |
+| 12 | F-09 | Commons: P18 and depicts | 2 | F-07, F-08 | O-10 (to record) | network | no |
+| 13 | F-10 | Library of Congress pictures | 2 | F-07, F-32 | O-10 (to record) | network | yes |
+| 14 | F-34 | Wellcome Collection | 2 | F-07, F-32 | O-10 (to record) | network | yes |
+| 15 | F-35 | Finding missing dates and ids | 2 | F-08, F-31 | O-10 (to record) | network | yes |
 | 16 | F-38 | Coverage survey | 2 | F-09, F-10*, F-31, F-34*, F-35*, F-36 | O-9, O-10 | network | no |
 | 17 | F-39 | Porting spike: OpenCV.js and sharp | 3 | F-01 | none | none | no |
 | 18 | F-12 | Face landmarks and crop | 3 | F-39 | none | none | no |
-| 19 | F-13 | Descreen and edge-preserving blur | 3 | F-39 | none | none | no |
+| 19 | F-13 | Descreen and edge-preserving blur | 3 | F-12 | none | none | no |
 | 20 | F-14 | Tone and halftone | 3 | F-39 | none | none | no |
 | 21 | F-15 | Mask, code outline, master and cut-out limits | 3 | F-12, F-14 | none | none | no |
 | 22 | F-30 | AI copy: key mask, alignment, drift check, blend | 3 | F-12, F-13 | none | none | no |
@@ -56,11 +56,11 @@
 | 24 | F-42 | Same photograph or different (code layers) | 3 | F-12 | none | none | no |
 | 25 | F-16 | Parity with the Python prototype | 3 | F-13, F-15, F-30, F-41 | none | none | no |
 | 26 | F-17 | OpenRouter client, spend ledger and caps | 4 | F-04, F-06 | none | none | no |
-| 27 | F-18 | Pre-check | 4 | F-17 | none | none | no |
-| 28 | F-19 | AI copy and keyed cut-out calls | 4 | F-17, F-30 | none | none | no |
-| 29 | F-21 | Draft check and compare-with-target | 4 | F-17, F-15 | none | none | no |
-| 30 | F-43 | Same-photograph tie-break | 4 | F-17, F-42 | none | none | no |
-| 31 | F-11 | Candidates: gather, group, order, download | 4 | F-09, F-10*, F-34*, F-32, F-37, F-42, F-43 | none | none | no |
+| 27 | F-18 | Pre-check | 4 | F-17, F-41 | none | none | no |
+| 28 | F-19 | AI copy and keyed cut-out calls | 4 | F-17, F-30, F-41 | none | none | no |
+| 29 | F-21 | Draft check and compare-with-target | 4 | F-17, F-15, F-41 | none | none | no |
+| 30 | F-43 | Same-photograph tie-break | 4 | F-17, F-41, F-42 | none | none | no |
+| 31 | F-11 | Candidates: gather, previews, group, order | 4 | F-09, F-10*, F-34*, F-32, F-37, F-42, F-43 | none | none | no |
 | 32 | F-24 | Publishing a portrait | 5 | F-03, F-04, F-07, F-37, F-41 | none | none | no |
 | 33 | F-23 | Per-teacher pipeline and failure policy | 5 | F-11, F-16, F-18, F-19, F-21, F-24 | none | none | no |
 | 34 | F-25 | Queue, schedule and run reports | 5 | F-23, F-31 | none | none | no |
@@ -80,7 +80,7 @@
 
 \* If a parkable dependency is parked, the card is built without it, and the digest says so. For example, F-11 is built without the LoC if F-10 is parked.
 
-F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries rather than features; reviewers check them, and F-06's allowlist test enforces AC-06. OUT-08 (the zip) is withdrawn (D-58).
+F-28 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contact) is needed only where a card records or calls a live source; offline checks use a placeholder. SCOPE-01..04 are boundaries rather than features; reviewers check them, and F-06's allowlist test enforces AC-06. OUT-08 (the zip) is withdrawn (D-58).
 
 ---
 
@@ -89,14 +89,18 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-01 · Skeleton, settings, secrets, offline tests
 - **Phase:** 1
 - **Goal:** A TypeScript repo on Node 24, matching the library's toolchain, with typed settings, secrets from the environment, a CLI frame and an offline test suite.
-- **Covers:** IN-10, IN-11, STY-05, RUN-05 (frame), RUN-06, PIP-09 (the family rule)
+- **Covers:** IN-10, IN-11, STY-05, RUN-05 (frame), RUN-06, PIP-09 (the family rule and page colour)
 - **Depends on:** none
 - **Owner input:** none
 - **Build:**
-  - `package.json` with Node 24 engines, `.nvmrc` and `tsconfig.json`;
+  - `package.json` with Node 24 engines, `.nvmrc` and `tsconfig.json`, and the image libraries installed from the start (`@techstark/opencv-js`, `sharp`), so F-36's health check can report them;
   - scripts `check` (tsc), `build` (esbuild), `test` (`tsx --test`);
-  - `src/config/settings.ts` (recipe 0.4.0 values from `prototype/recipe.py`, models, caps, schedule, sources);
-  - `src/config/env.ts` (zod);
+  - `src/config/settings.ts`:
+    - the recipe 0.5.0 values from `prototype/recipe.py`;
+    - the models, caps, schedule and sources;
+    - the allowed hosts (SRC-01);
+    - `checkPageRgb: [28, 30, 38]`, `maxModelImagePx: 1600`, `previewPx: 1600`, `maxWorkingPx: 2000`, `minSpreadYears: 10`, `maxCandidatesPerTeacher: 24`;
+  - `src/config/env.ts` (zod). The CLI connects with `DATABASE_PUBLIC_URL ?? DATABASE_URL`, so `railway run` works from the owner's PC;
   - `src/cli.ts`;
   - a test setup that refuses all outbound calls.
 - **Checks:**
@@ -106,6 +110,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - Changing any recipe value without changing `recipeVersion` fails a test (STY-05). The test compares a hash of the recipe block against the hash recorded for its version.
   - A checking model of the same family as any enhance model is refused at start-up (PIP-09).
   - A missing secret is reported by name only. A test that sets fake secrets and runs every command finds none of their values in the output.
+  - With both `DATABASE_PUBLIC_URL` and `DATABASE_URL` set, the CLI uses the public one; the services use `DATABASE_URL`.
 - **Test data:** valid and invalid settings objects.
 - **Live calls:** none
 - **Parkable:** no
@@ -124,8 +129,8 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - the contract and samples copied to `contracts/` at the repo root, byte for byte.
 - **Checks:**
   - Every sample in `portraits-api.sample.json` validates against its schema with ajv, and parses with the matching zod type.
-  - The seven refused payloads from `check_api.py` are refused by both ajv and zod. Examples: a turn-down without a reason; an unknown field in a decision.
-  - zod and ajv agree on 10 good and 10 bad generated payloads per request body.
+  - The twelve refused payloads from `check_api.py` are refused by both ajv and zod. Examples: a turn-down without a reason; an unknown field in a decision; an `approx_date` given as text; a `refused_reason` that isn't one of the codes.
+  - zod and ajv agree on 10 good and 10 bad generated payloads per request body. The contract constrains a `correct` decision's `value` by its `field` (a year or null for `approx_date`, true or false for `best_known`), so a discriminated zod union agrees with it.
   - A test fails if `contracts/portraits-api.openapi.json` differs from `brain/contracts/portraits-api.openapi.json`, so the two copies can't drift.
 - **Test data:** the contract's samples.
 - **Live calls:** none
@@ -134,19 +139,24 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 
 ### F-04 · Database, queue and step cache
 - **Phase:** 1
-- **Goal:** The records of T-07 in Postgres through Drizzle, a job queue that survives crashes, and a cache of paid step results.
-- **Covers:** RUN-03, PIP-12 (storage), IN-08 (storage), T-07
+- **Goal:** The records of T-07 (`../topics/T-07-records.md`, with its additions of 2026-10-20) in Postgres through Drizzle, a job queue that survives crashes, and a cache of paid step results.
+- **Covers:** RUN-03, RUN-04 (storage), PIP-12 (storage), IN-08 (storage), TRI-09 (storage), T-07
 - **Depends on:** F-01
 - **Owner input:** none
 - **Build:**
-  - `src/db/schema.ts` and `src/db/migrations/` (drizzle-kit SQL), with these tables: `teachers`, `candidates`, `photographs`, `portraits`, `files`, `portrait_events`, `library_decisions`, `requests`, `runs`, `spend`, `jobs`, `step_cache`, `api_keys`, `changes`, `sessions`, `app_settings` (the admin password's hash, the schedule switch);
+  - `src/db/schema.ts` and `src/db/migrations/` (drizzle-kit SQL), with these tables:
+    - `teachers`, `candidates`, `photographs`, `portraits`, `files`, `portrait_events`, `library_decisions`, `requests`;
+    - `runs`, `spend` (with a `budget` column: `trial`, `trial_examples`, `first_pass` or `regular`), `jobs`, `step_cache`;
+    - `api_keys`, `changes`, `sessions`;
+    - `trial_runs` and `trial_items` (TRI-09);
+    - `app_settings` (the admin password's hash, the schedule switch, `first_pass_state`);
   - `src/queue.ts`;
   - a PGlite test helper.
 - **Checks:**
   - The migrations run from empty on PGlite, and every table records and reads back.
   - Two workers claiming at once never get the same job (`FOR UPDATE SKIP LOCKED`, shown with two connections).
   - A job whose worker stops heartbeating is claimed again after the timeout, and resumes at its last finished step.
-  - The step cache hits for the same key, and misses when the SHA-256, step, model or settings hash changes.
+  - The step cache hits for the same key, and misses when any image's SHA-256, the step, the model, the prompt version, the note or the attempt changes. A remake (attempt 1) and a `try_again` without a note both miss; changing `recipeVersion` alone still hits (RUN-03).
   - The `changes` table hands out increasing sequence numbers, also inside concurrent transactions.
 - **Test data:** none
 - **Live calls:** none
@@ -162,7 +172,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Build:** `src/storage/bucket.ts` (`@aws-sdk/client-s3`, `s3-request-presigner`); an in-memory fake with the same interface for tests; layout helpers.
 - **Checks:**
   - Putting and getting a file round-trips, with its SHA-256 and content type.
-  - Keys follow `portraits/<teacher_id>/<portrait_id>/<file>`. A bad id (path characters, `..`) is refused.
+  - Keys follow `portraits/<teacher_id>/<portrait_id>/<file>`, or `trial/<trial_run_id>/<file>` for the trial (TRI-09). Any other key, or a bad id (path characters, `..`), is refused.
   - A signed link expires after 15 minutes (the fake checks the expiry it was given).
   - Nothing is ever deleted by the client's normal calls; there's no delete method outside tests.
 - **Test data:** small files.
@@ -202,13 +212,15 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-02 · Authors list reader and row checks
 - **Phase:** 2
 - **Goal:** Read library-pipeline's `authors.csv`, keep the active rows, read their dates, and report bad rows by name while the rest load.
-- **Covers:** IN-01, IN-02, IN-03, IN-05, AC-01 (part)
+- **Covers:** IN-01, IN-02, IN-03, IN-05, AC-01 (part), D-60
 - **Depends on:** F-01
 - **Owner input:** none
 - **Build:** `src/teachers/authors.ts`
 - **Checks:**
   - A fixture copied from the real header, with 12 rows (active, proposed, excluded; dates `1854-1948`, `d. 1925`, `b. 1870`, blank and unreadable), yields exactly the active rows. Aliases are split on `;`.
-  - Each reason (missing name, unreadable date, death before birth, a lifespan over 120 years, a future year) is reported with its row number, and the other rows load.
+  - Each reason (missing name, unreadable date, death before birth, a lifespan over 120 years, a future year, a malformed `wikidata_qid` or `lcnaf_id`) is reported with its row number, and the other rows load.
+  - **The optional columns (D-60):** a file without `wikidata_qid` and `lcnaf_id` reads as before; with them, the ids are read (`ids_from = list`). A good id passes `^Q[1-9][0-9]*$` or `^n[a-z]?[0-9]+$`.
+  - `key_works` is split into titles, without their bracketed years and edition notes.
   - Whole-file refusals (not UTF-8, no header, missing `name`, `status` or `dates`, no active rows) stop the read before any client is called.
   - Changing a row's stream or tier changes only `notes`.
 - **Test data:** about eight small CSV fixtures.
@@ -221,10 +233,11 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Goal:** One HTTP client for every outbound call, with an allowlist, an identifying User-Agent, per-source pacing, retries, a cache, and record and replay for tests.
 - **Covers:** SRC-01, SRC-09, SRC-10, RUN-06, AC-06
 - **Depends on:** F-01, F-04
-- **Owner input:** none
+- **Owner input:** O-10 (the User-Agent contact) before any live recording; tests use a placeholder
 - **Build:** `src/net/client.ts`
 - **Checks:**
-  - A request to a host outside the allowlist fails before leaving the process. The allowlist is the adopted sources, `api.github.com`, `openrouter.ai` and the environment's bucket endpoint.
+  - A request to a host outside the allowlist fails before leaving the process. The allowlist is SRC-01's: `www.wikidata.org`, `commons.wikimedia.org`, `upload.wikimedia.org`, `www.loc.gov`, `loc.gov`, `tile.loc.gov`, `id.loc.gov`, `api.wellcomecollection.org`, `iiif.wellcomecollection.org`, `openrouter.ai`, `api.github.com` and the environment's bucket host.
+  - **Redirects:** the client calls `fetch` with `redirect: "manual"`. A redirect to an allowed host is followed (up to 5); one to any other host is refused, naming it.
   - Every request carries the User-Agent from settings: name, version, contact.
   - **Pacing, on a fake clock:**
     - LoC calls are spaced evenly, one every 3 seconds, so 30 take at least 87 seconds;
@@ -237,17 +250,39 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Parkable:** no
 - **Size:** M
 
+### F-08 · Wikidata: fetch, check, find ids
+- **Phase:** 2
+- **Goal:** Read a teacher's Wikidata item, check a given id, and find a missing one as SRC-06 allows.
+- **Covers:** SRC-03 (R1), SRC-06 (a, b's Wikidata half), IN-04
+- **Depends on:** F-06
+- **Owner input:** O-10, to record
+- **Build:** `src/sources/wikidata.ts`
+- **Checks:**
+  - A good id returns its P18 file name, its birth and death years, its labels and aliases, and its LoC name id (P244) if present.
+  - An id that isn't a human, or whose years disagree with the teacher's, is refused with the reason.
+  - **Search** (SRC-06b, step 1), which works for teachers with no years:
+    - it finds humans whose label or alias matches the teacher's name or an alias (normalised), and who have both a birth and a death year on Wikidata;
+    - any years the teacher already has must match;
+    - each person found is returned with their id, years, LoC name id (P244) and works (P800, and items whose author P50 is them, found with `haswbstatement:P50=<Q-id>` in Wikidata's own search on `www.wikidata.org`; never the query service);
+    - none, or a year mismatch, returns nothing. Several people are all returned, for F-35 to separate.
+- **Test data:** recorded responses for about six real teachers and the edge cases.
+- **Live calls:** network (free; to record)
+- **Parkable:** no
+- **Size:** S
+
 ### F-31 · Teacher sync through GitHub
 - **Phase:** 2
 - **Goal:** Sync the active authors from the private library-pipeline repo into the database, with stable teacher ids, nightly and by command.
 - **Covers:** IN-01, IN-03, IN-04 (eligibility), IN-12, AC-01
-- **Depends on:** F-02, F-04, F-06
+- **Depends on:** F-02, F-04, F-06, F-08 (to check ids from the list)
 - **Owner input:** O-9 (the read-only GitHub token), needed for the live check only
 - **Build:** `src/teachers/sync.ts`; the `sync` command; the cron job calls it.
 - **Checks:**
   - A recorded GitHub contents response syncs to the expected teachers.
   - A second sync with the same file changes nothing (no new rows, no `record_version` bumps, no change-feed entries).
-  - Renaming an author keeps the `teacher_id`. A clashing slug gets `-2` and is reported. An author no longer active gets `on_list = false`, and their portraits are untouched.
+  - **Renames** (IN-12's order): a row is matched to an existing teacher by `wikidata_qid` or `lcnaf_id`, then by the same normalised name, then by a shared name or alias with compatible years, never by row position. A renamed author keeps the `teacher_id`; inserting a row above it changes nothing.
+  - A clashing slug gets `-2` and is reported. An author no longer active gets `on_list = false`, and their portraits are untouched.
+  - Ids from the optional columns are stored with `ids_from = list`, and checked with F-08 as SRC-06(a) says. An id that fails is refused for that row, with its reason, and the teacher is treated as having none.
   - Each teacher's eligibility (IN-04) is set: `qid`, `lcnaf_or_years` or `none`.
   - A broken file (F-02's whole-file refusals) leaves the existing teachers exactly as they were (IN-03).
   - The only GitHub call is a GET of `collection/authors.csv`. No write method exists in the client.
@@ -262,7 +297,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Goal:** Map any Commons, LoC or Wellcome rights statement to tier 1, tier 2 or refused, and build each file's licence and credit line.
 - **Covers:** SRC-02, SRC-11
 - **Depends on:** F-06
-- **Owner input:** none
+- **Owner input:** O-10, to record the strings
 - **Build:** `src/sources/licences.ts`; a fixture table of real licence strings.
 - **Checks:**
   - A table test over at least 40 real strings, each with its expected class:
@@ -270,7 +305,8 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
     - CC BY and CC BY-SA in several versions → tier 2;
     - NC, ND, fair use, GFDL alone, "rights status not evaluated" and blank → refused.
   - A dual-licensed file takes its most open allowed licence. An unknown string is refused, and its raw text is kept.
-  - Adaptation licences follow SRC-11's table: CC0 1.0 for public domain, CC BY 4.0 for CC BY, CC BY-SA 4.0 for CC BY-SA 2.0 and later; CC BY-SA 1.0 is held.
+  - Adaptation licences follow SRC-11's table: CC0 1.0 for public domain, CC BY 4.0 for CC BY, CC BY-SA 4.0 for CC BY-SA 2.0 and later.
+  - **CC BY-SA 1.0 is held** at this step, before anything is spent: its verdict is `held` with the reason, and it never becomes a candidate (SRC-02, SRC-11).
   - Credit lines match SRC-11's formats, including the example, and "Portrait by New Thought Nexus, adapted from: …" for the adaptations.
 - **Test data:** strings recorded once from real responses.
 - **Live calls:** network (free; to record the strings once)
@@ -286,27 +322,11 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Build:** `src/sources/rightsLog.ts`
 - **Checks:**
   - Recording the same original twice keeps one row, keyed by source and source id (and SHA-256 once downloaded), and adds to its history.
-  - A refused original keeps its reason, and a later run doesn't research it.
+  - A refused original keeps its reason, and a later run doesn't research it. A `held` one keeps its verdict and is listed for the owner (SRC-12).
   - A candidate missing its source, item link, licence or credit line is refused (SRC-08).
   - The CSV export has every SRC-08 and SRC-12 field, and the raw record is kept beside it.
 - **Test data:** records from F-07's fixtures.
 - **Live calls:** none
-- **Parkable:** no
-- **Size:** S
-
-### F-08 · Wikidata: fetch, check, find ids
-- **Phase:** 2
-- **Goal:** Read a teacher's Wikidata item, check a given id, and find a missing one as SRC-06 allows.
-- **Covers:** SRC-03 (R1), SRC-06 (a, b's Wikidata half), IN-04
-- **Depends on:** F-06
-- **Owner input:** none
-- **Build:** `src/sources/wikidata.ts`
-- **Checks:**
-  - A good id returns its P18 file name, its birth and death years, its labels and aliases, and its LoC name id (P244) if present.
-  - An id that isn't a human, or whose years disagree with the teacher's, is refused with the reason.
-  - **Search:** one unique human with the name or an alias and both years is returned as a candidate; two matches, none, or a year mismatch return nothing.
-- **Test data:** recorded responses for about six real teachers and the edge cases.
-- **Live calls:** network (free; to record)
 - **Parkable:** no
 - **Size:** S
 
@@ -315,12 +335,13 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Goal:** Turn a teacher's P18 image and their depicts-tagged Commons files into candidates, with licence, author and credit.
 - **Covers:** SRC-03 (R1, R2), SRC-08
 - **Depends on:** F-07, F-08
-- **Owner input:** none
+- **Owner input:** O-10, to record
 - **Build:** `src/sources/commons.ts` (`imageinfo` with `extmetadata`; search with `haswbstatement:P180=<Q-id>` in the file namespace).
 - **Checks:**
   - **R1:** the P18 file becomes a candidate (`wikidata_p18`) with its licence, author, credit, size and file link.
   - **R2:** each depicts-tagged file becomes a candidate (`commons_p180`); a file that is only in the teacher's category doesn't (negative fixture).
   - Non-image files (PDF, DjVu, audio) are skipped.
+  - For previews (PIP-21), a thumbnail link at the largest of Wikimedia's standard widths not over 1,600 px is recorded, beside the full file link and the full width and height from `imageinfo`.
   - A file with a refused licence becomes a refused row in the rights log, not a candidate.
 - **Test data:** recorded responses for two teachers, one with several depicts files.
 - **Live calls:** network (free; to record)
@@ -332,13 +353,13 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Goal:** Find Prints & Photographs records that name the teacher with matching dates or their LoC name id, and turn them into candidates.
 - **Covers:** SRC-03 (R3), SRC-05, SRC-08, SRC-09 (pacing)
 - **Depends on:** F-07, F-32
-- **Owner input:** none
+- **Owner input:** O-10, to record
 - **Build:** `src/sources/loc.ts` (loc.gov JSON, `fo=json`)
 - **Checks:**
   - **Matches:** a record whose name heading carries the teacher's LoC name id; a record with a heading like `Fillmore, Charles, 1854-1948` whose dates match.
   - **No match:** a near miss (same name, different dates); an undated heading; a name in the title only.
   - The rights advisory is classified by F-07. "Rights status not evaluated" is refused.
-  - The largest available image link is chosen, and its pixel size is recorded when given.
+  - The largest available image link is chosen, and its pixel size is recorded (from the IIIF `info.json` when the record doesn't give it). An IIIF link at most 1,600 px (`full/!1600,1600/0/default.jpg`) is recorded for previews (PIP-21).
   - Requests are paced to 20 a minute (through F-06).
 - **Test data:** recorded responses for three teachers, plus near-miss and undated records.
 - **Live calls:** network (free; to record)
@@ -350,12 +371,12 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Goal:** Find Wellcome picture records whose contributor or subject is the teacher, by LoC name id or name and dates, with clean licences.
 - **Covers:** SRC-03 (R3), SRC-05, SRC-08
 - **Depends on:** F-07, F-32
-- **Owner input:** none
+- **Owner input:** O-10, to record
 - **Build:** `src/sources/wellcome.ts` (catalogue API, no key; images through IIIF).
 - **Checks:**
   - A record whose contributor or subject carries the teacher's LoC name id matches. So does one with the name and matching dates.
   - Licences map through F-07: PDM and CC0 → tier 1; CC BY → tier 2; CC BY-NC → refused.
-  - The IIIF image link for the full size is recorded.
+  - The IIIF image links for the full size and for a preview at most 1,600 px (`/full/!1600,1600/0/default.jpg`) are recorded, with the full width and height from `info.json`.
 - **Test data:** recorded responses for two teachers (one mind-cure figure).
 - **Live calls:** network (free; to record)
 - **Parkable:** yes
@@ -366,14 +387,15 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Goal:** Fill a teacher's missing Wikidata id, LoC name id and dates only when Wikidata and the LoC name authority agree; list everything else for the owner.
 - **Covers:** IN-13, SRC-06 (b, c), IN-04
 - **Depends on:** F-08, F-31
-- **Owner input:** none
+- **Owner input:** O-10, to record
 - **Build:** `src/teachers/enrich.ts`; `src/sources/locNames.ts` (id.loc.gov).
 - **Checks:**
-  - Both sources agree on the person and both years → the ids and dates are stored and marked `resolved_by_tool`.
-  - Disagreement, or only one source with data → nothing stored; a suggestion with its evidence is listed.
+  - **An undated teacher** whose one Wikidata person links (P244) to a LoC name record with the same life dates → the ids and dates are stored and marked `resolved_by_tool`.
+  - **Two people share the name** (the theologian and the linguist Charles J. Fillmore, say): the teacher's `key_works` pick out exactly one, by a work title → accepted; if they pick out none or both → nothing stored, listed.
+  - Disagreement (P244 points elsewhere, or the years differ), or only one source with data → nothing stored; a suggestion with its evidence is listed.
   - The suggestions export as a CSV whose columns match `authors.csv` (name, aliases, dates, plus `wikidata_qid` and `lcnaf_id` and the evidence).
   - A teacher left with no id and no dates is marked skipped, with what to add.
-- **Test data:** recorded Wikidata and id.loc.gov responses for agree, disagree and one-sided cases.
+- **Test data:** recorded Wikidata and id.loc.gov responses for agree (dated and undated), disagree, same-name and one-sided cases.
 - **Live calls:** network (free; to record)
 - **Parkable:** yes (teachers without ids then stay skipped until the owner adds them)
 - **Size:** M
@@ -402,13 +424,14 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-39 · Porting spike: OpenCV.js and sharp
 - **Phase:** 3
 - **Goal:** Prove that every image operation the recipe needs works in TypeScript, choose the fallback for any gap, and give the imaging cards a safe way to use OpenCV.js.
-- **Covers:** architecture.md ("Porting risks"); groundwork for STY-01..STY-09, PIP-04, PIP-05, PIP-13, PIP-20
+- **Covers:** architecture.md ("Porting risks" and "Porting traps"); groundwork for STY-01..STY-09, PIP-04, PIP-05, PIP-13, PIP-20, PIP-23
 - **Depends on:** F-01
 - **Owner input:** none
 - **Build:**
   - `src/imaging/cv.ts`: load OpenCV.js once, and a `withMats(fn)` helper that frees every Mat made inside;
   - `src/imaging/io.ts` (`sharp`: decode, colour to sRGB, RGBA PNG out);
-  - `prototype/export_parity.py`, run once in Python and its outputs committed, which writes reference results for each operation on two fixture images;
+  - the reference results already committed in `prototype/parity/` (made by `prototype/export_parity.py` in Phase 0; `index.json` lists each file, its exact call and its tolerance), copied to `test/fixtures/parity/`;
+  - the YuNet model already committed in `models/` (with its source and licence);
   - `docs/porting.md`: each operation, what was used, and any fallback.
 - **Checks:**
   - **Each operation runs and matches the Python reference within a set tolerance on the fixtures:**
@@ -422,6 +445,12 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
     - connected components;
     - SIFT with RANSAC (`estimateAffinePartial2D`);
     - YuNet face detection.
+  - **The known traps** (architecture.md, "Porting traps") each have a test:
+    - the 15 × 15 median on the float spectrum matches `scipy.ndimage.median_filter` within one 12-bit step (a typed-array median, exact or with a 12-bit sliding histogram; OpenCV's 8-bit `medianBlur` isn't precise enough), with the border reflected as scipy does;
+    - with that median, `detect_screen` finds exactly the prototype's peaks on all three originals (`results.json`, `detect_screen`);
+    - the 5 × 5 maximum is `cv.dilate` and matches `maximum_filter`;
+    - `cv.idft` with `DFT_SCALE | DFT_REAL_OUTPUT` round-trips an image;
+    - YuNet's boxes come back as `[x0, y0, x1, y1]`.
   - Each missing operation's fallback from architecture.md is implemented and passes the same check instead, and `docs/porting.md` says which. The fallbacks are AKAZE or ORB, `onnxruntime-node`, and block matching.
   - Running the whole set 50 times leaves memory flat within 10% (no Mat leaks).
   - `sharp` reads JPEG, PNG (with alpha), TIFF and WebP fixtures, and writes 8-bit RGBA PNG. An alpha channel survives a round trip.
@@ -433,15 +462,17 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-12 · Face landmarks and crop
 - **Phase:** 3
 - **Goal:** Find the face box and five landmarks with YuNet, and crop to the square of STY-03 by a similarity transform.
-- **Covers:** PIP-04, STY-03
+- **Covers:** PIP-04, PIP-23 (the working region), STY-03
 - **Depends on:** F-39
 - **Owner input:** none
-- **Build:** `src/imaging/face.ts` (YuNet ONNX, MIT, committed with its source and licence noted); `src/imaging/crop.ts`
+- **Build:** `src/imaging/face.ts` (YuNet ONNX from `models/`; an original over 640 px is searched on a copy reduced to 640 px, with coordinates scaled back); `src/imaging/crop.ts`, including the working region for originals over `maxWorkingPx` (the crop's square plus 25% a side, reduced by area averaging to at most `maxWorkingPx`)
 - **Checks:**
-  - On the owner's three originals, the landmarks fall within 5% of the face width of the prototype's fixtures (`prototype/fixtures/*.json`). Those were made with a different detector (SCRFD), hence the margin.
-  - The crop puts the eye line at 0.443 of the side and the eye-to-mouth distance at 0.237 of the side, with the face centred, each within 1%.
-  - With no face found, the pre-check's box is used and the eye line is estimated from it (synthetic case).
+  - On the owner's three originals (`prototype/parity/inputs/`), the box and landmarks match YuNet's in Python (`prototype/parity/results.json`, `yunet`) within 1 px, and the score within 0.01. The fixtures (`prototype/fixtures/*.json`) hold the same YuNet results since recipe 0.5.0.
+  - The crop puts the eye line at 0.449 of the side and the eye-to-mouth distance at 0.221 of the side, with the face centred, each within 1%.
+  - YuNet's `[x, y, w, h]` boxes are turned into `[x0, y0, x1, y1]` (a test with a known box).
+  - **With no face found** (synthetic case), the five landmarks come from the pre-check's box by PIP-04's proportions (eyes at ±0.22 w and 0.39 h, nose at 0.58 h, mouth corners at ±0.19 w and 0.74 h). They match `results.json`'s `landmarks_from_box`. On the three originals, a crop made that way from the YuNet box puts the eye line within 0.03 of the side of the real crop's, at a scale within 10%.
   - A face narrower than `minFacePx` is reported as too small.
+  - The working region of a 4,000 × 5,000 synthetic original is at most 2,000 px on its long side and contains the whole crop square. An original of 2,000 px or less is used whole.
 - **Test data:** the three originals; the prototype's fixtures; a synthetic image with no face.
 - **Live calls:** none
 - **Parkable:** no
@@ -450,16 +481,17 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-13 · Descreen and edge-preserving blur
 - **Phase:** 3
 - **Goal:** Detect a printed dot pattern by frequency analysis, notch it out, and give every original an edge-preserving blur sized in dot cells.
-- **Covers:** PIP-05
-- **Depends on:** F-39
+- **Covers:** PIP-05, PIP-23
+- **Depends on:** F-12 (the working region)
 - **Owner input:** none
-- **Build:** `src/imaging/descreen.ts` (port of `descreen` and `detect_screen` in `prototype/recipe.py`).
+- **Build:** `src/imaging/descreen.ts` (port of `descreen` and `detect_screen` in `prototype/recipe.py`), on the working region.
 - **Checks:**
   - The owner's Fillmore and Cady originals are detected as screened, and Holmes isn't (the prototype's result).
   - A synthetic screened image has its screen peaks reduced by at least the factor the prototype achieves.
   - A clean image gets only the mild blur. Its output differs from the input by no more than the prototype's on the same image.
   - What was found and applied is returned for the record.
-- **Test data:** the three originals; a synthetic screen.
+  - A 4,000 × 5,000 synthetic screened original finishes in under 60 seconds, and the process stays under 1.5 GB (the worker's memory), because only the working region is processed.
+- **Test data:** the three originals; a synthetic screen; the large synthetic original (generated in the test, not committed).
 - **Live calls:** none
 - **Parkable:** no
 - **Size:** M
@@ -475,6 +507,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - On a synthetic gradient, frequency analysis finds a pitch of 1000/110 px along a 45° grid, and dot area grows with brightness.
   - Dark tones are fully transparent; the brightest face tone is near full coverage.
   - The threshold map matches the prototype's exactly for the same size and settings (it's pure arithmetic).
+  - The map is built once per recipe, in one pass without full-size intermediate arrays, and reused: a second portrait doesn't rebuild it.
 - **Test data:** synthetic gradients.
 - **Live calls:** none
 - **Parkable:** no
@@ -491,6 +524,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - The line is one connected piece, 6 ± 1 px wide, starting 2 ± 1 px outside the figure. Where the shoulders leave the square, it runs off the bottom.
   - The master passes STY-06: every visible pixel is pure white; the corners and the outside are transparent.
   - The three examples pass PIP-19's limits. Fixtures with a floating fragment, a figure cut off above the shoulders, and a full square are each refused, naming the limit.
+  - The 98% piece share is measured on the raw cut-out before smoothing. Smoothing still keeps only the largest piece, as the prototype does, and the fragment fixture is refused all the same.
 - **Test data:** the prototype's cut-out fixtures; synthetic bad masks.
 - **Live calls:** none
 - **Parkable:** no
@@ -499,7 +533,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-30 · AI copy: key mask, alignment, drift check, blend
 - **Phase:** 3
 - **Goal:** Take an AI copy on flat green, read the cut-out from its green, align it to the original, refuse it if details moved, and blend it at 50% in the portrait's frame.
-- **Covers:** PIP-13 (code side), PIP-03 (key mask), STY-04
+- **Covers:** PIP-13 (code side), PIP-03 (key mask, mask.png), OUT-11 (mask), STY-04
 - **Depends on:** F-12, F-13
 - **Owner input:** none
 - **Build:** `src/imaging/align.ts`, `blend.ts` (ports of `key_mask`, `align_enhanced`, `local_drift` and the blend in `make_master`).
@@ -507,8 +541,9 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - **Alignment:** synthetic keyed copies (2.8× larger, sharpened, rescaled by 2%, shifted, on green) align with correlation ≥ 0.99.
   - **Blend:** it shows no double edges (edge agreement ≥ 0.98), and the blend share is exactly `enhanceBlend`.
   - **Key mask:** the mask from the green matches the prototype's cut-out fixture with overlap ≥ 0.94.
-  - **Drift check:** copies with the eyes and mouth moved by about 1.2 dot cells measure above 0.7 and are refused; good copies measure below. Both are within 0.1 of the prototype's figures (`prototype/out/enhance-mechanics.json`).
+  - **Drift check:** measured inside the face box shrunk by `driftBoxInset` (0.15) on each side. Copies with the eyes and mouth moved by about 1.2 dot cells measure above 0.7 and are refused; good copies measure below. Both are within 0.1 of the prototype's figures (`prototype/out/enhance-mechanics.json`: good 0.14–0.31, moved 0.95–1.08).
   - **Poor alignment:** a copy that can't be aligned (a different face) is refused, and the original is used alone.
+  - **The mask is mapped back:** the key mask is warped through the inverse of the alignment onto the original's own size and position, composed with the working region's offset and scale for a large original (PIP-23). On a synthetic copy, small and large (4,000 × 5,000), the mapped mask overlaps the true figure in the original by at least 0.97. It's the same for a `cutout_keyed` image.
 - **Test data:** the generator from `prototype/test_enhance_mechanics.py`, ported.
 - **Live calls:** none
 - **Parkable:** no (the cut-out depends on it)
@@ -517,10 +552,10 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-41 · Black-and-white, 500 px and viewing copies
 - **Phase:** 3
 - **Goal:** Make the black-and-white version (option C) and the 500 px copies from the master's layers, and the original's PNG viewing copy.
-- **Covers:** STY-08, STY-09, OUT-05
+- **Covers:** STY-08, STY-09, OUT-05, PIP-22
 - **Depends on:** F-15
 - **Owner input:** none
-- **Build:** `src/imaging/versions.ts` (ports of `bw_version`, `small` and `check_bw`).
+- **Build:** `src/imaging/versions.ts` (ports of `bw_version`, `small` and `check_bw`); `src/imaging/modelImage.ts`, which makes the images sent to models (PIP-22).
 - **Checks:**
   - `bw-1000` passes `check_bw`: visible pixels are grey; the corners are transparent; it's opaque wherever the master shows.
   - Both 500 px copies pass their checkers.
@@ -528,22 +563,24 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
     - is a PNG at most 1,600 px on the long side;
     - is never enlarged (a 300 px original stays 300 px);
     - keeps transparency from a PNG original.
-- **Test data:** the prototype's layers via the three examples; a transparent PNG.
+  - **Model images (PIP-22):** a 16-bit TIFF and a CMYK JPEG each become 8-bit sRGB PNG, at most `maxModelImagePx` on the long side and under 5 MB.
+- **Test data:** the prototype's layers via the three examples; a transparent PNG; a 16-bit TIFF and a CMYK JPEG.
 - **Live calls:** none
 - **Parkable:** no
 - **Size:** S
 
 ### F-42 · Same photograph or different (code layers)
 - **Phase:** 3
-- **Goal:** Tell copies of one photograph from different photographs with a face fingerprint and feature matching, leaving the unclear middle for the model (F-43).
+- **Goal:** Tell copies of one photograph from different photographs with a whole-picture fingerprint and feature matching, leaving the unclear middle for the model (F-43).
 - **Covers:** PIP-20 (layers 1 and 2), PIP-15
 - **Depends on:** F-12
 - **Owner input:** none
-- **Build:** `src/imaging/samePhoto.ts` (a port of `prototype/same_photo.py`, plus a perceptual hash of the cropped face).
+- **Build:** `src/imaging/samePhoto.ts` (a port of `prototype/same_photo.py`, plus a 64-bit difference hash of the whole picture; feature points computed once per picture and kept).
 - **Checks:**
   - The prototype's 30 doctored copies are judged the same. These are crop, rescale, rotation, JPEG, blur, reprint screen, mirror and noise, generated as in `same_photo.py`. Their inlier counts are within 25% of `prototype/out/same-photo.json`.
   - The different-photograph pairs score at or below `diffMaxInliers`.
-  - Exact duplicates are caught by the fingerprint alone.
+  - Exact duplicates and resized or re-encoded copies are caught by the fingerprint alone (at most 2 bits different). Two different frontal sittings are never "same" by fingerprint.
+  - A new candidate is compared with one representative per photograph group, and each picture's feature points are computed once (a counter in the test).
   - A pair between the thresholds is returned as "unclear", for F-43.
   - When the survey's real pairs exist (F-38), they're added as fixtures. Two sittings of one teacher must come out "different" or "unclear", never "same".
   - If F-39 chose a fallback detector (AKAZE or ORB), `sameMinInliers` and `diffMaxInliers` are measured again on the same fixtures and recorded as a recipe change. The 25% check then compares against the new measures.
@@ -565,7 +602,8 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
     - mean alpha difference ≤ 0.02;
     - dots across 110 ± 1.
   - The same for `bw-1000`, and for both 500 px copies.
-  - The test runs with a frozen copy of the recipe 0.4.0 settings (in `test/fixtures/reference/`), not the live settings, so a later recipe version from the trial doesn't break it.
+  - The test runs with a frozen copy of the recipe 0.5.0 settings (in `test/fixtures/reference/`), not the live settings, so a later recipe version from the trial doesn't break it.
+  - The landmarks are the fixtures' own (given, not detected), so a detector difference can't move the crop.
 - **Test data:** `prototype/fixtures/`, `prototype/out/`.
 - **Live calls:** none
 - **Parkable:** no (a failure goes to the digest with the measures)
@@ -592,7 +630,8 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
     - staging's $2 a night and $10 a month.
   - In a pull-request environment, every paid call is refused (stub mode only).
   - The environment's rules are chosen from `RAILWAY_ENVIRONMENT_NAME` through settings.
-  - Each call's cost is logged with run, teacher, step, model, environment and whether it is actual or estimated.
+  - Every request asks for usage (`"usage": {"include": true}`). Each call's cost is logged with run, teacher, step, model, environment, budget, and whether it is actual or estimated.
+  - The month cap sums only `regular` spend; the trial's spend never counts toward it.
   - A model whose family equals the enhance model's is refused for checking.
   - Model ids and prices come from settings. An unknown model id is refused before any call.
 - **Test data:** canned OpenRouter answers, including usage and cost fields.
@@ -603,13 +642,15 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-18 · Pre-check
 - **Phase:** 4
 - **Goal:** Ask Claude Haiku whether an original can be used, and record its structured verdict.
-- **Covers:** PIP-02, PIP-18 (age estimate), D-47 (medium), D-52
-- **Depends on:** F-17
+- **Covers:** PIP-02, PIP-18 (age estimate), PIP-22, D-47 (medium), D-52
+- **Depends on:** F-17, F-41
 - **Owner input:** none
 - **Build:** `src/models/precheck.ts`; `src/models/prompts/precheck.md` (from `prototype/prompts/`, v2)
 - **Checks:**
   - Canned verdicts drive pass and fail. A fail sets the original aside with its reasons, and no further call is made for it.
   - The face box, medium, age estimate, dot pattern and caption are parsed. Malformed JSON is retried once, then counted as a failure with the raw text kept.
+  - The face box comes back as fractions and is turned into the original's pixels with the width and height the source gave; a face under `minFacePx` wide fails in code, whatever the model said. With no size from the source, the check is repeated on the downloaded original before the enhance call.
+  - The request carries the copy's preview, re-encoded as an 8-bit PNG at most 1,600 px; never a TIFF, never the full original.
   - A caption naming someone else fails.
   - `allowedMedia` excludes engravings when set.
   - The answer is cached per original (a second check makes no call).
@@ -621,14 +662,16 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-19 · AI copy and keyed cut-out calls
 - **Phase:** 4
 - **Goal:** Ask the image model for the enhanced copy on green (and the cut-out-only fallback), cache it, and keep it with its record.
-- **Covers:** PIP-13 (calls and records), PIP-03 (fallback), PIP-10 (fresh copy on a remake), D-52, D-56
-- **Depends on:** F-17, F-30
+- **Covers:** PIP-13 (calls and records), PIP-03 (fallback), PIP-10 (fresh copy on a remake), PIP-22, D-52, D-56
+- **Depends on:** F-17, F-30, F-41
 - **Owner input:** none
 - **Build:** `src/models/enhance.ts`, `cutout.ts`; prompts `enhance_keyed.md`, `cutout_keyed.md`
 - **Checks:**
   - A canned image answer becomes `enhanced.png`, with the model, prompt version, alignment and drift scores and whether it was used.
   - A second try on the same original makes no call; a remake (PIP-10) makes exactly one new call.
-  - A mask failing PIP-19, or a copy refused by its safeguards, triggers one `cutout_keyed` call.
+  - **One `cutout_keyed` call** is made when the enhance call errors, when its copy is refused by its safeguards, or when its mask fails PIP-19. Its image is aligned like the AI copy, and its mask becomes `mask.png`.
+  - If the fallback errors, can't be aligned or fails PIP-19, the draft fails for its cut-out (PIP-03), and no further call is made for that attempt.
+  - The enhance and cut-out requests carry the descreened working region as a PNG at most 1,600 px, never the original file.
   - A `try_again` note is added to the enhance prompt, and recorded.
 - **Test data:** synthetic keyed images as canned answers (from F-30's generator).
 - **Live calls:** none
@@ -638,12 +681,12 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-21 · Draft check and compare-with-target
 - **Phase:** 4
 - **Goal:** Ask Claude Sonnet to judge a draft on five criteria against the original, and score a draft against a hand-made target.
-- **Covers:** PIP-09, TRI-08 (mode), D-52
-- **Depends on:** F-17, F-15
+- **Covers:** PIP-09, PIP-22, TRI-08 (mode), D-52
+- **Depends on:** F-17, F-15, F-41
 - **Owner input:** none
 - **Build:** `src/models/draftCheck.ts`; prompts `draftcheck.md`, `compare.md`
 - **Checks:**
-  - The request carries the draft on a dark page, the original and the three examples.
+  - The request carries, in this order: the original's viewing copy, the draft on `checkPageRgb`, then the three examples on the same colour (as `draftcheck.md` says). Every image is an 8-bit PNG at most 1,600 px and under 5 MB; none is a TIFF.
   - Canned answers pass only when all five criteria pass. The scores and notes are recorded.
   - A `try_again` note becomes an extra criterion.
   - The compare mode returns a score per criterion against the target.
@@ -656,23 +699,24 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-43 · Same-photograph tie-break
 - **Phase:** 4
 - **Goal:** For pairs F-42 finds unclear, ask Claude Sonnet whether they are the same photograph, treating "unsure" as the same.
-- **Covers:** PIP-20 (layers 3 and 4), D-50
-- **Depends on:** F-17, F-42
+- **Covers:** PIP-20 (layers 3 and 4), PIP-22, D-50
+- **Depends on:** F-17, F-41, F-42
 - **Owner input:** none
 - **Build:** `src/models/samePhotoCheck.ts`; prompt `same_photo.md`
 - **Checks:**
   - "same" groups the pair; "different" separates it; "unsure" groups it (D-50).
   - The evidence is recorded with the pair.
   - A pair is never asked twice (cached by both SHA-256s, in either order).
+  - Both images are the candidates' previews, reduced to 800 px and sent as 8-bit PNGs; never a TIFF.
 - **Test data:** canned answers.
 - **Live calls:** none
 - **Parkable:** no
 - **Size:** S
 
-### F-11 · Candidates: gather, group, order, download
+### F-11 · Candidates: gather, previews, group, order
 - **Phase:** 4
-- **Goal:** Gather a teacher's candidates from every adopted source, drop refused licences, group copies of one photograph, order the copies, and download the chosen ones with a checksum.
-- **Covers:** SRC-07, SRC-08, PIP-15, PIP-01 (part), OUT-12 (originals), IN-05
+- **Goal:** Gather a teacher's candidates from every adopted source, drop refused licences, fetch small previews, group copies of one photograph and order the copies (PIP-21, steps 1–3), and provide the full download that F-23 calls for the photographs it chooses.
+- **Covers:** PIP-21 (steps 1–3, and the download of step 6), SRC-07, SRC-08, PIP-15, PIP-01 (part), OUT-12 (originals), IN-05
 - **Depends on:** F-09, F-10*, F-34*, F-32, F-37, F-42, F-43
 - **Owner input:** none
 - **Build:** `src/sources/candidates.ts`
@@ -681,8 +725,9 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
     - two photographs;
     - the refused one logged;
     - the duplicate merged;
-    - the right best copy per photograph (licence tier, then size, then damage rating; SRC-07).
-  - Downloads are checked against their SHA-256 on a second fetch, and stored as `original.<ext>`.
+    - the copies of each photograph in SRC-07's order (licence tier, then size; damage once pre-checked).
+  - **Previews:** at most `maxCandidatesPerTeacher` previews are fetched, at most 1,600 px, from each source's sized-image link. They're kept only in memory or temporary files, never in the bucket. No full original is fetched by this step.
+  - **The download** (called by F-23 for chosen copies only): checked against its SHA-256 on a second fetch, and stored as `original.<ext>`.
   - Set-aside photographs are excluded.
   - The best-known flag is set on the P18 photograph and its copies.
   - Changing a teacher's notes changes none of their candidates (IN-05).
@@ -707,7 +752,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - A fixture whose enhance call failed produces the other seven, with `enhanced_used` false.
   - Each file's licence and credit follow SRC-11's table, for a public-domain, a CC BY and a CC BY-SA fixture.
   - Stopping the work after the files but before the database commit leaves no visible portrait, and no change-feed entry.
-  - A record missing a licence isn't published. The failure names the field.
+  - A record missing a licence isn't published. The failure names the field, the portrait is `failed`, and its candidate is set aside, so a second run doesn't try it again (OUT-04).
   - Portrait ids count up per teacher, and are never reused after a turn-down.
 - **Test data:** images from phase 3; F-07's fixtures.
 - **Live calls:** none
@@ -717,18 +762,21 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-23 · Per-teacher pipeline and failure policy
 - **Phase:** 5
 - **Goal:** Take one teacher from candidates to published portraits: open slots, the choice of photographs, pre-check, AI copy, draft, check, remake and set-asides.
-- **Covers:** PIP-01, PIP-10, PIP-11, PIP-12, PIP-14, PIP-16, PIP-18 (dates), PIP-19 (in the flow)
+- **Covers:** PIP-01, PIP-10, PIP-11, PIP-12, PIP-14, PIP-16, PIP-18 (dates), PIP-19 (in the flow), PIP-21 (steps 4–6)
 - **Depends on:** F-11, F-16, F-18, F-19, F-21, F-24
 - **Owner input:** none
 - **Build:** `src/pipeline/teacher.ts`
 - **Checks (all with stubs):**
-  - A teacher with 5 different photographs gets 3 portraits: the P18 photograph first, then a spread across the teacher's life by approximate date.
+  - **Step order (PIP-21):** the best copies are pre-checked before any choice; a photograph whose best copy fails for damage tries its next copy; full originals are downloaded only for the photographs chosen (a stub counts the downloads).
+  - **Choice (PIP-16):** a teacher with 5 different photographs gets 3 portraits: the P18 photograph first, then each further slot the best-quality dated photograph at least 10 years from those chosen.
+    - With none 10 years away, the one furthest from its nearest chosen year is taken; with no dated ones left, the best undated one.
+    - A fixture checks each branch, and a teacher with no P18 starts with the best-quality photograph.
   - **Failures:**
     - a draft failing twice sets its original aside, and the next photograph is tried;
     - a failure a new copy can't change sets it aside at once;
     - at most 6 drafted and 12 pre-checked per teacher per run.
   - A source date beats an estimated date; an estimate uses the birth year.
-  - A cut-out limit failure triggers the keyed fallback call once.
+  - A cut-out limit failure, or a failed enhance call, triggers the keyed fallback call once. A failing fallback fails the draft; the remake tries once more; a second failure sets the original aside.
   - A two-run scenario never tries a set-aside photograph again.
 - **Test data:** a stub world (sources, models and images) for three teachers.
 - **Live calls:** none
@@ -738,7 +786,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-25 · Queue, schedule and run reports
 - **Phase:** 5
 - **Goal:** Run the nightly schedule and the queue: sync, queue teachers with open slots not searched for a month, take requests first, resume after a crash, stop at a cap, and write each run's report.
-- **Covers:** RUN-02, RUN-03, RUN-04 (stop and report), RUN-08, OUT-06
+- **Covers:** RUN-02, RUN-03, RUN-04 (stop, report and the first pass), RUN-08, OUT-06
 - **Depends on:** F-23, F-31
 - **Owner input:** none
 - **Build:** `src/cron.ts`, `src/worker.ts`; `src/pipeline/run.ts`
@@ -751,6 +799,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - The cron job exits after queueing.
   - Killing the worker mid-teacher and restarting it resumes with no repeated paid call (stub call counts).
   - Reaching a cap stops the run cleanly. Finished portraits stay published, and the report says so.
+  - **The first pass (RUN-04):** while `first_pass_state` is `active`, spend is booked to `first_pass` and the night cap doesn't apply. It becomes `done` when the queue first empties, or when `first_pass` spend reaches $100; from then on, spend is `regular` and the night and month caps apply.
   - A snapshot test of the fixture run's report covers every field of OUT-06.
 - **Test data:** F-23's stub world.
 - **Live calls:** none
@@ -770,6 +819,9 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - **Change feed:**
     - `since` then `after` pages through every change in order;
     - `more` and `next_cursor` behave as the contract says;
+    - with `after`, the answer's `since` is the time of the cursor's entry (the service's start for `c_0`);
+    - an empty page echoes the cursor it was given as `next_cursor`, with `more: false`. With `since` and nothing after it, `next_cursor` is the cursor of the last change at or before `since` (`c_0` when there's none), so the next call doesn't replay older changes;
+    - neither `since` nor `after`, or both, gives 422 `invalid`;
     - a cursor older than 30 days gives 410 `cursor_too_old`.
   - `/files/{kind}` redirects to a signed link that expires in 15 minutes.
   - Portraits being made or failed never appear.
@@ -782,22 +834,25 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-45 · API: decisions and requests
 - **Phase:** 5
 - **Goal:** Accept the library's decisions and requests, apply them once, and queue requests at once.
-- **Covers:** IN-06, IN-07, IN-08, SRC-04
+- **Covers:** IN-06, IN-07, IN-08, SRC-04, D-61
 - **Depends on:** F-44, F-25
 - **Owner input:** none
-- **Build:** `src/api/decisions.ts`, `requests.ts`; `src/models/noteKind.ts` with prompt `note_kind.md`
+- **Build:** `src/api/decisions.ts`, `requests.ts` (the web side: validate, store, queue, answer 202); `src/pipeline/requests.ts` (the worker side: classify the note, do the work, finish the request); `src/models/noteKind.ts` with prompt `note_kind.md` v2
 - **Checks:**
   - **Decisions:**
     - approve, turn_down (each reason), set_main and correct change the portrait as IN-07 says, and appear in its history and the change feed;
-    - approving a portrait with `replaces` makes the old one `replaced`.
+    - approving a portrait with `replaces` makes the old one `replaced`, with `replaced_by` set;
+    - **main portrait:** when the replaced portrait was the main one, `main` passes to the new one; turning down the main portrait clears `main`, and the teacher has none.
   - **Bad decisions:** a turn-down without a reason is refused with `invalid` naming `/reason`; set_main on a waiting portrait gives `conflict`.
   - **Resending:** the same `decision_id` or `request_id` changes nothing and says it's a duplicate. Reusing an id with different content gives `conflict`.
   - **Requests:**
-    - a `try_link` to an adopted source is queued;
+    - a `try_link` to an adopted source is queued. Each link form in SRC-04 is read without fetching the page (`commons.wikimedia.org/wiki/File:…`, `upload.wikimedia.org/…` including a thumbnail link, `(www.)loc.gov/item/…`, `(www.)loc.gov/pictures/item/…`, `(www.)loc.gov/resource/…`, `wellcomecollection.org/works/…`, `api.wellcomecollection.org/catalogue/v2/works/…`);
     - a link elsewhere is refused with the reason;
-    - a `try_again` whose note Claude Haiku (stubbed, prompt `note_kind.md`) judges to be about the crop or the outline is answered `refused`, suggesting `another_original`; a restoration note is passed on;
+    - a `try_again` whose note Claude Haiku (stubbed, prompt `note_kind.md`) judges to be about the crop or the outline is answered `refused`, suggesting `another_original`; a restoration note is passed on. "The line cuts off the left ear" counts as restoration;
     - `another_original` makes the portrait `turned_down` (reason `other`) and queues the teacher;
-    - an unknown teacher or portrait gets 404; a link outside the adopted sources gets 422.
+    - an unknown teacher or portrait gets 404; a link outside the adopted sources gets 422; a `try_again` or `another_original` on a turned-down or replaced portrait gets 409;
+    - a `try_again` on a waiting portrait replaces it when done; on an approved portrait, the new draft is offered with `replaces`, and the approved one (and `main`) stays until the library approves it;
+  - **Life cycle (IN-06):** the web answer is 202 with `queued`. The worker sets `working`, then either `done` with `result_portrait_id` (always a new portrait id), or `refused` with a `refused_reason` code and no result. Each code in IN-06 has a fixture. Each state change is in the change feed.
   - Every answer validates against the contract.
 - **Test data:** the fixture database.
 - **Live calls:** none
@@ -807,7 +862,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-48 · Later runs: better copies, turn-downs, corrections
 - **Phase:** 5
 - **Goal:** On later runs, offer clearly better copies, bring back a turned-down photograph only when allowed, and never overwrite the library's corrections.
-- **Covers:** PIP-17, PIP-18 (corrections), OUT-07
+- **Covers:** PIP-17, PIP-18 (corrections), OUT-07, D-59, D-61
 - **Depends on:** F-23, F-45
 - **Owner input:** none
 - **Build:** additions to `src/pipeline/teacher.ts`
@@ -818,7 +873,11 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - **Turn-downs:**
     - turned down for `quality`, a 2× copy is offered once, and not a second time;
     - turned down as `not_this_teacher` or `do_not_use`, it never returns.
-  - **Full slots:** with all slots full, a new photograph ranking above one of them is offered with `replaces`.
+  - **Full slots (D-61, PIP-17):** with all slots full, PIP-16 is re-run over the three and a new photograph.
+    - When the new one is chosen and the one left out is approved and not main, it's offered with `replaces` set to that one. Approving it makes that one `replaced`; turning it down leaves the three as they were, and it isn't offered again.
+    - When the one left out is waiting, or the main portrait, nothing is offered. A photograph PIP-16 wouldn't choose isn't offered.
+    - Only one such offer per teacher is open at a time.
+  - **Slots:** an open offer doesn't take a slot of its own, so a teacher with three portraits and an offer gets no fourth draft (PIP-14).
   - **Corrections:** a library-corrected date and best-known flag survive a re-run.
 - **Test data:** F-23's stub world over three runs.
 - **Live calls:** none
@@ -838,6 +897,8 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
     - a wrong password locks out after the set number of tries;
     - the session cookie is secure, HTTP-only and SameSite, and lasts 30 days.
   - **Pages:** the teacher list, one teacher (all versions, rights, the library's decisions), the runs and one run's report all render from the fixture database.
+  - `/admin/trial` shows "No trial run yet" until F-28 fills it.
+  - Held originals (CC BY-SA 1.0) are listed for the owner, with their source and licence (SRC-02, SRC-12).
   - The rights-log CSV and the suggestions CSV download with the right columns.
   - No page has a form that changes data, except logging in and out.
   - Every page renders at 390 px wide without horizontal scrolling (a layout test).
@@ -939,7 +1000,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 ### F-28 · Trial, board and defaults
 - **Phase:** 6
 - **Goal:** Run the three enhance models over the trial set, score them, show the board, set the defaults with a new recipe version, and confirm PIP-20's thresholds on real pairs.
-- **Covers:** TRI-01..TRI-07, PIP-20 (thresholds), D-47 (engravings), D-56
+- **Covers:** TRI-01..TRI-07, TRI-09, PIP-20 (thresholds), D-47 (engravings), D-56
 - **Depends on:** F-27, F-38
 - **Owner input:** O-4; the owner's veto (by the digest's window)
 - **Build:**
@@ -954,6 +1015,8 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
   - PIP-20's thresholds are re-measured on the survey's real pairs. If two sittings of one teacher would be judged "same", the thresholds are adjusted (with a new `recipeVersion`) and the digest says so.
   - The engraving results are reported for the owner's verdict on `allowedMedia`.
   - The run is under the client's `trial` sub-budget ($27), and stops cleanly if it's reached. That leaves $3 for F-29.
+  - **Kept apart (TRI-09):** after a stubbed trial, the `portraits`, `candidates` and `changes` tables are unchanged, and the trial's files are under `trial/<trial_run_id>/`.
+  - **The cache survives the new defaults:** after the winner is written with a new `recipeVersion`, a stubbed first-run step on a trial original hits the cache (RUN-03).
 - **Test data:** the trial set.
 - **Live calls:** paid (≤ $27)
 - **Parkable:** no
@@ -969,7 +1032,7 @@ F-28 and F-29 share the trial's $30 budget (TRI-07). SCOPE-01..04 are boundaries
 - **Checks:**
   - **Live:** for each example, "compare with target" passes against the hand-made portrait.
   - The code measures at the owner's framing (500 px) meet TRI-08: overlap ≥ 0.85, tone error ≤ 0.08, dots across 110 ± 2, no STY-06 problems.
-  - It reuses the trial's cached AI copies (it runs in production too), under the client's `trial-examples` sub-budget ($3).
+  - It reuses the trial's cached AI copies (it runs in production too), under the client's `trial_examples` sub-budget ($3).
   - The examples are never published (D-13): the test runs them outside the publishing path.
 - **Test data:** `design/portraits/`
 - **Live calls:** paid (≤ $3)

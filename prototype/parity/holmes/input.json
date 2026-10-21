@@ -1,0 +1,15 @@
+{
+ "op": "input",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "grey crop [135, 163, 96, 96] of inputs/ernest-holmes.rgb.png",
+ "tolerance": "exact",
+ "card": "F-39",
+ "stats": {
+  "min": 0.2937529683113098,
+  "max": 0.8774940967559814,
+  "mean": 0.761760413646698
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "op": "key_mask",
+ "shape": [
+  8,
+  64
+ ],
+ "call": "key_mask(key_strip), key_lo 0.15, key_hi 0.45",
+ "tolerance": {
+  "max_abs": 1e-06
+ },
+ "card": "F-30",
+ "stats": {
+  "min": 0.0,
+  "max": 1.0,
+  "mean": 0.30311670899391174
+ }
+}

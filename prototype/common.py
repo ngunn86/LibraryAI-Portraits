@@ -55,41 +55,32 @@ def cutout(rgb, model_path, size=320):
     return cv2.resize(out.astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR)
 
 # ---------- face box and eyes ----------
-# Prototype: SCRFD-500M (insightface "buffalo_sc", research licence) used ONLY to measure the examples here.
-# Production: OpenCV YuNet (MIT), which gives the same box + 5 landmarks. The TypeScript app commits its model file (F-12); this prototype keeps SCRFD outside the repo.
-FACE_MODEL = "/tmp/claude-0/-home-claude/27dc5434-a5bc-5b9d-b2a3-302381507a91/scratchpad/models/buffalo_sc/det_500m.onnx"
+# YuNet (MIT, committed in models/), the production detector (PIP-04, F-12). Recipe 0.4.0 and earlier
+# measured the examples with SCRFD-500M (insightface, research licence, never in the repo); 0.5.0 re-measured
+# the crop with YuNet, because the two detectors place the mouth corners differently (prototype/README.md).
+FACE_MODEL = ROOT / "models/face_detection_yunet_2023mar.onnx"
 
-def detect_face(rgb, model_path=FACE_MODEL, thresh=0.4):
-    """Return dict(box=(x0,y0,x1,y1), eyes=((lx,ly),(rx,ry)), kps=5x2, score) for the largest face, or None."""
-    import onnxruntime as ort
-    if model_path not in _sess:
-        _sess[model_path] = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
-    s = _sess[model_path]
+def detect_face(rgb, model_path=FACE_MODEL, thresh=0.6):
+    """Return dict(box=(x0,y0,x1,y1), eyes=((lx,ly),(rx,ry)), kps=5x2, score) for the largest face, or None.
+
+    YuNet returns [x, y, w, h] boxes; they are turned into corners here. It finds faces of about 10-300 px,
+    so an image whose long side is over 640 px is searched on a copy reduced to 640 px, then scaled back.
+    """
     h, w = rgb.shape[:2]
-    S = 640
-    sc = S / max(h, w)
-    img = np.zeros((S, S, 3), np.float32)
-    img[: int(round(h * sc)), : int(round(w * sc))] = cv2.resize(rgb, (int(round(w * sc)), int(round(h * sc))))
-    x = ((img * 255 - 127.5) / 128).transpose(2, 0, 1)[None].astype(np.float32)
-    outs = s.run(None, {s.get_inputs()[0].name: x})
-    boxes, kpss, scores = [], [], []
-    for i, st in enumerate((8, 16, 32)):
-        sco, bb, kp = outs[i][:, 0], outs[i + 3] * st, outs[i + 6] * st
-        f = S // st
-        cy, cx = np.mgrid[:f, :f]
-        centers = np.stack([cx, cy], -1).reshape(-1, 2).astype(np.float32) * st
-        centers = np.repeat(centers, 2, axis=0)
-        keep = sco >= thresh
-        c = centers[keep]
-        b = np.stack([c[:, 0] - bb[keep, 0], c[:, 1] - bb[keep, 1], c[:, 0] + bb[keep, 2], c[:, 1] + bb[keep, 3]], 1)
-        k = (kp[keep].reshape(-1, 5, 2) + c[:, None, :])
-        boxes.append(b); kpss.append(k); scores.append(sco[keep])
-    boxes, kpss, scores = np.concatenate(boxes), np.concatenate(kpss), np.concatenate(scores)
-    if len(scores) == 0:
+    sc = min(1.0, 640 / max(h, w))
+    img = (np.clip(rgb, 0, 1) * 255).astype(np.uint8)
+    img = img if img.ndim == 3 else np.repeat(img[..., None], 3, -1)
+    if sc < 1:
+        img = cv2.resize(img, (int(round(w * sc)), int(round(h * sc))), interpolation=cv2.INTER_AREA)
+    det = cv2.FaceDetectorYN.create(str(model_path), "", (img.shape[1], img.shape[0]), thresh, 0.3, 5000)
+    _, faces = det.detect(img[..., ::-1].copy())          # OpenCV expects BGR
+    if faces is None or len(faces) == 0:
         return None
-    i = int(np.argmax((boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1]) * (scores > thresh)))
-    b, k = boxes[i] / sc, kpss[i] / sc
-    return dict(box=tuple(float(v) for v in b), kps=k, eyes=(tuple(k[0]), tuple(k[1])), score=float(scores[i]))
+    f = faces[int(np.argmax(faces[:, 2] * faces[:, 3]))].astype(np.float64)
+    x, y, bw, bh = f[:4] / sc
+    k = f[4:14].reshape(5, 2) / sc
+    return dict(box=(float(x), float(y), float(x + bw), float(y + bh)), kps=k, eyes=(tuple(k[0]), tuple(k[1])),
+                score=float(f[14]))
 
 # ---------- prototype cut-out: union of two small public models (stand-in for Bria RMBG 2.0) ----------
 SCRATCH = Path("/tmp/claude-0/-home-claude/27dc5434-a5bc-5b9d-b2a3-302381507a91/scratchpad")

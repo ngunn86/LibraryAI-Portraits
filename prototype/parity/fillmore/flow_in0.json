@@ -1,0 +1,15 @@
+{
+ "op": "flow_in0",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "8-bit: GaussianBlur(norm(input), 1.0), norm = clip((a - mean) / std * 40 + 128)",
+ "tolerance": "exact",
+ "card": "F-39",
+ "stats": {
+  "min": 16.0,
+  "max": 168.0,
+  "mean": 127.50347137451172
+ }
+}

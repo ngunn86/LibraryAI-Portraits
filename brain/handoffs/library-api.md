@@ -1,7 +1,7 @@
 # Hand-off to the library's planning: the portraits API
 
 **From:** Nexus Portraits planning, 2026-10-19 (night). **For:** the Library-AI (Rev1) chat, relayed by the owner.
-**Contract:** `brain/contracts/portraits-api.openapi.json` in ngunn86/LibraryAI-Portraits (draft 4, 2026-10-20), with `portraits-api.md` (plain words), `portraits-api.sample.json` and `check_api.py`. Copy them unchanged, with the commit, as you would any outside contract.
+**Contract:** `brain/contracts/portraits-api.openapi.json` in ngunn86/LibraryAI-Portraits (draft 5, 2026-10-20), with `portraits-api.md` (plain words), `portraits-api.sample.json` and `check_api.py`. Copy them unchanged, with the commit, as you would any outside contract.
 
 ## What was decided here that the library needs
 
@@ -14,6 +14,7 @@
 | D-41 | No categories. Each portrait has an approximate date and a best-known flag, which the library may correct (`kind: correct`) |
 | D-42 | The library keeps its own copy of every file it pulls. The tool's own storage is backed up only through its database |
 | D-44 | One key for reading and sending; **the library pulls** the change feed on its own schedule (the tool never calls the library); requests (`try_again`, `another_original`, `try_link`) are handled right away |
+| D-61 | When a teacher's three slots are full, a different photograph that clearly ranks above one of them can arrive as a waiting portrait with `replaces` set. Approving it is the swap, as for a better copy |
 
 ## What changes on the library's side
 
@@ -32,7 +33,10 @@ Unchanged:
 
 ## Statuses worth knowing
 
-- **`replaced`** means superseded by another portrait of the same photograph: either a better copy you approved in its place, or a newer draft that replaced a waiting one.
+- **`replaced`** means superseded by the portrait in `replaced_by` (D-61): a better copy or a higher-ranked photograph you approved in its place, or a newer draft that replaced a waiting one.
+- **The main portrait** passes to the replacement on a swap. Turning down the main portrait clears it, and the teacher has none until you set one.
+- **A request** answers 202 (`queued`), then becomes `working`, and ends `done` with `result_portrait_id` (always a new portrait) or `refused` with a `refused_reason` code. A `try_again` on a waiting portrait replaces it; on an approved one, the new draft arrives with `replaces` set, and your approval is the swap. A request on a turned-down or replaced portrait answers 409.
+- **A `try_link`** can be any of the links an admin copies from a browser: a Commons file page or file link, a LoC item or resource page, or a Wellcome work page (SRC-04).
 - **`another_original`** turns the current portrait down (reason `other`) and fills the slot from the next photograph.
 - A teacher's `portrait_search.state` can be `skipped`, when the teacher has no Wikidata id, LoC name id or dates. The owner adds them to `authors.csv`.
 
@@ -40,7 +44,7 @@ Unchanged:
 
 `not_this_teacher` and `do_not_use` stop that photograph for good. `quality` and `other` allow one clearly better copy later (PIP-17). The queue's turn-down action should ask which.
 
-Teachers are searched again monthly, even when all three slots are full (D-59). So a better copy of an approved portrait can turn up later as a new waiting portrait with `replaces` set.
+Teachers are searched again monthly, even when all three slots are full (D-59). So a better copy of an approved portrait, or a better photograph (D-61), can turn up later as a new waiting portrait with `replaces` set.
 
 ## What this project would like back
 

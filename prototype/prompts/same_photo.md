@@ -1,6 +1,6 @@
 # same_photo v1 (PIP-20, tie-break)
 
-Send: picture A, then picture B (both as images, each at about 800 px on the long side), then this text. Ask for JSON only. Used only when feature matching is between the two thresholds (PIP-20). If the answer is "unsure", the tool treats them as the same photograph (D-50).
+Send: picture A, then picture B (the two candidates' previews, each reduced to about 800 px on the long side, as 8-bit PNGs; PIP-22), then this text. Ask for JSON only. Used only when feature matching is between the two thresholds (PIP-20). If the answer is "unsure", the tool treats them as the same photograph (D-50).
 
 ---
 

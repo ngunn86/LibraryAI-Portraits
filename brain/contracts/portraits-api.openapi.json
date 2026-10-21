@@ -2,9 +2,9 @@
  "openapi": "3.1.0",
  "info": {
   "title": "Nexus Portraits API",
-  "version": "1.0.0-draft.4",
+  "version": "1.0.0-draft.5",
   "summary": "What the library reads from the portraits tool, and the decisions and requests it sends back.",
-  "description": "Defined by this project and adopted by the library (D-37). Draft for T-08, 2026-10-19.\n\n- **Pull only** (D-44): the library reads the change feed on its own schedule; the tool never calls the library.\n- **One key** (D-44) for the library, for reading and sending. Made and switched off by the owner; stored only as a hash.\n- **Requests are handled right away** (D-44): a request answers 202, and its result appears in the change feed.\n- The library keeps its own copy of every file it pulls (D-42); each file carries its SHA-256.\n- Conventions mirror the library's own API (Rev1 `brain/contracts/api.openapi.json`): bearer keys, the same error object, the same change-feed pattern.\n- Within v1, changes are additive only: new optional fields and new routes. Response objects may gain fields; readers must ignore unknown ones."
+  "description": "Defined by this project and adopted by the library (D-37). Draft for T-08, 2026-10-19; draft 5 (2026-10-20) merges the first outside review (Argon).\n\n- **Pull only** (D-44): the library reads the change feed on its own schedule; the tool never calls the library.\n- **One key** (D-44) for the library, for reading and sending. Made and switched off by the owner; stored only as a hash.\n- **Requests are handled right away** (D-44): a request answers 202, and its result appears in the change feed.\n- The library keeps its own copy of every file it pulls (D-42); each file carries its SHA-256.\n- Conventions mirror the library's own API (Rev1 `brain/contracts/api.openapi.json`): bearer keys, the same error object, the same change-feed pattern.\n- Within v1, changes are additive only: new optional fields and new routes. Response objects may gain fields; readers must ignore unknown ones."
  },
  "servers": [
   {
@@ -330,7 +330,7 @@
     ],
     "summary": "What changed since",
     "operationId": "listChanges",
-    "description": "Every change since a point, in sequence order. The first call passes `since`; each later call passes the previous `next_cursor` as `after` (one of the two is required).",
+    "description": "Every change since a point, in sequence order. The first call passes `since`; each later call passes the previous `next_cursor` as `after`. Exactly one of the two is required: neither, or both, answers 422 `invalid`. With `after`, the answer's `since` is the time of the cursor's entry (the service's start for `c_0`). An empty page echoes the cursor it was given as `next_cursor`, with `more: false`. With `since` and nothing after it, `next_cursor` is the cursor of the last change at or before `since` (`c_0` when there's none), so the next call doesn't replay older changes.",
     "parameters": [
      {
       "name": "since",
@@ -441,7 +441,7 @@
     ],
     "summary": "Ask for work on a teacher",
     "operationId": "sendRequest",
-    "description": "Try again, another original, or try a link (IN-06). Accepted with 202 and handled right away by the worker (D-44); the result, or `refused` with its reason, appears in the request and the change feed. Unknown teacher or portrait: 404. A link outside the adopted sources, or a try_again/another_original without a portrait: 422. Safe to resend: a repeated `request_id` returns the existing request.",
+    "description": "Try again, another original, or try a link (IN-06). Accepted with 202 and handled right away by the worker (D-44); the result, or `refused` with its reason, appears in the request and the change feed. Unknown teacher or portrait: 404. A link outside the adopted sources, or a try_again/another_original without a portrait: 422. A try_again/another_original on a portrait that is turned down or replaced: 409 `conflict`. Safe to resend: a repeated `request_id` returns the existing request.",
     "requestBody": {
      "required": true,
      "content": {
@@ -1086,7 +1086,7 @@
        "turned_down",
        "replaced"
       ],
-      "description": "waiting: in the library's queue; approved; turned_down (by the library, or by its another_original request); replaced: superseded by another portrait of the same photograph, either a better copy the library approved in its place or a newer draft that replaced a waiting one (OUT-07). Portraits still being made, or that failed, never appear."
+      "description": "waiting: in the library's queue; approved; turned_down (by the library, or by its another_original request); replaced: superseded by the portrait in `replaced_by` (OUT-07, D-61): a better copy or a higher-ranked photograph the library approved in its place, or a newer draft that replaced a waiting one. Portraits still being made, or that failed, never appear."
      },
      "main": {
       "type": "boolean"
@@ -1339,7 +1339,8 @@
          {
           "type": "null"
          }
-        ]
+        ],
+        "description": "Set only on a waiting portrait offered in place of an approved one: a better copy of the same photograph, a remake asked for by try_again, or a different photograph that ranks above it (D-61). Approving it is the swap. A draft that supersedes a waiting portrait carries no `replaces`."
        },
        "replaced_by": {
         "oneOf": [
@@ -1354,7 +1355,8 @@
          {
           "type": "null"
          }
-        ]
+        ],
+        "description": "Set when this portrait is `replaced`: the portrait that superseded it."
        },
        "approx_date": {
         "$ref": "#/components/schemas/ApproxDate"
@@ -1394,7 +1396,7 @@
        "recipe_version": {
         "type": "string",
         "examples": [
-         "0.4.0"
+         "0.5.0"
         ]
        },
        "created": {
@@ -1557,7 +1559,8 @@
     "properties": {
      "since": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "The `since` given, or, with `after`, the time of the cursor's entry."
      },
      "until": {
       "type": "string",
@@ -1571,7 +1574,7 @@
      },
      "next_cursor": {
       "type": "string",
-      "description": "Opaque; pass as `after`."
+      "description": "Opaque; pass as `after`. On an empty page: the cursor that was given, or, with `since`, the cursor of the last change at or before it (`c_0` when there's none)."
      },
      "more": {
       "type": "boolean"
@@ -1611,7 +1614,7 @@
        "set_main",
        "correct"
       ],
-      "description": "approve: a waiting portrait goes live in the library. Approving a better copy (one with `replaces`) is the swap: the old portrait becomes `replaced` (PIP-17). turn_down: a waiting or approved portrait; needs `reason`. set_main: an approved portrait becomes the teacher's main one; the previous main is unset. correct: replaces the tool's value of `field` with `value`; never overwritten by a later run (PIP-18)."
+      "description": "approve: a waiting portrait goes live in the library. Approving a portrait with `replaces` set is the swap: the portrait it replaces becomes `replaced` (PIP-17, D-61), and if that one was the teacher's main portrait, `main` passes to the new one. turn_down: a waiting or approved portrait; needs `reason`. Turning down the main portrait clears `main`; the teacher then has none until the library sets one. set_main: an approved portrait becomes the teacher's main one; the previous main is unset. Only an approved portrait can be main. correct: replaces the tool's value of `field` with `value`; never overwritten by a later run (PIP-18)."
      },
      "reason": {
       "type": "string",
@@ -1632,7 +1635,7 @@
       "description": "For correct."
      },
      "value": {
-      "description": "For correct: a year (integer) or null for approx_date; a boolean for best_known."
+      "description": "For correct: a year (integer) or null for approx_date; true or false for best_known. Constrained by `field` below."
      },
      "note": {
       "type": "string",
@@ -1684,6 +1687,90 @@
         "field",
         "value"
        ]
+      }
+     },
+     {
+      "if": {
+       "properties": {
+        "field": {
+         "const": "approx_date"
+        }
+       },
+       "required": [
+        "field"
+       ]
+      },
+      "then": {
+       "properties": {
+        "value": {
+         "oneOf": [
+          {
+           "type": "integer"
+          },
+          {
+           "type": "null"
+          }
+         ]
+        }
+       }
+      }
+     },
+     {
+      "if": {
+       "properties": {
+        "field": {
+         "const": "best_known"
+        }
+       },
+       "required": [
+        "field"
+       ]
+      },
+      "then": {
+       "properties": {
+        "value": {
+         "type": "boolean"
+        }
+       }
+      }
+     },
+     {
+      "if": {
+       "properties": {
+        "kind": {
+         "not": {
+          "const": "turn_down"
+         }
+        }
+       },
+       "required": [
+        "kind"
+       ]
+      },
+      "then": {
+       "properties": {
+        "reason": false
+       }
+      }
+     },
+     {
+      "if": {
+       "properties": {
+        "kind": {
+         "not": {
+          "const": "correct"
+         }
+        }
+       },
+       "required": [
+        "kind"
+       ]
+      },
+      "then": {
+       "properties": {
+        "field": false,
+        "value": false
+       }
       }
      }
     ]
@@ -1751,7 +1838,7 @@
        "another_original",
        "try_link"
       ],
-      "description": "IN-06. try_again: a new draft from the same original; the note guides a fresh AI copy. A note about the crop or the outline can't be applied under one recipe: the request is accepted, then answered `refused` with that reason (classified by a model, prompt note_kind.md). another_original: the portrait becomes turned_down (reason other) and its slot is filled from the next photograph. try_link: try the pasted link; a link outside the adopted sources is refused at once with 422 `invalid`."
+      "description": "IN-06. try_again: a new draft from the same original; the note guides a fresh AI copy. On a waiting portrait the new draft replaces it; on an approved one it's offered with `replaces`, and the approved one stays until the library approves the new one. A cut-out fault (an ear, hair or a shoulder cut off, background left inside the line) is restoration, since a fresh AI copy brings a new cut-out. A note about the crop (zoom, centring, framing) or the outline (its style, thickness or colour) can't be applied under one recipe: the request is accepted, then answered `refused` with that reason (classified by a model, prompt note_kind.md). another_original: the portrait becomes turned_down (reason other) and its slot is filled from the next photograph. try_link: try the pasted link; a link outside the adopted sources is refused at once with 422 `invalid`. The link is read without fetching the page. Accepted forms: commons.wikimedia.org/wiki/File:<title> or an upload.wikimedia.org file or thumbnail link; (www.)loc.gov/item/<id>, (www.)loc.gov/pictures/item/<id> or (www.)loc.gov/resource/<id>; (api.)wellcomecollection.org/(catalogue/v2/)works/<id> (SRC-04)."
      },
      "note": {
       "type": "string",
@@ -1833,17 +1920,29 @@
          "working",
          "done",
          "refused"
-        ]
+        ],
+        "description": "queued: accepted (202). working: the worker has it. done: a portrait was published (`result_portrait_id`). refused: nothing was published (`refused_reason`). Each change of state is in the change feed."
        },
        "refused_reason": {
         "oneOf": [
          {
-          "type": "string"
+          "type": "string",
+          "enum": [
+           "crop_note",
+           "outline_note",
+           "licence_refused",
+           "licence_held",
+           "precheck_failed",
+           "draft_failed",
+           "no_candidates",
+           "cap_reached"
+          ]
          },
          {
           "type": "null"
          }
-        ]
+        ],
+        "description": "When refused (IN-06): crop_note or outline_note (the note asks for what one recipe can't change; try another_original), licence_refused or licence_held (try_link), precheck_failed or draft_failed, no_candidates (no photograph left to try), cap_reached (a spend cap stopped it; it isn't retried)."
        },
        "result_portrait_id": {
         "oneOf": [
@@ -1858,7 +1957,8 @@
          {
           "type": "null"
          }
-        ]
+        ],
+        "description": "When done: the new portrait, always a new id. If the request was on a waiting portrait, that one becomes `replaced` at once; on an approved one, the new portrait arrives with `replaces` set, and the swap happens if the library approves it (OUT-07, PIP-17)."
        },
        "updated": {
         "type": "string",
@@ -1926,7 +2026,7 @@
        "another_original",
        "try_link"
       ],
-      "description": "IN-06. try_again: a new draft from the same original, with the note (Q-08). another_original: set aside this portrait's original and use the next candidate. try_link: try the pasted link (SRC-04)."
+      "description": "IN-06. try_again: a new draft from the same original, with the note. On a waiting portrait it replaces it; on an approved one it's offered with `replaces`. another_original: the portrait becomes turned_down (reason other), its photograph is set aside, and the slot is filled from the next photograph. try_link: try the pasted link (SRC-04)."
      },
      "note": {
       "type": "string",

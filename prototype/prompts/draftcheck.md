@@ -1,6 +1,6 @@
 # draftcheck v1 (PIP-09)
 
-Send, in this order: (1) the original photograph; (2) the draft portrait on the library's dark page colour; (3)–(5) the owner's three example portraits on the same page colour. Then this text. Ask for JSON only. The checker's model family must differ from the image models used on this draft.
+Send, in this order: (1) the original's viewing copy (an 8-bit sRGB PNG at most 1,600 px, never the original file; PIP-22); (2) the draft portrait on the library's dark page colour, `checkPageRgb` (28, 30, 38); (3)–(5) the owner's three example portraits on the same page colour. Then this text. Ask for JSON only. The checker's model family must differ from the image models used on this draft.
 
 ---
 

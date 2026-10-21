@@ -1,6 +1,6 @@
 # enhance_keyed v1 (PIP-13 + PIP-03)
 
-Send: the descreened original (as an image), then this text. Ask for the closest available aspect ratio to the original, and the largest output up to 2K.
+Send: the descreened working region (the whole descreened original when it's 2,000 px or less; PIP-23), as an 8-bit sRGB PNG at most 1,600 px on the long side (PIP-22), then this text. Ask for the closest available aspect ratio to the original, and the largest output up to 2K.
 
 ---
 

@@ -1,6 +1,6 @@
 # precheck v2 (PIP-02; v2 adds the age estimate for PIP-18, and drops book plates, D-24)
 
-Send: the original (as an image), then this text. Ask for JSON only.
+Send: the candidate's preview (at most 1,600 px, from the source's sized-image service; PIP-21), re-encoded as an 8-bit sRGB PNG, never the original file (PIP-22), then this text. Ask for JSON only. Code turns `face_box` into the original's pixels and checks `minFacePx` itself, since the model doesn't know the picture's size.
 
 ---
 

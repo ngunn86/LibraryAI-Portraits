@@ -1,0 +1,17 @@
+{
+ "op": "dist_outside",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "distanceTransform(mask == 0, DIST_L2, maskSize 5)",
+ "tolerance": {
+  "max_abs": 0.001
+ },
+ "card": "F-39, F-15",
+ "stats": {
+  "min": 0.0,
+  "max": 1.0,
+  "mean": 0.00021701389050576836
+ }
+}

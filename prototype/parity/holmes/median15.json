@@ -1,0 +1,19 @@
+{
+ "op": "median15",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "scipy.ndimage.median_filter(logspec, size=15, mode='reflect')",
+ "tolerance": {
+  "max_abs": 0.0004756382373371986,
+  "why": "a 12-bit sliding-histogram median is within one 12-bit step"
+ },
+ "card": "F-39, F-13",
+ "stats": {
+  "min": 0.05202140286564827,
+  "max": 1.1958328485488892,
+  "mean": 0.24488109350204468
+ },
+ "note": "cv2.medianBlur accepts floats only for sizes 3 and 5, and its 8-bit route isn't precise enough: on Cady it moves one screen peak by a frequency bin (results.json, detect_screen). Here the 8-bit route differs by up to 0.0038, a 12-bit median by up to 0.00024. Note the border: scipy reflects (mode='reflect'); medianBlur replicates."
+}

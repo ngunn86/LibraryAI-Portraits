@@ -1,0 +1,17 @@
+{
+ "op": "idft_roundtrip",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "idft(dft(input, DFT_COMPLEX_OUTPUT), DFT_SCALE | DFT_REAL_OUTPUT); equals input",
+ "tolerance": {
+  "max_abs": 1e-05
+ },
+ "card": "F-39",
+ "stats": {
+  "min": 0.18823552131652832,
+  "max": 0.9921568632125854,
+  "mean": 0.7703669667243958
+ }
+}

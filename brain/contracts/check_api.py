@@ -27,7 +27,12 @@ bad = {"turn_down without reason": ("Decision", {k: x for k, x in sample["decisi
        "try_link without link": ("NewRequest", {k: x for k, x in sample["new_request_try_link"].items() if k != "link"}),
        "try_again without portrait": ("NewRequest", dict(sample["new_request_try_again"], portrait_id=None)),
        "bad portrait id": ("PortraitSummary", dict(sample["portrait_page"]["portraits"][0], portrait_id="charles-fillmore")),
-       "unknown file kind": ("File", dict(sample["portrait"]["files"][0], kind="sepia"))}
+       "unknown file kind": ("File", dict(sample["portrait"]["files"][0], kind="sepia")),
+       "approx_date given as text": ("Decision", dict(sample["decision_correct"], value="1920")),
+       "best_known given as a number": ("Decision", dict(sample["decision_correct"], field="best_known", value=1)),
+       "approve with a reason": ("Decision", dict(sample["decision_approve"], reason="quality")),
+       "turn_down with a field": ("Decision", dict(sample["decision_turn_down"], field="best_known", value=True)),
+       "refused_reason as free text": ("Request", dict(sample["request"], status="refused", result_portrait_id=None, refused_reason="it failed"))}
 for k, (n, x) in bad.items():
     if v(n).is_valid(x): fails += 1; print("SHOULD FAIL", k)
 print("schemas", len(doc["components"]["schemas"]), "samples", len(pairs), "negative", len(bad), "fails", fails)

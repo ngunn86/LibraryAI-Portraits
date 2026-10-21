@@ -1,0 +1,17 @@
+{
+ "op": "logspec",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "log1p(|fftshift(fft2((L - GaussianBlur(L, sigma 3)) * hann(h) x hann(w)))|); numpy.hanning",
+ "tolerance": {
+  "max_abs": 0.001
+ },
+ "card": "F-39, F-13",
+ "stats": {
+  "min": 0.008943866938352585,
+  "max": 3.425065279006958,
+  "mean": 0.7982075214385986
+ }
+}

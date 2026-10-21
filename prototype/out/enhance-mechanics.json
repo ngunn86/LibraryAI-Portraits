@@ -2,28 +2,28 @@
  "charles-fillmore": {
   "align_corr": 0.997,
   "used": true,
-  "face_drift_cells": 0.463,
-  "moved_features_drift_cells": 1.088,
+  "face_drift_cells": 0.311,
+  "moved_features_drift_cells": 1.079,
   "moved_features_used": false,
-  "edge_agreement_with_plain": 0.991,
+  "edge_agreement_with_plain": 0.989,
   "keyed_cutout_iou_vs_standin": 0.986
  },
  "emilie-cady": {
   "align_corr": 0.999,
   "used": true,
-  "face_drift_cells": 0.386,
-  "moved_features_drift_cells": 0.996,
+  "face_drift_cells": 0.27,
+  "moved_features_drift_cells": 0.951,
   "moved_features_used": false,
-  "edge_agreement_with_plain": 0.987,
-  "keyed_cutout_iou_vs_standin": 0.961
+  "edge_agreement_with_plain": 0.989,
+  "keyed_cutout_iou_vs_standin": 0.957
  },
  "ernest-holmes": {
   "align_corr": 0.998,
   "used": true,
-  "face_drift_cells": 0.318,
-  "moved_features_drift_cells": 0.898,
+  "face_drift_cells": 0.143,
+  "moved_features_drift_cells": 0.985,
   "moved_features_used": false,
   "edge_agreement_with_plain": 0.999,
-  "keyed_cutout_iou_vs_standin": 0.943
+  "keyed_cutout_iou_vs_standin": 0.944
  }
 }

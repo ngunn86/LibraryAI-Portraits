@@ -1,0 +1,16 @@
+{
+ "op": "key_strip",
+ "shape": [
+  8,
+  64,
+  3
+ ],
+ "call": "grey 0.4 blending into pure green, left to right (RGB 0..1)",
+ "tolerance": "exact",
+ "card": "F-30",
+ "stats": {
+  "min": 0.0,
+  "max": 1.0,
+  "mean": 0.36666667461395264
+ }
+}

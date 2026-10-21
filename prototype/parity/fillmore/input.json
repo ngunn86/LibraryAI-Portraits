@@ -1,0 +1,15 @@
+{
+ "op": "input",
+ "shape": [
+  96,
+  96
+ ],
+ "call": "grey crop [89, 88, 96, 96] of inputs/charles-fillmore.rgb.png",
+ "tolerance": "exact",
+ "card": "F-39",
+ "stats": {
+  "min": 0.1882352977991104,
+  "max": 0.9921569228172302,
+  "mean": 0.7703669667243958
+ }
+}

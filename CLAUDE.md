@@ -33,7 +33,7 @@ The project serves two purposes:
 - an API for the library;
 - no extraction from books.
 
-T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-59); see the tracker. The requirements were consolidated on 2026-10-20, and no questions are open. The app is built in **TypeScript on Node 24**, like the library (D-57); `brain/spec/architecture.md` v2 describes it, and `prototype/` (Python) is the reference implementation of the recipe.
+T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-61); see the tracker. The requirements were consolidated on 2026-10-20, and no questions are open. The first outside review (Argon) is merged. The app is built in **TypeScript on Node 24**, like the library (D-57); `brain/spec/architecture.md` v2 describes it, and `prototype/` (Python, recipe 0.5.0) is the reference implementation of the recipe.
 
 ## Repo map
 
@@ -56,6 +56,8 @@ T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-59); see the tracker.
 | `brain/reviews/` | Feedback from reviewing agents. See its README for the format |
 | `brain/reference/rev1/` | *(to come)* Files copied from Library-AI---Rev1, unchanged, with the commit they came from |
 | `design/portraits/` | The owner's three hand-made portraits (the style target) and their originals; see its README |
+| `prototype/` | The Python reference recipe, its fixtures and outputs, the prompts, and `parity/` (per-operation references for the TypeScript port) |
+| `models/` | The YuNet face detector (MIT), committed so the build and tests never download it; see its README |
 
 ## Rules for every agent
 

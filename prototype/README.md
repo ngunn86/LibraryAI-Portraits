@@ -1,4 +1,4 @@
-# Style prototype (P0-3): results, 2026-10-19 (recipe 0.4.0)
+# Style prototype (P0-3): results, 2026-10-20 (recipe 0.5.0)
 
 This folder answers one question before the harness builds anything: can code reproduce the owner's three hand-made portraits? It holds reference code and reference outputs, **not the product**. The harness builds the real modules (F-12..F-16) from what's learned here.
 
@@ -10,9 +10,24 @@ This folder answers one question before the harness builds anything: can code re
 |---|---|---|
 | Dot grid | FFT of the alpha channel | **45°**, cell pitch 4.55 px at 500 px, i.e. **110 cells across** (Fillmore 109, Holmes 111). Cady is finer (127), which looks like a different setting on that one |
 | Dot shape | Close-up | Round white dots in shadows, merging into white with round dark holes in highlights (a classic round "Euclidean" dot). Dark tones are fully transparent |
-| Framing | Each original registered onto its target (eye landmarks, refined by image alignment; correlation 0.91–0.99) | Eye-to-mouth distance **0.237 of the side** (0.223–0.246; this measure doesn't change when the head turns). Eye line at **0.443** of the height (0.40–0.51). Face centred (0.46–0.56). Fillmore and Cady are exactly 2× their originals, so their framing mostly came from the originals |
+| Framing | Each original registered onto its target (eye landmarks, refined by image alignment; correlation 0.91–0.99), then YuNet's landmarks mapped into the target | Eye-to-mouth distance **0.221 of the side** (0.197–0.246; this measure doesn't change when the head turns). Eye line at **0.449** of the height (0.40–0.51). Face centred (0.46–0.55). Fillmore and Cady are exactly 2× their originals, so their framing mostly came from the originals. (With SCRFD's landmarks, up to 0.4.0: 0.237 and 0.443) |
 | Tone | Dot coverage vs. original brightness, over the registered figure | A levels-and-gamma curve. The white point sits at the face's own brightest tones (p98), and shadows drop out to transparent well above black |
 | Line | Coverage profile inward from the figure's edge | About **3 px wide with a ~1 px gap** at 500 px, i.e. **6 px and 2 px** on the 1,000 px master (Fillmore, Holmes). Cady's is thicker (about 4.5 px at 500). The dots are clipped to a smoothed silhouette, and the line follows that same silhouette |
+
+## Changes in 0.5.0 (2026-10-20)
+
+Two changes the TypeScript port needed, found while making its reference outputs after Argon's review. The look is 0.4.0's.
+
+- **The crop is measured with YuNet**, the face detector the app uses (MIT, committed in `models/`). Up to 0.4.0 the examples were measured with SCRFD (research licence, never in the repo). The two place the mouth corners differently: with YuNet's landmarks, 0.4.0's constants framed Fillmore 20% and Holmes 7% tighter than the owner's portraits. Re-measured the same way (the owner's framing, YuNet's landmarks):
+  - `eye_mouth_frac` 0.237 → **0.221**;
+  - `eye_y_frac` 0.443 → **0.449**.
+
+  The fixtures' landmarks are now YuNet's (`make_fixtures.py --faces-only`), so the prototype runs from the repo alone. The automatic crop's zoom against the owner's framing is now 1.12, 0.90 and 1.00 (Fillmore, Cady, Holmes): right on average, with a wider spread than SCRFD gave (1.06, 0.97, 0.99), because YuNet's mouth corners vary more. The trial shows the framing on real originals. The measures at the owner's framing are unchanged within 0.006.
+- **The drift check is measured inside the inner face** (`drift_box_inset` 0.15 on each side). YuNet's box for Cady reaches the hair's edge, where the background differs between the original and any green-keyed copy, and a good copy measured 1.41 cells there and was wrongly refused. Inside the inner face, good copies measure 0.14–0.31 and copies with the eyes and mouth moved measure 0.95–1.08 (`out/enhance-mechanics.json`).
+- **`landmarks_from_box`**: five landmarks estimated from a face box when no face is found (PIP-04). The proportions are where YuNet's landmarks sit inside its own box on the three originals. On them, a crop made this way puts the eye line within 0.03 of the side of the real crop's, at a scale within 10%.
+- **`export_parity.py`** writes `parity/`: reference results for each operation the port uses (F-39), with the exact call and a tolerance for each. Two findings:
+  - OpenCV's 8-bit `medianBlur` isn't precise enough for `detect_screen`'s 15 × 15 median: on Cady it moves one screen peak by a frequency bin. A 12-bit median finds exactly the same peaks (`parity/results.json`).
+  - The difference hash (PIP-20's fingerprint) changes by at most 1 bit for a half-size or JPEG copy, and by 29–37 bits between different people.
 
 ## Changes in 0.4.0 (2026-10-19)
 
@@ -70,11 +85,12 @@ These are the settings in `recipe.py`. They become the recipe in the TypeScript 
 ```
 descreen: edge-preserving blur on every original, 0.30 cell (0.6 with a screen) · colour sigma 0.08
           screen = compact spectral peaks ≥ 1.6 log units above surroundings in ≥ 2 directions, notch-filtered
-enhance:  (when a copy is supplied) align by image correlation over the figure (≥ 0.90), local face drift ≤ 0.7 cell,
+enhance:  (when a copy is supplied) align by image correlation over the figure (≥ 0.90), local face drift ≤ 0.7 cell
+          (inside the face box inset by 0.15 a side),
           edge-preserving blur on the copy, blend 0.5 in the frame;
           cut-out from the copy's green background (greenness 0.15–0.45 soft edge)
 size_px 1000 · dots_across 110 (side ÷ cell pitch along the 45° grid) · grid_angle_deg 45 · supersample 4
-crop:    eye_mouth_frac 0.237 · eye_y_frac 0.443 · face_centre_x_frac 0.50 · min_face_px 90
+crop:    eye_mouth_frac 0.221 · eye_y_frac 0.449 · face_centre_x_frac 0.50 · min_face_px 90  (0.5.0, YuNet landmarks)
 tone:    white = face p98 + 0.02 · black = face p5 − 0.2 × (p98 − p5) · gamma 1.8
          sharpen 0.6 at 1 cell · tone blur 0.05 cell  (face tones read at one-cell scale, inside the face box)
 outline: mask_smooth_px 9 (head) · body_smooth_px 28 below the chin, blended over 120 px
@@ -97,9 +113,9 @@ outline: mask_smooth_px 9 (head) · body_smooth_px 28 below the chin, blended ov
 
 | Example | Figure overlap (IoU) | Tone error (mean abs, 0–1) | Tone correlation | Dots across |
 |---|---|---|---|---|
-| Charles Fillmore | 0.97 | 0.071 | 0.987 | 110.5 |
-| Emilie Cady | 0.90 | 0.053 | 0.967 | 110.5 |
-| Ernest Holmes | 0.92 | 0.058 | 0.979 | 110.5 |
+| Charles Fillmore | 0.97 | 0.073 | 0.987 | 110.5 |
+| Emilie Cady | 0.89 | 0.049 | 0.969 | 110.5 |
+| Ernest Holmes | 0.92 | 0.059 | 0.979 | 110.5 |
 
 **Proposed thresholds for F-16 and TRI-08** (the code measures):
 
@@ -126,7 +142,9 @@ F-16 also checks that the recipe re-creates `out/*.png` from `fixtures/` within 
 | Path | What |
 |---|---|
 | `recipe.py` | The recipe and its settings (reference implementation) |
-| `common.py` | Loaders, the stand-in cut-out, the face detector used for measuring |
+| `common.py` | Loaders, the stand-in cut-out, the face detector (YuNet, from `models/`) |
+| `export_parity.py` | Writes `parity/`: the port's reference results, operation by operation (F-39) |
+| `parity/` | `inputs/` (the originals as decoded), per-operation arrays (`.f32` with a `.json` sidecar), `results.json`, `index.json` |
 | `register.py`, `measure_dots.py`, `tune_tone.py` | How the owner's portraits were measured and the tone fitted |
 | `make_fixtures.py` | Saves the model-dependent inputs (cut-outs, landmarks, registrations) to `fixtures/` |
 | `run_examples.py` | Re-runs the recipe from `fixtures/` alone and writes `out/` |
@@ -146,9 +164,6 @@ F-16 also checks that the recipe re-creates `out/*.png` from `fixtures/` within 
 
 From the repo root, with Python 3.12+, NumPy, OpenCV and Pillow, run `python3 prototype/run_examples.py`. It needs only `fixtures/`.
 
-`make_fixtures.py`, `register.py` and `tune_tone.py` also need the stand-in models. Those are kept out of the repo:
+`export_parity.py` and `make_fixtures.py --faces-only` need only the repo too (SciPy for the first). The rest of `make_fixtures.py`, `register.py` and `tune_tone.py` also need the stand-in cut-out models, kept out of the repo: `u2net_human_seg` and `isnet-general-use` from the rembg releases.
 
-- `u2net_human_seg` and `isnet-general-use` from the rembg releases;
-- SCRFD-500M from insightface's `buffalo_sc`, which is for research use only and is used here just to measure the examples.
-
-The product uses its own cut-out provider and a permissively licensed face detector (YuNet).
+The face detector is YuNet, in `models/` (MIT). Up to recipe 0.4.0, SCRFD-500M (insightface's `buffalo_sc`, research use only) was used just to measure the examples; it's no longer needed. The product uses its own cut-out (the AI copy's green background, PIP-03) and the same YuNet.
