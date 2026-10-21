@@ -72,7 +72,7 @@ The plan is structured so the autonomous build harness can build from it. Other 
 
 These were settled for the harness project rather than this repo. They are recorded here because this project is the harness's first run and the plan must fit them.
 
-**D-12 · 2026-10 · How the harness works** · owner
+**D-12 · 2026-10 · How the harness works** · owner · *partly superseded by D-65 (who codes and checks, the digest, where it runs) and D-62 (merging)*
 - A conductor script guides the build.
 - Opus makes the judgment calls and tries to solve stuck features before parking them.
 - Claude, OpenAI Codex and Gemini code and check each other's work. An "A" grade means every check passes across several models.
@@ -472,7 +472,7 @@ Claude's choices carried with this decision (RUN-10):
 - **Secrets:** Railway variables per environment, never in the repo, logs or API answers. A test scans for them.
 - **Rate limits** on the API and the login.
 - **Outbound calls** only to the adopted sources and OpenRouter (SRC-01).
-- **Environment caps:** since the key is shared, staging and pull-request copies get their own low caps ($2 a night), and spend is recorded with the environment's name. The key's credit limit (O-4) is the backstop across them all.
+- **Environment caps:** since the key is shared, staging gets its own low caps ($2 a night and $10 a month), and spend is recorded with the environment's name. Pull-request copies make no paid calls at all: they run in stub mode (RUN-10), and since D-67 they don't get the key. The key's credit limit (O-4) is the backstop across them all. *(Corrected 2026-10-21: this line had given pull-request copies "$2 a night", against RUN-10.)*
 
 → T-21, RUN-10, IN-11, OUT-13, OUT-14
 
@@ -487,7 +487,7 @@ Claude's proposals carried with this decision:
   - teachers with several photographs, including copies of one photograph and two sittings of one teacher. These set PIP-20's thresholds on real pairs.
 - **The contenders** are the three enhance models: Nano Banana Pro, Nano Banana 2 and GPT Image 2.
 - **"Close"** means a total score within 5% of the best; the cheaper model then wins.
-- **The board** goes on the admin page, and the harness digest links to it for the veto. There is no Drive copy (D-42).
+- **The board** goes on the admin page, and the harness digest links to it for the veto. There is no Drive copy (D-42). *(Since D-63, the link and the veto are on the control issue.)*
 - **Engravings** are turned off by the owner's veto if they look bad on the board (D-47).
 - **Cost:** about $11 of the $30 budget (D-54).
 
@@ -544,3 +544,72 @@ Claude's architecture carried with this decision (`spec/architecture.md` v2, pro
 
 → PIP-16, PIP-17, OUT-07, IN-07, the API contract, F-48
 
+## From the harness chat (relayed in `Coding Harness Instructions.md`, harness plan `68dee18`, 2026-10-20)
+
+The owner made these in the Coding Harness chat; the IDs in brackets are that chat's.
+
+**D-62 · 2026-10-20 · Merge right away** · owner · *HD-44*
+"Merge the cards right away, yes."
+- A card merges as soon as its blocking checks pass, with its evidence posted on the control issue (D-63) at once.
+- The morning digest is only a summary. The owner's veto still reverts a merge.
+- This replaces "merges when its blocking checks pass and the digest has gone out".
+
+→ `plan/build-plan.md` §4, HT-05, HT-27
+
+**D-63 · 2026-10-20 · Phone control through GitHub: the control issue** · owner · *HD-42, HR-57*
+- Each project's repo gets one GitHub issue, the **control issue**. The owner steers by replying there, from the GitHub app or by email reply:
+  - `/status`, `/pause` (after the current step), `/stop` (now), `/resume`;
+  - `/approve <id>`, `/veto <id>`;
+  - `/direct <plain words>`, which the Tech Lead reads but which can't raise a budget or a permission.
+- The harness reads the issue every 2 minutes and takes commands only from the owner's GitHub account. ntfy push alerts notify at once and link to the issue.
+- **Never idle waiting for the owner:** a question goes out as an alert at once, and the harness carries on with every card the question doesn't block.
+- **Authorizations the owner keeps** are asked on the control issue with an instant alert, naming the exact action and why: email to a real address other than the owner's, a production deploy or switch-on, deleting production data, spend above a cap, new keys or accounts, anything irreversible outside the repo.
+- Wherever this project's notes said "the digest" as a gate or a channel, they now mean the control issue.
+
+→ `plan/build-plan.md` §4, CLAUDE.md, TRI-05, HT-05, HT-08, HT-22, HT-27, HT-28
+
+**D-64 · 2026-10-20 · The harness's use of the PC and the plans** · owner · *HD-40, HD-41*
+- **No usage reserve** (HD-41): the harness uses each subscription until the tool stops it, including extra usage the owner turns on, then waits for the reset.
+- **The PC is dedicated to the build while it runs** (HD-40): library-pipeline doesn't run then.
+
+→ `plan/build-plan.md` §4
+
+**D-65 · 2026-10-20 · How the harness builds this project** · owner, through the harness chat (HD-47 placed its instructions here) · *supersedes parts of D-12*
+- **Only Claude (Opus 5.5) writes the product's code.** Gemini lists the cases each card's tests must cover; Codex writes the card's acceptance tests first, and they're locked; Codex and Gemini review each commit independently; a verifier from another family adds tests at each phase's gate card; the Tech Lead (Opus, maximum effort) rules from a fixed menu, and logs each ruling.
+- **An A grade** is computed by the conductor, never awarded by a model: every blocking check, both reviews and the smoke checks pass, for one commit.
+- **The digest they can veto** becomes the control issue (D-63).
+- **It runs in a worker box on the owner's PC:** a Docker container holding only the card's working copy, the agents' logins and the test services, with no GitHub or Railway credentials. Only the conductor pushes, merges and deploys, and it never runs project code with `railway run`.
+- **A build agent** reads what its packet names, changes only its card's `Owns`, never edits the notes, and writes `BLOCKED.md` when a spec or test looks wrong.
+- The cards follow the harness's **format 1**, and the project gets a `harness.yaml`.
+
+→ CLAUDE.md, AGENTS.md, GEMINI.md, `harness.yaml`, `plan/build-plan.md` §4–5, `plan/features.md`
+
+## From the owner, on the harness's instructions (2026-10-21)
+
+**D-66 · 2026-10-21 · A 24-hour veto window for production** · owner
+"24 hours."
+- A production deploy, or switching something on there, waits 24 hours after its notice on the control issue, so the owner can `/veto` it.
+- The window covers one exact release, and restarts if the release changes. The conductor promotes only after the notice is posted, and only if it read the control issue within the last 10 minutes.
+- Production's first deploy is the release (F-47), and it goes through the window like any other. (The trial moved to staging the same day, because no check may touch production.)
+
+→ `harness.yaml` (`deploy.production`), `plan/build-plan.md` §4
+
+**D-67 · 2026-10-21 · Keep one OpenRouter key** · owner · *confirms D-55*
+"Keep one key."
+- One key serves production and staging. Its limit at OpenRouter is the boundary the provider enforces; the per-environment caps in code are the second line.
+- **Pull-request copies don't get the key at all,** so they can't spend even if their code is wrong (Claude's choice; it keeps one key).
+- **The key's limit is set in steps** by the owner (O-4), never higher than what the plan can spend by then (Claude's proposal):
+  1. from the first live card to the release: **$50**, no reset (staging's $10 a month while building, the trial's $30, and a margin);
+  2. at the release (F-47): raised by the first pass's **$100**;
+  3. after the first pass: switched to **$40 a month** (production's $30 and staging's $10).
+
+→ O-4, RUN-04, RUN-10, `plan/build-plan.md` §3 and the release checklist
+
+**D-68 · 2026-10-21 · The admin site gets a front page** · owner
+"Yes, include them."
+- **A front page** says whether all is well: last night's run, the month's spend against its cap, errors, and a short list of what needs the owner (teachers to identify, held originals, anything stuck).
+- **Portraits are shown on the library's dark page colour,** since the white versions are invisible on white.
+- **The trial board** lays each original's results side by side, so the owner's veto of the trial's choice is easy to make.
+- Everything else stays plain: server-rendered pages, one stylesheet, nothing to design.
+
+→ OUT-13, TRI-05, F-46

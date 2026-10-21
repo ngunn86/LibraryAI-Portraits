@@ -32,7 +32,8 @@ bad = {"turn_down without reason": ("Decision", {k: x for k, x in sample["decisi
        "best_known given as a number": ("Decision", dict(sample["decision_correct"], field="best_known", value=1)),
        "approve with a reason": ("Decision", dict(sample["decision_approve"], reason="quality")),
        "turn_down with a field": ("Decision", dict(sample["decision_turn_down"], field="best_known", value=True)),
-       "refused_reason as free text": ("Request", dict(sample["request"], status="refused", result_portrait_id=None, refused_reason="it failed"))}
+       "refused_reason as free text": ("Request", dict(sample["request"], status="refused", result_portrait_id=None, refused_reason="it failed")),
+       "health without the database": ("Health", {k: x for k, x in sample["health"].items() if k != "database"})}
 for k, (n, x) in bad.items():
     if v(n).is_valid(x): fails += 1; print("SHOULD FAIL", k)
 print("schemas", len(doc["components"]["schemas"]), "samples", len(pairs), "negative", len(bad), "fails", fails)

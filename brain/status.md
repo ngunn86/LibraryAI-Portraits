@@ -1,41 +1,43 @@
 # Status
 
-**Phase 0: planning.** There is no code yet. Last updated 2026-10-20 by Claude.
+**Phase 0: planning.** There is no code yet. Last updated 2026-10-21 by Claude.
 
 **Where planning is:**
-- **The owner's decisions are made** for tracker topics T-01..T-23 (D-31..D-57), plus D-58..D-61. The tool is a hosted Railway app in TypeScript, like the library, with an API the library adopts.
+- **The owner's decisions are made** for tracker topics T-01..T-23 (D-31..D-57), plus D-58..D-68. The tool is a hosted Railway app in TypeScript, like the library, with an API the library adopts.
 - **Requirements consolidated** on 2026-10-20 and **feature cards drafted** for the new design.
 - **The first outside review is merged:** Gemini 4 Argon's 19 points, all accepted ([reviews/2026-10-20-argon-round-2.md](reviews/2026-10-20-argon-round-2.md)). Recipe 0.5.0 and the porting references (`prototype/parity/`) came out of it.
-- **Next:** more review rounds if the owner runs them; T-09 once Rev1 is pushed.
+- **Adapted to the Coding Harness** (2026-10-21, D-62..D-68): `harness.yaml`, the build-agent carve-out, the build loop and veto window, jobs over the web instead of `railway run`, a health check that proves the database and bucket, and 18 of the 52 cards in format 1 as a sample.
+- **Next:** the owner relays [handoffs/harness-questions.md](handoffs/harness-questions.md) to the harness chat, which checks the sample; then the other 34 cards are converted. T-09 once Rev1 is pushed.
 
 ## Where things stand
 
 | Piece | State |
 |---|---|
-| Tracker | [tracker.md](tracker.md). T-01..T-08, T-10..T-14 and T-16..T-23 decided. T-24 and T-25 proposed in full. T-09 waits for Rev1's push; T-15 for real AI copies in the trial; T-26 is the review rounds; T-27 is the harness's own planning |
+| Tracker | [tracker.md](tracker.md). T-01..T-08, T-10..T-14 and T-16..T-23 decided. T-24 proposed in full; T-25 converting to the harness's format. T-09 waits for Rev1's push; T-15 for real AI copies in the trial; T-26 is the review rounds; T-27 is the harness's own planning |
 | Briefs | v1 (2026-10-17) and v2 (2026-10-19), in `brief/`. v2 is the brief; decisions D-24 onwards extend it |
 | Requirements | [spec/requirements.md](spec/requirements.md), consolidated 2026-10-20: every ID kept, every item current. Open: only the PORT reconciliation (needs O-1) |
 | Architecture | [spec/architecture.md](spec/architecture.md) v2 (proposed): TypeScript on Node 24 (D-57); Railway web, worker and cron; Postgres with a queue table; an S3 bucket; `sharp` and OpenCV.js, with a porting spike. The Python prototype is the reference |
-| API contract | [contracts/portraits-api.openapi.json](contracts/portraits-api.openapi.json), draft 5, with samples and an offline check (`check_api.py`, passing). The library adopts it (D-37); hand-off note in [handoffs/library-api.md](handoffs/library-api.md) |
+| API contract | [contracts/portraits-api.openapi.json](contracts/portraits-api.openapi.json), draft 6, with samples and an offline check (`check_api.py`, passing). The library adopts it (D-37); hand-off note in [handoffs/library-api.md](handoffs/library-api.md) |
 | Sources | [spec/sources.md](spec/sources.md): Wikidata/Commons, the LoC and Wellcome (D-46); Smithsonian only if the survey shows gaps |
-| Build plan and features | [plan/build-plan.md](plan/build-plan.md) (rewritten 2026-10-20) and [plan/features.md](plan/features.md) (draft 3, 2026-10-20, with Argon's review merged; the format stays provisional until the harness settles its own, D-15) |
-| Decisions | D-01..D-61 |
+| Build plan and features | [plan/build-plan.md](plan/build-plan.md) (adapted to the harness 2026-10-21) and [plan/features.md](plan/features.md) (draft 4: 52 cards with gate cards; 18 in the harness's format 1 as a sample). The harness's settings: [../harness.yaml](../harness.yaml). The owner's release steps: [plan/release-checklist.md](plan/release-checklist.md) |
+| Decisions | D-01..D-68 |
 | Open questions | None. Q-27 and Q-28 were resolved on 2026-10-20 (D-58, D-59); Argon's two calls were answered the same day (D-60, D-61) |
 | Style prototype | Recipe 0.5.0 (`prototype/`): 0.4.0's look, accepted as the starting point (D-49), with the crop measured with YuNet and the drift check inside the inner face. Descreen, AI-enhanced blend with safeguards, code outline, black-and-white and 500 px versions, and the same-photo check prototype. Prompts in `prototype/prompts/`; per-operation references for the port in `prototype/parity/`; the face model in `models/` |
-| Harness | Planned in its own chat (D-15). This project's requirements for its proof run: [handoffs/harness-throwaway-test.md](handoffs/harness-throwaway-test.md) (kept updated) |
+| Harness | Planned in its own chat (D-15); its requirements of this project are in `../Coding Harness Instructions.md`, and this project's answers and questions in [handoffs/harness-questions.md](handoffs/harness-questions.md). The throwaway test: [handoffs/harness-throwaway-test.md](handoffs/harness-throwaway-test.md) (HT-01..HT-32, kept updated) |
 | Reviews | Format and prompt in [reviews/README.md](reviews/README.md). Round with Gemini 4 Argon merged 2026-10-20 |
 
 ## Waiting on the owner
 
 1. **Pass [handoffs/library-api.md](handoffs/library-api.md) to the library chat** and have Rev1's latest planning pushed to GitHub (O-1). That unblocks T-09 and the PORT reconciliation.
+2. **Relay [handoffs/harness-questions.md](handoffs/harness-questions.md) to the harness chat,** and ask it to run `harness cards check` on the sample cards.
 3. **Any further outside reviews** (P0-6): point the reviewing tools at `brain/reviews/README.md`. Argon's round is merged.
-4. Later: the harness's card format (D-15) and the throwaway test; then the owner inputs O-4, O-8..O-11 as the build reaches them.
+4. Later: the throwaway test; then the owner inputs (O-4, O-8..O-11, O-13) as the build reaches them, and the [release checklist](plan/release-checklist.md).
 
 ## Next planning steps, in order
 
 1. Further outside review rounds, if any; Claude merges accepted points and records decisions (P0-6, T-26).
 2. T-09 and the PORT reconciliation, once Rev1 is pushed (P0-1).
-3. Convert the cards to the harness's format when it exists (T-25).
+3. Convert the other 34 cards to format 1 once the sample passes `harness cards check` (T-25).
 4. Freeze plan v1 (P0-7).
 
 ## Session log
@@ -200,3 +202,4 @@
 
   No questions are open. The PORT reconciliation waits for Rev1's push.
 - **2026-10-20 (afternoon):** **Argon's review merged** (19 points, all accepted; D-60 and D-61 from the owner). Requirements PIP-21..PIP-23 and TRI-09 added; the contract is draft 5 and the cards draft 3. Making the porting references showed the prototype's crop had been measured with a different face detector, so recipe 0.5.0 re-measures it with YuNet (committed in `models/`). The references are in `prototype/parity/`.
+- **2026-10-21:** **Adapted to the Coding Harness** (its instructions of 2026-10-20). The owner chose a 24-hour veto window (D-66), one OpenRouter key (D-67) and the admin front page (D-68); the harness chat's decisions are D-62..D-65. RUN-11 (jobs over the web) and RUN-12 (a real health check) added; the trial moved to staging, so production's first deploy is the release; 18 cards in format 1, with F-49..F-55 new. Questions for the harness chat in `handoffs/harness-questions.md`.

@@ -156,7 +156,7 @@ A request or decision sent again with the same `request_id` or `decision_id` cha
   - the caps;
   - the schedule;
   - the sources and their pacing;
-  - the User-Agent contact.
+  - the User-Agent's name and version. Its contact comes from the variable `USER_AGENT_CONTACT` (O-10), with a placeholder in tests.
 - An invalid setting stops the service at start-up, naming the setting.
 - See [architecture.md](architecture.md).
 
@@ -808,7 +808,7 @@ Each run's report is a page on the admin site (RUN-09). It says, in plain words:
 
 **OUT-10 · Samples for the library** *fixed* · B2, D-37, D-58; mechanism *proposed* · C
 - The repo keeps sample payloads for every route (`contracts/portraits-api.sample.json`). They validate against the contract (`check_api.py`).
-- A staging copy, seeded with fixture portraits in stub mode, lets the library's builders pull end to end before any real portrait exists.
+- A staging copy, seeded with fixture portraits in stub mode (the `seed_fixtures` job, RUN-11), lets the library's builders pull end to end before any real portrait exists.
 - The library's acceptance check of the hand-off is to pull from staging and send one decision of each kind (D-58).
 
 *Verify:* `check_api.py` passes (F-03); the library stub completes against the seeded staging copy (F-05, F-27).
@@ -841,12 +841,19 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 
 *Verify:* the layout and `record.json` match the database; a turned-down portrait's files remain; a failed candidate has a log row and no files (F-24, F-37).
 
-**OUT-13 · Admin page** *fixed* · D-33, D-42; contents *proposed* · C
+**OUT-13 · Admin page** *fixed* · D-33, D-42, D-68; contents *proposed* · C
 - A read-only site behind one password (RUN-10). It works on a phone.
+- **Plain** (D-68): server-rendered pages and one stylesheet, nothing to design. **Portraits are shown on the library's dark page colour** (`checkPageRgb`), since the white versions are invisible on white.
+- **The front page** says whether all is well (D-68):
+  - last night's run: when, what it did, and whether it finished or stopped at a cap;
+  - the spend this month against its cap (and the first pass's against $100 while it's active);
+  - errors since the last run;
+  - **what needs the owner:** teachers to identify (IN-13), held originals (SRC-02), bad rows in the authors list (IN-02), and anything stuck.
 - **Teachers:** each teacher's portraits, with all versions, the rights record and the library's decisions; teachers skipped or unidentified, with suggestions for `authors.csv` (IN-13) as a CSV download.
 - **Runs:** each run's report (OUT-06), spend and errors.
 - **The rights log** as a CSV download (SRC-12).
-- **The trial board** (TRI-05).
+- **The trial board** (TRI-05), with an empty state until the trial has run.
+- **Held originals** (SRC-02), with their source and licence.
 - **API keys:** the list, by label and last use. Keys are made and switched off by command.
 - No approvals here: they happen in the library (D-38).
 
@@ -880,7 +887,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
   - a bucket.
 - There are three kinds of environment: production, staging, and one per pull request.
 - It is built in **TypeScript on Node 24**, like the library (D-57). See [architecture.md](architecture.md).
-- A command-line tool runs steps by hand for the harness and the owner (`railway run`, RUN-05).
+- A command-line tool runs steps by hand for the owner (RUN-05). **The harness never runs project code with Railway's credentials** (`railway run`, D-65): it starts jobs on a deployed copy over the web (RUN-11).
 
 **RUN-02 · What a run does, in order** *fixed* · B2, D-44, D-53, D-59
 1. The library's requests come first, as they arrive.
@@ -918,14 +925,14 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
   - **$2 per teacher per run** (proposed).
 
   The library's requests count toward the budget of the night they run in: the first pass's while it's active, otherwise the night and the month.
-- **The trial** has its own budget of $30 (TRI-07), split into named sub-budgets that the client enforces: $27 for F-28 and $3 for F-29.
+- **The trial** has its own budget of $30 (TRI-07), split into named sub-budgets that the client enforces: $27 for the trial (run in F-52) and $3 for the examples (F-29).
 - **Other environments** (RUN-10): pull-request copies make no paid calls at all; staging has $2 a night and $10 a month.
 - Before each paid call, the client checks that the spend so far, plus the call's estimated maximum, fits under every cap that applies. If it doesn't, the work stops cleanly, finished portraits are published, and the report says so.
 - **Each call's actual cost is logged.**
   - Every request asks OpenRouter to report usage (`"usage": {"include": true}`). Where no cost comes back, the settings' estimate is used, marked as estimated.
   - Each line records its environment and its **budget:** `trial`, `trial_examples`, `first_pass` or `regular`. The month cap counts only `regular`.
 - **The first pass's state** (`not_started`, `active` or `done`) is stored in the database:
-  - F-47 sets it `active` when it switches the schedule on;
+  - production's first nightly run sets it `active` (production is first deployed at the release, F-47);
   - it becomes `done` when the queue first empties, or when the first pass's spend reaches $100.
 
 *Verify:* stubbed costs cross each cap and sub-budget; no call is made past it, and the report says so (F-17).
@@ -941,6 +948,8 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - `keys new|off|list`: the library's keys (RUN-10).
 - `password set`: the admin password.
 - `status`: the queue, recent runs and spend.
+
+- The owner may run them from their own PC with `railway run`, which uses `DATABASE_PUBLIC_URL`. The harness never does (D-65); everything it needs on a deployed copy is a job it starts over the web (RUN-11).
 
 *Verify:* each command has a test (F-22; `trial` in F-28).
 
@@ -963,7 +972,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
   - exits.
 - The worker works through the queue. **The library's requests** are queued as they arrive.
 - **Each teacher is searched again monthly:** those with an open slot (D-53), and those whose slots are full, for better copies (D-59) and higher-ranked photographs (D-61).
-- The schedule is off until the release (F-47) and in every other environment. Staging and pull-request copies run only by hand.
+- **Production's schedule is on from its first deploy,** which is the release (F-47), after the 24-hour veto window (D-66). Nothing is scheduled in any other environment: staging and pull-request copies run jobs only when they're started (RUN-11).
 
 *Verify:* fake-clock scenarios (F-25):
 - searched 10 days ago, not queued; searched 35 days ago, queued;
@@ -987,20 +996,48 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
   - The password is set by command (`password set`).
 - **The library's key:** random, at least 32 bytes, stored as a hash. It is made and switched off by command and shown once.
 - **Transport and files:** HTTPS only. The bucket is private; files leave only through 15-minute signed links.
-- **Secrets** are Railway variables (IN-11). The OpenRouter key is the same in every environment (D-55).
+- **Secrets** are Railway variables (IN-11). One OpenRouter key serves production and staging (D-55, D-67); **pull-request copies don't get it.** Its limit at OpenRouter is set in steps by the owner (O-4, D-67).
 - **Rate limits:** about 600 API calls a minute per key, plus the login limit.
 - **Outbound calls** go only to the adopted sources, OpenRouter and (for the teacher list) GitHub (SRC-01).
-- **Environments, since the key is shared** (D-55):
-  - **pull-request copies** run in stub mode only: no paid calls, no cron;
-  - **staging** has no cron, runs by hand, and spends at most $2 a night and $10 a month;
-  - **production** has the caps of RUN-04.
-- The environment is read from Railway's `RAILWAY_ENVIRONMENT_NAME`, and its rules come from settings. The key's credit limit (O-4) is the backstop across all of them.
+- **Environments, since the key is shared** (D-55, D-67):
+  - **pull-request copies** run in stub mode only: no AI key, no paid calls, no cron;
+  - **staging** (Railway environment `staging`, deployed from `main` on every merge) has no cron, runs jobs only when started (RUN-11), and spends at most $2 a night and $10 a month;
+  - **production** (Railway environment `production`, deployed only by the harness's conductor after the veto window, D-66) has the caps of RUN-04.
+- The environment is read from Railway's `RAILWAY_ENVIRONMENT_NAME`, and its rules come from settings. The key's limit at OpenRouter (O-4) is the boundary across all of them; the caps in code are the second line.
+- **Test credentials for checks** (O-13): staging and pull-request copies seed, at start-up, a test admin password and a test library key from the Railway variables `SEED_ADMIN_PASSWORD` and `SEED_LIBRARY_KEY`, stored as hashes like any other. **Production never seeds.** The harness keeps the plain values in its own secret store, to log in and call the API in smoke checks.
 
 *Verify:*
 - a scan of the repo, test logs and sample answers finds no secret;
 - wrong passwords lock out;
 - a switched-off key gets 401;
-- a pull-request environment refuses every paid call, and staging stops at its caps (F-17, F-44, F-46).
+- a pull-request environment refuses every paid call, and staging stops at its caps (F-17, F-44, F-46);
+- seeding happens in staging and pull-request copies, never in production (F-36).
+
+**RUN-11 · Jobs started over the web** *proposed* · C, D-65
+The harness never runs the app's commands against Railway, so a deployed copy runs its own jobs when asked over HTTPS:
+- `POST /api/ops/jobs` with `{"kind": …, "params": {…}}` queues a job and answers 202 with its id. The kinds are:
+  - `sync` (IN-12), `survey` (SRC-14), `run` (RUN-02, with `teacher` or `limit`);
+  - `trial` and `trial_examples` (TRI-01..TRI-09), `seed_fixtures` (OUT-10);
+  - `noop`, which does nothing, for testing the route itself.
+- `GET /api/ops/jobs/{id}` answers its state (`queued`, `working`, `done`, `failed`) and, when finished, its report as JSON: a run's report (OUT-06), the survey's report, or the trial's result (its winner and recommended settings, TRI-06).
+- `GET /api/ops/spend` answers the spend so far by environment, budget and cap (RUN-04), so the harness can keep its own count.
+- **They need the environment's ops key** (`OPS_KEY`, a Railway variable per environment, compared as a hash, O-13). It's separate from the library's key, and the library never gets it.
+- **The environment's rules still apply:** a pull-request copy runs paid jobs in stub mode; staging and production keep their caps. `trial` and `trial_examples` run only on staging, under the trial's own budget (TRI-07) instead of staging's night and month caps. `seed_fixtures` never runs in production.
+- The admin site stays read-only (D-42): these routes are for the harness, not the browser.
+
+*Verify:* each kind starts, reports and refuses where its environment forbids it; a call without the ops key gets 401 (F-49).
+
+**RUN-12 · The health check means working** *proposed* · C, D-65
+- `GET /api/v1/health` answers 200 only when the service can really work:
+  - the database answers a query and its migrations are up to date;
+  - the bucket accepts a small write and read;
+  - OpenCV.js and `sharp` are loaded.
+- Otherwise it answers 503, naming what failed. It shows the version and the commit either way.
+- The database and bucket checks are cached for up to 30 seconds, so frequent health calls stay cheap.
+- The harness runs it on staging after every merge that deploys it. A failure rolls staging back and stops new cards (D-65), so it must never pass while something is broken.
+- **Database changes are additive from the first deploy to staging,** not only once live: add tables and columns, never drop, rename or rewrite in place, so a rolled-back release keeps working against the newer database.
+
+*Verify:* with the database or the bucket unreachable (faked), health answers 503 naming it; on the deployed copy, it answers 200 with the commit (F-36).
 
 ---
 
@@ -1030,18 +1067,21 @@ The trial runs before the first full run, which then uses its defaults. Nothing 
 - If two are within 5% of the best total score, the cheaper wins.
 
 **TRI-05 · The board** *fixed* · B2, D-56; format *proposed* · C
-- **A page on the admin site,** readable on a phone and linked from the harness digest for the owner's veto. It shows every result:
-  - beside its original, its no-blend version and the examples;
-  - with scores and cost per contender.
+- **A page on the admin site,** readable on a phone and linked from the harness's notice on the control issue, for the owner's veto (D-63). It shows every result:
+  - each original in a row, with every contender's draft side by side, each beside its no-blend version, and the examples for comparison (D-68);
+  - on the library's dark page colour (D-68);
+  - with scores and cost per contender, and the winner marked.
 - Trial drafts are never shown to the library.
 
-**TRI-06 · Defaults come from the trial** *fixed* · B2; mechanism *proposed* · C
-- The trial writes the winning model, and any engraving verdict, into `src/config/settings.ts` with a new `recipeVersion`. The harness commits it, with a note in the digest.
-- The owner's veto reverses it.
-- **The trial runs in production before the release.** Production is deployed with its schedule off and no library key (F-47 switches both on), and trial drafts never appear in the API. So the first full run reuses every cached paid step from the trial, since the cache lives in production's database.
+**TRI-06 · Defaults come from the trial** *fixed* · B2; mechanism *proposed* · C, D-65
+- The trial's job reports its result: the winning model, any engraving verdict and the PIP-20 thresholds it re-measured (RUN-11). A job on Railway can't change the repo, so a separate card (F-50) writes that result into `src/config/settings.ts` with a new `recipeVersion`.
+- That card merges at once (D-62), with its notice on the control issue. The owner's `/veto` reverses it.
+- **The trial runs on staging** (2026-10-21, D-65): the harness never lets a check touch production, and production is first deployed at the release. Trial drafts never appear in the API.
+  - The first full run, in production, redoes the paid steps for the trial's originals that belong to real teachers: about 20, roughly $3.
+  - The examples (F-29) reuse the trial's cache on staging.
 
 **TRI-07 · Trial budget** *fixed* · B2, D-54
-$30, separate from the run caps: $27 for the trial (F-28) and $3 for the examples (F-29), each enforced by the client. The estimate is about $11 (about 23 originals × 3 models, with their checks).
+$30, separate from the run caps: $27 for the trial (built in F-28, run on staging in F-52) and $3 for the examples (F-29), each enforced by the client. The estimate is about $11 (about 23 originals × 3 models, with their checks).
 
 **TRI-08 · The examples are reproduced** *fixed* · B2; measures *proposed* · C
 - The output for the owner's three originals passes the draft check's "compare with target" mode against the hand-made portraits.
@@ -1074,7 +1114,7 @@ AC-01..AC-03 restate B2's checks for the hosted API (D-58).
 | AC-02 | Every published portrait's record validates against the OpenAPI contract, with its files present and checked (all eight, or seven when the AI copy couldn't be made); a record missing its licence is refused, naming the field | F-03, F-24, F-26 |
 | AC-03 | The library stub, run against staging, pulls the change feed, fetches portraits and files (SHA-256 checked) and sends one decision and one request of each kind. The next run then: handles the request first; skips a teacher whose slots are full; sets aside a turned-down photograph; publishes a swap | F-05, F-26, F-27 |
 | AC-04 | The owner's three examples are reproduced closely enough that the check passes them against the hand-made targets | F-29 (TRI-08) |
-| AC-05 | The trial's board exists and the defaults are set from it. One full harness run (plan, build, tests, digest, veto) has completed on this project | F-28, plus the harness's own record |
+| AC-05 | The trial's board exists and the defaults are set from it. One full harness run (plan, build, tests, digest, veto) has completed on this project. The veto now goes through the control issue, and the digest is its summary (D-63) | F-28, F-50, plus the harness's own record |
 | AC-06 | Nothing reads the library's scans or reference shelf. Originals come only from the adopted sources (SRC-01), by the match rules of SRC-03 | F-06, F-09, F-10, F-34 |
 
 ---

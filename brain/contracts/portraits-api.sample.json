@@ -4,8 +4,11 @@
   "status": "ok",
   "version": "1.0.0",
   "commit": "31e2a9e",
+  "database": true,
+  "bucket": true,
   "opencv": true,
-  "sharp": true
+  "sharp": true,
+  "failing": []
  },
  "teacher_page": {
   "teachers": [

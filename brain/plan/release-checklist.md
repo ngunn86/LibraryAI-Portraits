@@ -1,0 +1,24 @@
+# Release checklist (the owner's)
+
+Steps around the release that a card can't do: they need the owner, or they take longer than a card may run. The harness alerts on the control issue when each one is due (D-63). Tick them here or in chat.
+
+## Before the first live card (F-27)
+
+- [ ] **O-4:** the OpenRouter key set as a Railway variable in **production and staging only** (never in pull-request copies). Its limit at OpenRouter: **$50, no reset** (D-67).
+- [ ] **O-13:** the ops keys and staging's test credentials set in Railway and in the harness's store.
+
+## The release (F-47): production's first deploy
+
+- [ ] The harness posts the promotion notice on the control issue. `/veto` within **24 hours** if anything looks wrong (D-66). The nightly schedule is on from this first deploy.
+- [ ] **Raise the key's limit at OpenRouter by $100**, for the first pass ($150 in all since the key was made). Do this before the window ends; if you don't, the first night simply stops at the limit.
+- [ ] **O-11:** make the library's key, from your PC: `railway run portraits keys new` (production). Copy it into the library's settings. It's shown once.
+
+## During the first pass (the nights it takes)
+
+- [ ] Each morning, glance at the admin site's front page: the night's run, the first pass's spend against $100, errors.
+- [ ] When the front page says the first pass is done, **switch the key's limit at OpenRouter to $40 a month** (production's $30 and staging's $10, D-67).
+- [ ] Check the teachers to identify, and add the suggested ids and dates to `authors.csv` (O-3). They're searched on a later night.
+
+## After
+
+- [ ] Nothing regular. The admin site's front page lists anything that needs you.

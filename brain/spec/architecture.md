@@ -30,13 +30,17 @@ The aim is the simplest structure that meets the requirements, and that rehearse
 | AI | OpenRouter only (D-19), through `fetch`, with a spend ledger and caps (RUN-04, D-54). Every request carries `"usage": {"include": true}` so the answer reports its cost. Images go as 8-bit sRGB PNG, never the original file (PIP-22) | One key |
 | Admin pages | Server-rendered HTML (a few templates, no client framework), behind one password (RUN-10) | Read-only browsing doesn't need React. The library's React and Vite stay the library's |
 | Tests | `node:test` through `tsx --test`, offline by default (RUN-06); `tsc` for types; esbuild for the build | As the library uses |
-| Deploys | Railway, configured as code in `.railway/railway.ts` (`railway.toml` stops being read on 2026-12-01). Healthcheck `GET /api/v1/health` | The harness deploys and checks by itself (HT-03, HT-07, HT-08) |
+| Deploys | Railway, configured as code in `.railway/railway.ts` (`railway.toml` stops being read on 2026-12-01). Healthcheck `GET /api/v1/health`, which proves the database and bucket work (RUN-12) | The harness's conductor deploys and checks by itself (HT-03, HT-07, HT-08); `harness.yaml` names the commands and the deploy rules |
 
 ## Railway layout
 
 ```
-project nexus-portraits (environments: production · staging · one per pull request)
-  web      node dist/web.js     API (OUT-14) + admin pages (OUT-13); healthcheck /api/v1/health
+project nexus-portraits
+  environments:
+    pr-<n>      one per pull request: stub mode, no AI key, no cron, seeded test credentials
+    staging     deployed from `main` on every merge; jobs only when started (RUN-11)
+    production  deployed only by the conductor, after the 24-hour veto window (D-66)
+  web      node dist/web.js     API (OUT-14), ops jobs (RUN-11) + admin pages (OUT-13); healthcheck /api/v1/health
   worker   node dist/worker.js  claims jobs from Postgres, one teacher at a time (RUN-02, RUN-03)
   cron     node dist/cron.js    nightly: sync the teacher list, queue teachers, exit (RUN-08)
   postgres                      records, queue, rights log, spend ledger; Railway backups (D-42)
@@ -46,12 +50,18 @@ pre-deploy: drizzle-kit migrate
 
 All three services are built from the same repo and image, each with its own start command.
 
+**Production is promoted, never pushed to.** It deploys only the exact commit the conductor promotes, after the window, with a production token kept outside the worker box (Claude's choice: Railway's production environment follows a `production` branch, which only the conductor moves to a commit already merged to `main`). **Production is first deployed at the release (F-47)**, and only then. Before that, everything live (the smoke test, the survey, the trial and the examples) runs on staging, because no check may touch production (the harness's rule, D-65).
+
 ## Modules
 
 ```
 src/
   web.ts · worker.ts · cron.ts        entry points
-  cli.ts                              commands for the harness and owner (railway run): doctor, sync, survey, run, trial, keys, password, status (RUN-05)
+  cli.ts                              the command frame (RUN-05): loads every file in cli/commands/
+  cli/commands/<name>.ts              one file per command (doctor, sync, survey, run, trial, keys, password, status), each owned by the card that adds it. For the owner, from their PC; the harness never runs them on Railway
+  jobs/<kind>.ts                      one file per job kind (sync, survey, run, trial, trial_examples, seed_fixtures, and noop for tests), loaded by the worker; started over the web (RUN-11) or by cron
+  api/ops.ts                          POST /api/ops/jobs, GET /api/ops/jobs/{id}, GET /api/ops/spend, behind the ops key (RUN-11)
+  health.ts                           what /api/v1/health checks (RUN-12)
   config/settings.ts                  the typed, committed settings (no keys); recipe hash vs recipe_version (STY-05)
   config/env.ts                       secrets from the environment (zod); never logged (IN-11, RUN-10)
   db/schema.ts · db/migrations/       Drizzle schema (the records of T-07) and SQL migrations
@@ -80,7 +90,8 @@ src/
     requests.ts                       the worker's side of the library's requests (IN-06)
     trial.ts                          TRI-01..TRI-09
   api/                                routes, auth, change feed, decisions, requests (OUT-14)
-  admin/                              pages and templates (OUT-13)
+  admin/                              the frame, login and stylesheet (OUT-13)
+  admin/pages/<page>.ts               one file per page (front page, teachers, a teacher, runs, a run, rights log, trial board, held originals, keys), loaded by the frame
 test/
   fixtures/                           recorded source and model responses, images, the prototype's reference outputs
   *.test.ts
@@ -139,7 +150,7 @@ The tables follow the records of T-07 (`../topics/T-07-records.md`):
 
 `spend` has a `budget` column (`trial`, `trial_examples`, `first_pass` or `regular`); the month cap counts only `regular`.
 
-Additions are additive migrations only, once live.
+**Migrations are additive from the first deploy to staging** (RUN-12): add tables and columns; never drop, rename or rewrite in place. A rolled-back release must keep working against the newer database.
 
 ## Settings
 
@@ -159,12 +170,15 @@ A test fails if the recipe values change without a new `recipeVersion` (STY-05).
 
 | Variable | What |
 |---|---|
-| `OPENROUTER_API_KEY` | The tool's one AI key, the same in every environment (D-55); credit limit set at OpenRouter (O-4) |
+| `OPENROUTER_API_KEY` | The tool's one AI key (D-55, D-67), set in production and staging only; **never in pull-request copies.** Its limit is set at OpenRouter, in steps (O-4) |
 | `GITHUB_TOKEN` | Read-only, fine-grained, library-pipeline contents only (D-32, O-9) |
 | `SESSION_SECRET` | Signs the admin session (RUN-10). The admin password's hash is in the database, set by `password set` |
 | `DATABASE_URL` | From Railway's Postgres (its private hostname works only inside Railway) |
-| `DATABASE_PUBLIC_URL` | From Railway's Postgres. The CLI uses `DATABASE_PUBLIC_URL ?? DATABASE_URL`, so `railway run portraits …` works from the owner's PC |
+| `DATABASE_PUBLIC_URL` | From Railway's Postgres. The CLI uses `DATABASE_PUBLIC_URL ?? DATABASE_URL`, so the owner can run `railway run portraits …` from their PC. The harness never does (D-65) |
 | Bucket variables | From Railway's bucket (endpoint, name, access key, secret) |
+| `USER_AGENT_CONTACT` | Not a secret: the contact address in the User-Agent (O-10, SRC-09). Tests use a placeholder |
+| `OPS_KEY` | Per environment: the key for starting jobs over the web (RUN-11). Compared as a hash; the harness keeps a copy in its store (O-13) |
+| `SEED_ADMIN_PASSWORD`, `SEED_LIBRARY_KEY` | Staging and pull-request copies only: test credentials seeded at start-up, for the harness's smoke checks (RUN-10, O-13). Production never reads them |
 
 `doctor` reports only whether each one is present, never its value.
 
@@ -174,11 +188,11 @@ A test fails if the recipe values change without a new `recipeVersion` (STY-05).
 
 | Environment | Paid calls | Cron | Caps |
 |---|---|---|---|
-| Pull-request copies | none (stub mode) | none | — |
-| Staging | yes, by hand only | none | $2 a night, $10 a month |
-| Production | yes | nightly, switched on at the release (F-47) | RUN-04 |
+| Pull-request copies | none (stub mode, no key) | none | — |
+| Staging | yes, only in jobs started over the web (RUN-11) | none | $2 a night, $10 a month |
+| Production | yes | nightly, from its first deploy, which is the release (F-47, after the veto window) | RUN-04 |
 
-The trial runs in production before the release, so its cached AI copies are reused by the first full run (TRI-06).
+The trial runs on staging, under its own $30 budget rather than staging's caps (TRI-06, TRI-07).
 
 ## The Python prototype is the reference
 

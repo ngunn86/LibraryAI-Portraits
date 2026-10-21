@@ -46,7 +46,7 @@
 | T-22 | The trial | 5 Running | T-14 – T-18, T-20 | **decided** (D-56): three enhance models; the checker picks, the owner can veto; no-blend shown beside |
 | T-23 | Stack and architecture | 6 Build | T-01, T-06, T-08 | **decided** (D-57): TypeScript like the library; [architecture v2](spec/architecture.md) proposed |
 | T-24 | Testing approach | 6 Build | T-23 | **proposed in full** (D-09; [build plan §5](plan/build-plan.md)): node:test, PGlite, contract tests, smoke tests on PR copies |
-| T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | **drafted** ([features.md](plan/features.md) draft 2: 45 cards in 6 phases); convert to the harness's format when it exists |
+| T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | **converting** ([features.md](plan/features.md) draft 4: 52 cards in 6 phases, with gate cards; a sample of 18 in the harness's format 1, waiting for `harness cards check`) |
 | T-26 | Outside reviews and plan freeze | 6 Build | T-25 | **in progress**: Argon's round merged 2026-10-20 (D-60, D-61); more rounds to come ([reviews/README.md](reviews/README.md)) |
 | T-27 | What the harness must do for a hosted app (hand-off to the harness chat) | 6 Build | T-01 | in discussion: [throwaway test requirements](handoffs/harness-throwaway-test.md) v1 |
 
@@ -466,10 +466,11 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
   Nothing here needs the owner unless a reviewer objects.
 
-### T-25 · Feature cards for the harness · **drafted**
+### T-25 · Feature cards for the harness · **converting**
 - **Depends on:** all topics above, and the harness's input format (from the other chat, D-15).
 - **To decide:** rewrite `plan/features.md` from the decisions. The current 35 cards predate D-24..D-29.
-- **Done (2026-10-20):** draft 2, with 45 cards in six phases for the hosted TypeScript app. Old IDs are kept where the feature continues; F-36..F-48 are new; F-20 and F-33 are withdrawn. Left: conversion to the harness's format (D-15).
+- **Done (2026-10-20):** draft 2, with 45 cards in six phases for the hosted TypeScript app. Old IDs are kept where the feature continues; F-36..F-48 are new; F-20 and F-33 are withdrawn.
+- **2026-10-21:** the harness's format 1 arrived (`Coding Harness Instructions.md`). Draft 4: F-49..F-55 added (jobs over the web, settings and secrets, the trial run on staging, applying its winner, three gate cards); soft dependencies removed; 18 cards converted as a sample. **Left:** the other 34, once the harness chat's `harness cards check` passes on the sample.
 
 ### T-26 · Outside reviews and plan freeze · **in progress**
 - **Depends on:** T-25.
@@ -492,7 +493,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - roll back a bad deploy;
   - keep live AI spend under the app's cap.
 - **Relaxed by D-35:** a deploy may be the owner's one-tap step, announced in the digest. Deploying without clicking is a nice-to-have.
-- **Output:** [handoffs/harness-throwaway-test.md](handoffs/harness-throwaway-test.md), the throwaway test's requirements (HT-01..HT-29) for the owner's harness planning. **Claude keeps it updated** whenever a decision changes what the hosted app needs, with a change-log line each time.
+- **Output:** [handoffs/harness-throwaway-test.md](handoffs/harness-throwaway-test.md), the throwaway test's requirements (HT-01..HT-32) for the owner's harness planning. **Claude keeps it updated** whenever a decision changes what the hosted app needs, with a change-log line each time.
 
 ---
 
@@ -632,3 +633,9 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - `prototype/parity/` holds the per-operation references for F-39. They show that OpenCV's 8-bit median isn't precise enough for the screen detector; a 12-bit median is.
 
   Next: further review rounds, if the owner runs them; then T-09 once Rev1 is pushed.
+- **2026-10-21 09:30.** **The harness's instructions** (`Coding Harness Instructions.md`, harness plan `68dee18`) reviewed with the owner. The owner chose a **24-hour veto window** (D-66), **one OpenRouter key** (D-67, with its OpenRouter limit in steps and none in pull-request copies) and **the admin site's front page** (D-68). The harness chat's decisions are recorded as D-62..D-65.
+  - New: `harness.yaml`; the build-agent carve-out in CLAUDE.md, AGENTS.md and GEMINI.md; the build plan's loop, environments, veto window and owner inputs with a status column; a release checklist; `brain/rulings.md` and `brain/gotchas/`; RUN-11 (jobs over the web, since the harness never uses `railway run`) and RUN-12 (a health check that proves the database and bucket); contract draft 6.
+  - **The trial moved to staging,** because no check may touch production; production's first deploy is the release.
+  - Cards: draft 4, with F-49..F-55 and 18 cards in format 1 as a sample. HT-01..HT-32 updated in the throwaway test.
+
+  Next: the owner relays `handoffs/harness-questions.md` to the harness chat, which runs `harness cards check` on the sample; then the other 34 cards are converted (T-25).

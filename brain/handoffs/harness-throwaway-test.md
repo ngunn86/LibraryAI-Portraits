@@ -4,7 +4,7 @@
 
 **Who uses it:** the owner plans and runs this test in the harness chat (D-15). This file is the portraits project's list of what the test must prove. **Claude keeps it updated** as portraits decisions change what the hosted app needs. Every change is logged at the bottom.
 
-**Status:** draft v1, 2026-10-19; updated 2026-10-20 (see the change log).
+**Status:** draft v1, 2026-10-19; updated 2026-10-20 and 2026-10-21 (see the change log).
 
 - **Host: Railway, decided** (D-36, 2026-10-19). The Replit spike is skipped, so this test is the harness's own proof on Railway, not a way of choosing a host.
 - Rev1's `brain/reference/hosting-railway-review.md` is written for both projects. Where it sets plan, region or layout, this test follows it.
@@ -38,7 +38,7 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 
 | ID | What must be shown | Passed when |
 |---|---|---|
-| HT-01 | The harness creates the throwaway repo, or uses one the owner creates, with the project skeleton and an offline test suite | The tests pass locally in WSL and on each pull request |
+| HT-01 | The harness creates the throwaway repo, or uses one the owner creates, with the project skeleton and an offline test suite | The tests pass in the harness's worker box on the PC, and on each pull request |
 | HT-02 | The host builds the Node 24 TypeScript app from the repo with no hand-made build steps *(Railway: Railpack, or a Dockerfile)*. *Since D-57:* include one WebAssembly dependency (OpenCV.js) and `sharp`'s native binary, to prove they build and run on the host. *Since Argon's review:* also `onnxruntime-node`, the real app's fallback for its face detector | The build log shows success for the commit pushed, and `/health` reports that OpenCV.js, `sharp` and `onnxruntime-node` loaded. `onnxruntime-node` runs one small ONNX model (the portraits repo's `models/face_detection_yunet_2026may.onnx`) on a test image |
 
 ### B. Deploying
@@ -47,7 +47,7 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 |---|---|---|
 | HT-03 | A push to the staging branch deploys staging **without clicking** | Staging's `/health` shows the new commit within a few minutes of the push |
 | HT-04 | A pull request gets its own **temporary copy**, with its own URL, database and bucket *(Railway: PR environments)* | The harness finds the PR copy's URL and gets 200 from `/health`. The copy disappears when the PR is closed or merged |
-| HT-05 | Promotion to production happens only **after the owner's veto window**, announced in the digest | Production changes only after the window. A veto (reply or tap) stops it |
+| HT-05 | Promotion to production happens only **after the owner's veto window**, announced on the control issue (D-63, D-66) | Production changes only after the window. The window covers one exact release and restarts if it changes; the conductor promotes only if it read the control issue within the last 10 minutes. `/veto <id>` stops it |
 | HT-06 | The owner's own deploy path works from a phone (D-35 fallback) | The owner deploys or redeploys from the phone in under 2 minutes |
 | HT-07 | The project setup lives in the repo, as far as the host allows *(Railway: the Infrastructure-as-Code file, `.railway/railway.ts`; the older `railway.toml` stops being read on 2026-12-01)* | `plan` and `apply` (or the host's equivalent) reproduce the setup. Anything the file can't express is listed in the repo as a one-time dashboard step |
 
@@ -55,8 +55,8 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 
 | ID | What must be shown | Passed when |
 |---|---|---|
-| HT-08 | A deliberately broken release **doesn't go live**: the healthcheck holds it back | The previous release keeps serving, and the failed deploy is reported in the digest |
-| HT-09 | Rolling back works: the owner taps once in the dashboard, and the harness redeploys a fix | Production is back on the good release within 5 minutes, and the harness confirms with `/health` |
+| HT-08 | A deliberately broken release **doesn't go live**: the healthcheck holds it back | The previous release keeps serving, and the failed deploy is alerted on the control issue at once (the digest summarizes it) |
+| HT-09 | Rolling back works: the owner taps once in the dashboard (the owner's own path), and the harness redeploys a fix. A `/veto` reverts the card, and the conductor redeploys | Production is back on the good release within 5 minutes, and the harness confirms with `/health` |
 
 ### D. Data
 
@@ -89,8 +89,8 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 
 | ID | What must be shown | Passed when |
 |---|---|---|
-| HT-22 | The harness reads logs and deploy status by itself *(Railway: CLI `railway logs`, `railway deployment list`, ideally as JSON)* | The harness quotes the failing line from HT-08's broken deploy in its digest |
-| HT-23 | Claude Code can use the host's MCP server for reading and diagnosis *(Railway: `railway mcp`; it asks before destructive actions)* | One read-only question about the project ("what failed in the last deploy?") is answered through the MCP server |
+| HT-22 | The harness reads logs and deploy status by itself *(Railway: CLI `railway logs`, `railway deployment list`, ideally as JSON)* | The harness quotes the failing line from HT-08's broken deploy in its alert on the control issue |
+| HT-23 | *withdrawn* (2026-10-21): the conductor reads logs and deploy status with the Railway CLI (HT-22); Railway's MCP server isn't used | — |
 | HT-24 | The owner can see logs and costs on a phone | The owner finds the HT-14 job's logs and the cost so far, from the phone |
 | HT-25 | Costs are visible after 24 hours, and a usage alert is set | The cost view shows the day's cost, and an alert is set at a chosen amount |
 
@@ -98,10 +98,13 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 
 | ID | What must be shown | Passed when |
 |---|---|---|
-| HT-26 | The harness runs smoke tests against a **deployed URL** (PR copy, staging, production) as part of a feature's checks | A feature card's live check runs against the PR copy, and its result appears in the grade |
-| HT-27 | The harness's digest reports deploys, failures, costs and anything waiting for the owner, and offers the veto | The digest reaches the owner's phone with those items and a way to veto |
-| HT-28 | The harness waits for the owner only where a card says so (veto windows, one-tap deploys), and otherwise carries on | The run doesn't stall on any non-veto step |
+| HT-26 | The harness runs smoke tests against a **deployed URL** (PR copy, staging, production) as part of a feature's checks | A card's smoke check runs against the PR copy, with that environment's test credentials from the harness's store, and its result appears in the grade |
+| HT-27 | The control issue carries each merge's evidence, alerts and anything waiting for the owner, with `/veto` and `/approve`; the morning digest summarizes deploys, failures and costs (D-62, D-63) | The owner sees a merge's notice and a test alert on the phone, and a `/veto` from the GitHub app is obeyed |
+| HT-28 | The harness waits for the owner only for veto windows and `/approve`, and otherwise carries on with every card a question doesn't block | The run doesn't stall on any step that isn't a veto window or an authorization |
 | HT-29 | **Teardown**: the throwaway project, its environments and the repo are removed, with no running costs left | The host shows no services, and the next day's cost is $0 |
+| HT-30 | **A veto after a merge:** `/veto <id>` reverts a merged card, and staging is redeployed without it | Staging's `/health` shows the commit before the card within a few minutes, and the cards built on it are sent back to have their checks run again |
+| HT-31 | **A failed health check after a merge** rolls staging back and stops new cards until it's fixed | A merge whose `/health` answers 503 on staging is rolled back automatically; no new card starts; an alert names the failure |
+| HT-32 | **Pull-request copies get only the variables they should.** They have the test credentials and the GitHub token, but not the AI key *(Railway: the PR environments' base environment, or per-variable settings)* | A PR copy's `/health` shows the key absent, and the variables it needs present |
 
 ## Limits for the test
 
@@ -160,4 +163,9 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
   - **`railway run` from the owner's PC:** Railway's `DATABASE_URL` uses a private hostname that only resolves inside Railway. The real app's command-line tool uses `DATABASE_PUBLIC_URL` when it's set. If the throwaway app has a command run through `railway run`, it should do the same; HT-12's restore check is unaffected.
   - The real app's outbound client follows redirects by hand and checks each target host, and its allowlist includes the sources' file hosts (`upload.wikimedia.org`, `tile.loc.gov`, `iiif.wellcomecollection.org`). No change to the test.
   - **The face detector:** the real app commits YuNet (`models/`, about 230 KB). If OpenCV.js lacks `FaceDetectorYN`, the app runs the model with `onnxruntime-node`, a native module. HT-02 now also loads `onnxruntime-node` on Railway and runs that model once, so the fallback is proven on the host too.
-
+- **2026-10-21 (the harness's instructions, `Coding Harness Instructions.md`):** this file brought up to the harness's current design (D-62..D-66):
+  - **wording:** HT-01's tests run in the harness's worker box, not in WSL directly. The digest as a channel becomes the control issue (HT-05, HT-08, HT-22, HT-27, HT-28); the digest only summarizes. HT-26 is a *smoke* check ("live" now means paid);
+  - **HT-05** gains the veto window's rules; the portraits project chose 24 hours (D-66);
+  - **HT-09** keeps the owner's own rollback, and adds `/veto` reverting a card;
+  - **HT-23 withdrawn:** the conductor uses the Railway CLI, not the MCP server;
+  - **HT-30..HT-32 added:** a veto that reverts a merged card and redeploys staging; a failed health check that rolls staging back; pull-request copies without the AI key (the portraits app keeps one key, D-67, and gives it to production and staging only).

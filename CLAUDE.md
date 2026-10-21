@@ -33,7 +33,7 @@ The project serves two purposes:
 - an API for the library;
 - no extraction from books.
 
-T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-61); see the tracker. The requirements were consolidated on 2026-10-20, and no questions are open. The first outside review (Argon) is merged. The app is built in **TypeScript on Node 24**, like the library (D-57); `brain/spec/architecture.md` v2 describes it, and `prototype/` (Python, recipe 0.5.0) is the reference implementation of the recipe.
+T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-61); see the tracker. The requirements were consolidated on 2026-10-20, and no questions are open. The first outside review (Argon) is merged. The plan is being adapted to the Coding Harness (D-62..D-68, `harness.yaml`): a sample of cards is in format 1, and the rest follow once the harness chat has checked the sample. The app is built in **TypeScript on Node 24**, like the library (D-57); `brain/spec/architecture.md` v2 describes it, and `prototype/` (Python, recipe 0.5.0) is the reference implementation of the recipe.
 
 ## Repo map
 
@@ -42,7 +42,7 @@ T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-61); see the tracker.
 | `brain/README.md` | Index of the notes and their conventions (IDs, status words, how to edit) |
 | `brain/tracker.md` | **The planning tracker**: every topic to decide, in dependency order, with status and an append-only log |
 | `brain/topics/` | Discussion notes for tracker topics that need more than a few lines (for example T-01) |
-| `brain/handoffs/` | Documents for the owner's other chats. `harness-throwaway-test.md` is **kept updated** whenever a decision changes what the hosted app needs. `library-api.md` tells the library's planning what to adopt |
+| `brain/handoffs/` | Documents for the owner's other chats. `harness-throwaway-test.md` is **kept updated** whenever a decision changes what the hosted app needs. `library-api.md` tells the library's planning what to adopt. `harness-questions.md` answers the harness chat's instructions and asks its questions |
 | `brain/status.md` | Where planning stands, what's blocked, what's next, session log |
 | `brain/brief/` | The owner's briefs, verbatim. v2 (2026-10-19) is current; v1 is superseded and kept for history |
 | `brain/spec/requirements.md` | **The normative requirements**, with stable IDs. This is what gets built and tested |
@@ -58,11 +58,25 @@ T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-61); see the tracker.
 | `design/portraits/` | The owner's three hand-made portraits (the style target) and their originals; see its README |
 | `prototype/` | The Python reference recipe, its fixtures and outputs, the prompts, and `parity/` (per-operation references for the TypeScript port) |
 | `models/` | The YuNet face detector (MIT), committed so the build and tests never download it; see its README |
+| `harness.yaml` | The Coding Harness's settings for this project (format 1): cards, protected paths, commands, limits, deploys |
+| `Coding Harness Instructions.md` | What the harness requires of this project, from the harness chat (it updates this file; D-65) |
+| `brain/plan/release-checklist.md` | The owner's steps around the release |
+| `brain/rulings.md`, `brain/gotchas/` | Written by the harness during the build: the Tech Lead's rulings (never owner decisions) and gotchas about the code |
+
+## When you're a build agent run by the Coding Harness
+
+If your prompt says you're a build agent, this file's planning rules (reading the notes in order, recording decisions, updating status) don't apply to you (D-65):
+- read what your packet names, and any other file you need;
+- change only the files your card's `Owns` lists. Never edit `brain/`, the cards or any other protected path in `harness.yaml`;
+- commit only to the card's branch, and only when your prompt asks; never push or deploy;
+- if a spec or a test looks wrong, stop and explain in `BLOCKED.md`. The Tech Lead rules, or asks the owner.
+
+The rest of this file (the rules below, and the build section at the end) still applies.
 
 ## Rules for every agent
 
 1. **The owner decides.**
-   - Items marked **fixed** come from the owner. Don't change them; raise a question instead.
+   - Items marked **fixed** come from the owner. Don't change them; raise a question instead (a build agent writes `BLOCKED.md`).
    - Items marked **proposed** are Claude's suggestions waiting for the owner. Reviewers are welcome to challenge them.
    - Items marked **open** point to a question in `brain/open-questions.md`.
 2. **IDs are permanent.** Never renumber requirements (`IN-`, `SRC-`, `STY-`, `PIP-`, `OUT-`, `RUN-`, `TRI-`, `AC-`), features (`F-`), decisions (`D-`) or questions (`Q-`). Retire an ID by marking it *withdrawn*, and add new IDs at the end of their group.
@@ -74,17 +88,17 @@ T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-61); see the tracker.
 6. **Testing follows the owner's standard: features work reasonably well and without bugs.**
    - No scientific evaluation and no coverage targets.
    - Tests run offline on fixtures and stubs.
-   - Live, paid calls happen only in features marked *live*, under the spend cap.
+   - Live, paid calls happen only in checks marked *live*, on cards whose side effects allow them, under the spend cap.
 7. **Notes are edited in place.**
    - When the owner settles something, Claude records it in `brain/decisions.md` (dated) and updates the affected requirement's status.
    - `brain/status.md` is updated at the end of each working session.
    - `brain/handoffs/harness-throwaway-test.md` is updated, with a change-log line, whenever a decision changes the hosting, deploys, jobs, data, secrets or integrations.
 8. **Reviewers write in `brain/reviews/` and don't edit the spec directly.** Claude merges accepted points and records the decisions.
 
-## During the build (provisional until the harness, designed in a separate chat, settles its format; see D-15)
+## During the build (the Coding Harness, format 1; `harness.yaml`, D-65)
 
-- Build **one feature at a time**, in the order of `brain/plan/features.md`, and respect each card's *Depends on*.
-- A feature is done when every check on its card passes and the whole test suite still passes.
-- **Live calls only where the card says *live*, and never past the spend cap in settings.** Stubbed features must not need a key.
-- If a feature is stuck, park it only if its card says *Parkable: yes*. Otherwise stop and raise it in the digest.
-- Never change a **fixed** requirement to make a check pass. Raise it instead.
+- The harness builds **one card at a time**, in the order of `brain/plan/features.md`, once every card in its *Depends on* is merged. Each card's acceptance tests are written first, by Codex, and locked.
+- A card is done when every blocking check on it passes, both reviews pass and the whole suite still passes, for one commit. It then merges at once (D-62), with its evidence on the control issue (D-63).
+- **Paid calls only in checks marked *live*, on cards whose side effects allow them, and never past the spend cap.** Stubbed cards must not need a key.
+- If a card is stuck, it's parked only if it says *Parkable: yes*. Otherwise the build stops and alerts the owner on the control issue.
+- Never change a **fixed** requirement, the API contract or the style rules to make a check pass. A build agent writes `BLOCKED.md` instead.

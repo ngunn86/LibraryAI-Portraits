@@ -1,0 +1,61 @@
+# The Coding Harness's settings for this project (format 1; `Coding Harness Instructions.md`, D-65).
+# Planning owns this file; build agents never change it.
+format: 1
+project: libraryai-portraits
+cards: brain/plan/features.md
+always_read: CLAUDE.md
+
+# Paths agents may never change, unless a card names one in its Owns (a setup card, say).
+protected:
+  - brain/                      # the notes, specs, cards and API contract (brain/contracts/)
+  - design/                     # the owner's portraits
+  - prototype/                  # the Python reference, its fixtures and parity outputs
+  - models/                     # the YuNet face model
+  - contracts/                  # the contract's copy at the root (F-03 makes it)
+  - .railway/                   # deploy settings (F-36 makes them)
+  - .github/
+  - tsconfig.json
+  - harness.yaml
+  - "Coding Harness Instructions.md"
+  - CLAUDE.md
+  - AGENTS.md
+  - GEMINI.md
+
+owner_inputs: brain/plan/build-plan.md#3   # the table's Status column: done, not done or withdrawn
+notes_writable: [brain/status.md, brain/rulings.md, brain/gotchas/]
+rulings: brain/rulings.md
+held_back: []
+acceptance_tests: "test/{slug}-*.test.ts"      # F-07 -> test/f07-*.test.ts
+acceptance_fixtures: "test/fixtures/{slug}/"
+
+box: { apt: [] }                # sharp, OpenCV.js and onnxruntime-node come from npm
+services: {}                    # PGlite runs inside the tests: no database container
+
+commands:
+  install: npm ci
+  check: npm run check
+  test: npm test
+  test_card: npm test -- --test-name-pattern "{card}"
+  build: npm run build
+  smoke: npm run smoke -- --url {url}           # F-36 adds the script
+  test_count: '^ℹ tests (\d+)'                 # node:test's default reporter; F-01 confirms it against a real run
+
+# models: left out, so the harness's defaults apply
+
+limits:
+  rounds_per_card: 4
+  hours_per_card: 6
+  paid_calls:
+    # The app spends with its own key, in jobs the live checks start over the web (RUN-11); the harness
+    # counts from GET /api/ops/spend. A card's own "paid (≤ $N)" sets its cap.
+    # Live checks: F-27 $2, F-28 $27, F-29 $3. The first pass's $100 is the app's own nightly spend, not a check.
+    openrouter: { per_card_usd: 2, per_month_usd: 35, total_usd: 35 }
+
+deploy:
+  host: railway
+  pr_copies: true               # stub mode, no AI key, seeded test credentials (RUN-10)
+  staging: on-merge             # Railway environment "staging", deployed from main
+  health: /api/v1/health        # 200 only when the database, bucket and image libraries work (RUN-12)
+  production: { mode: veto-window, hours: 24 }  # D-66; the conductor promotes, with a token outside the box
+
+digest: { issue: TODO, time: "07:30" }   # the control issue's number, set when the harness creates it (D-63)

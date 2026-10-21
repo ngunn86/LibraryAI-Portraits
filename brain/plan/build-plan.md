@@ -1,19 +1,19 @@
 # Build plan
 
-**Status (2026-10-20):** proposed by Claude, rewritten for the hosted TypeScript app (D-31..D-61). Argon's review round is merged (P0-6).
+**Status (2026-10-21):** proposed by Claude, for the hosted TypeScript app (D-31..D-68). Adapted to the Coding Harness's format 1 (`../../Coding Harness Instructions.md`, D-62..D-66): the harness's settings are in `../../harness.yaml`.
 
 ## 1. The shape of the work
 
 | Phase | What | Cards | Who | Paid AI spend (tool key) |
 |---|---|---|---|---|
 | **0 · Planning** | Notes, decisions, API contract, style prototype, reviews | — | Claude with the owner; other AI tools review | none |
-| **— · Harness proof** | The throwaway app: build, deploy, test and tear down on Railway ([../handoffs/harness-throwaway-test.md](../handoffs/harness-throwaway-test.md)) | HT-01..HT-29 | Harness (planned in its own chat) | ≤ $0.50 |
-| **1 · Foundation and deploys** | Skeleton, API contract in code, database and queue, bucket, Railway setup with staging and PR copies | F-01, F-03, F-04, F-37, F-36 | Harness | none |
-| **2 · Teachers and sources** | The authors list, the outbound client, licences, rights log, Wikidata, Commons, LoC, Wellcome, finding ids, the coverage survey | F-02, F-06, F-31, F-07, F-32, F-08, F-09, F-10, F-34, F-35, F-38 | Harness | none (free public APIs) |
-| **3 · Imaging (ported from the Python prototype)** | Porting spike, face and crop, descreen, halftone, mask and outline, blend, versions, same-photo check, parity with the prototype | F-39, F-12, F-13, F-14, F-15, F-30, F-41, F-42, F-16 | Harness | none |
-| **4 · Model steps** | OpenRouter client and caps, pre-check, AI copy and cut-out, draft check, same-photo tie-break, candidates | F-17, F-18, F-19, F-21, F-43, F-11 | Harness | none (stubbed) |
-| **5 · Pipeline and service** | Publishing, the per-teacher pipeline, queue and schedule, the API, decisions and requests, later runs, admin site, commands, the library stub, the offline end-to-end run | F-24, F-23, F-25, F-44, F-45, F-48, F-46, F-22, F-05, F-26 | Harness | none |
-| **6 · Live** | Smoke test on staging; the trial and its board, and the examples, in production before the release (schedule off, no library key); production release and first nightly run | F-27, F-28, F-29, F-47 | Harness, with the owner's veto | ≤ $2 + ≤ $30 (trial, F-29 included) + ≤ $100 (first full run) |
+| **— · Harness proof** | The throwaway app: build, deploy, test and tear down on Railway ([../handoffs/harness-throwaway-test.md](../handoffs/harness-throwaway-test.md)) | HT-01..HT-32 | Harness (planned in its own chat) | ≤ $0.50 |
+| **1 · Foundation and deploys** | Repo and test runner, settings and secrets, API contract in code, database and queue, bucket, Railway setup with staging and PR copies and the health check, jobs over the web; the phase's gate | F-01, F-51, F-03, F-04, F-37, F-36, F-49, F-53 | Harness | none |
+| **2 · Teachers and sources** | The authors list, the outbound client, Wikidata, the teacher sync, licences, rights log, Commons, LoC, Wellcome, finding ids, the coverage survey; the phase's gate | F-02, F-06, F-08, F-31, F-07, F-32, F-09, F-10, F-34, F-35, F-38, F-54 | Harness | none (free public APIs) |
+| **3 · Imaging (ported from the Python prototype)** | Porting spike, face and crop, descreen, halftone, mask and outline, blend, versions, same-photo check; parity with the prototype is the phase's gate | F-39, F-12, F-13, F-14, F-15, F-30, F-41, F-42, F-16 | Harness | none |
+| **4 · Model steps** | OpenRouter client and caps, pre-check, AI copy and cut-out, draft check, same-photo tie-break, candidates; the phase's gate | F-17, F-18, F-19, F-21, F-43, F-11, F-55 | Harness | none (stubbed) |
+| **5 · Pipeline and service** | Publishing, the per-teacher pipeline, queue and schedule, the API, decisions and requests, later runs, admin site, commands, the library stub; the offline end-to-end run is the phase's gate | F-24, F-23, F-25, F-44, F-45, F-48, F-46, F-22, F-05, F-26 | Harness | none |
+| **6 · Live** | Smoke test on staging; the trial built, then run on staging; the winner written into the settings; the examples; the release, which is production's first deploy | F-27, F-28, F-52, F-50, F-29, F-47 | Harness, with the owner's veto on the control issue | ≤ $2 + ≤ $30 (trial, F-29 included) + ≤ $100 (first full run, in production) |
 
 The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requirements.md) are met.
 
@@ -27,58 +27,86 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 | P0-4 | Trial set curation (TRI-02) | the coverage survey | **Moved into the build:** F-28 picks the set from F-38's report, with the owner's veto |
 | P0-5 | Contract files | — | **Done:** `contracts/portraits-api.openapi.json` with samples and a check (D-44) |
 | P0-6 | Review rounds by other AI tools, merged | P0-2 | **In progress:** Argon's round merged 2026-10-20; more if the owner runs them (`brain/reviews/`) |
-| P0-7 | Freeze plan v1: the git tag `plan-v1`, and a status line telling the harness to start | P0-6, the harness's card format (D-15), the throwaway test passed | Later |
+| P0-7 | Freeze plan v1: the git tag `plan-v1`, and a status line telling the harness to start | P0-6, P0-8, the throwaway test passed | Later |
+| P0-8 | Adapt to the harness (format 1, D-65): `harness.yaml`, the instruction files, this plan, and the cards (a sample first; the rest once the harness chat's `harness cards check` passes on it) | The harness's instructions (2026-10-20) | **In progress:** everything but the remaining cards done 2026-10-21. The sample in format 1 is F-01, F-51, F-04, F-36, F-49, F-53, F-31, F-07, F-38, F-54, F-55, F-23, F-27, F-28, F-52, F-50, F-29 and F-47 |
 
 ## 3. Inputs only the owner can supply
 
-| ID | What | Needed by | Notes |
-|---|---|---|---|
-| O-1 | Rev1's latest planning pushed to GitHub (the library chat), including `brain/reference/hosting-railway-review.md` and its portrait spec, so Claude can copy them into `brain/reference/rev1/` unchanged | P0-1 (**now**) | Rev1 is readable here through GitHub (read-only). At 3e444eb (2026-10-18) it predates the library adopting this API |
-| O-2 | The three hand-made portraits and their originals | P0-3 | **Done 2026-10-19** (`design/portraits/`); sources unknown, so test use only (D-13) |
-| O-3 | The teacher list. **Taken from library-pipeline's `authors.csv`** (D-22, D-45, read-only). The owner adds the dates and Wikidata ids the tool suggests (from the admin page's CSV) in `authors.csv` | Ongoing | |
-| O-4 | The tool's own OpenRouter key, set as a Railway variable (per environment). It is the only AI key (D-19). Never in chat or the repo. **Set a credit limit on the key at OpenRouter** as a backstop (D-54) | The first live feature | A key separate from other projects, so spend is easy to see |
-| O-5 | ~~The delivery folder~~ *withdrawn* (D-42: the library pulls through the API) | — | |
-| O-6 | The Claude GitHub App installed on this repo (Q-20) | — | **Done 2026-10-19** |
-| O-7 | The harness, ready to run | Phase 1 | Designed in a separate chat (D-15) |
-| O-8 | A Railway account (Hobby to start) with the project created, and the harness given deploy access (D-36) | Phase 1 | After the throwaway test (`handoffs/harness-throwaway-test.md`) |
-| O-9 | A read-only, fine-grained GitHub token for library-pipeline, limited to that repo's contents (D-32), set as a Railway variable | The teacher sync | Never in chat or the repo |
-| O-10 | A contact email address for the tool's User-Agent (D-46), one meant for the app rather than a personal one | The source clients | Wikimedia's 2026 limits require it |
-| O-11 | The library's key for this API, made by the owner once the API is deployed (`portraits keys new`), and handed to the library's settings (D-44) | F-47 | |
-| O-12 | Answer Q-27 (the zip, and the restated acceptance checks) | Before F-05 | **Done 2026-10-20** (D-58) |
+The harness reads the **Status** column: a card whose owner input isn't `done` is skipped, and the build goes on with the others. `withdrawn` inputs aren't needed by any card.
 
-## 4. Working with the harness
+| ID | What | Needed by | Status | Notes |
+|---|---|---|---|---|
+| O-1 | Rev1's latest planning pushed to GitHub (the library chat), including `brain/reference/hosting-railway-review.md` and its portrait spec, so Claude can copy them into `brain/reference/rev1/` unchanged | P0-1 (**now**) | not done | Rev1 is readable here through GitHub (read-only). At 3e444eb (2026-10-18) it predates the library adopting this API |
+| O-2 | The three hand-made portraits and their originals | P0-3 | done | 2026-10-19 (`design/portraits/`); sources unknown, so test use only (D-13) |
+| O-3 | The teacher list. **Taken from library-pipeline's `authors.csv`** (D-22, D-45, read-only). The owner adds the dates and ids the tool suggests (from the admin page's CSV) in `authors.csv`, including its optional `wikidata_qid` and `lcnaf_id` columns (D-60) | Ongoing | done | The list exists; adding suggestions is ongoing |
+| O-4 | The tool's one OpenRouter key (D-19, D-67), **set by the owner as a Railway variable in production and staging only**, never in pull-request copies, and given to the harness's secret store only if the harness chat says it needs it. **Its limit at OpenRouter, in steps** (D-67): $50 with no reset from the first live card; raised by $100 at the release; then $40 a month after the first pass (see the release checklist) | F-27 (the first live card) | not done | A key separate from other projects, so spend is easy to see. Never in chat or the repo |
+| O-5 | ~~The delivery folder~~ (D-42: the library pulls through the API) | — | withdrawn | |
+| O-6 | The Claude GitHub App installed on this repo (Q-20) | — | done | 2026-10-19 |
+| O-7 | The harness, ready to run, with the throwaway test passed | Phase 1 | not done | Designed in its own chat (D-15) |
+| O-8 | A Railway account (Hobby to start) with the project created, PR environments on, and the harness's conductor given a staging-deploy token and a production token, kept in the harness's store, outside the worker box (D-36, D-65) | F-36 | not done | After the throwaway test (`handoffs/harness-throwaway-test.md`) |
+| O-9 | A read-only, fine-grained GitHub token for library-pipeline, limited to that repo's contents (D-32), set as a Railway variable | F-31's live check | not done | Never in chat or the repo |
+| O-10 | A contact email address for the tool's User-Agent (D-46), one meant for the app rather than a personal one | The recordings of F-07, F-08, F-09, F-10, F-34 and F-35 | not done | Wikimedia's 2026 limits require it. Set as the variable `USER_AGENT_CONTACT` in Railway and in the harness's store (for recordings). It isn't a secret, but this way no one edits code to add it; tests use a placeholder |
+| O-11 | The library's key for this API, made by the owner once production is released (`portraits keys new`, run from the owner's PC), and handed to the library's settings (D-44) | The release checklist | not done | Not a card's input: F-47 doesn't wait for it |
+| O-12 | Answer Q-27 (the zip, and the restated acceptance checks) | Before F-05 | done | 2026-10-20 (D-58) |
+| O-13 | **Test credentials per environment** (RUN-10, RUN-11): an `OPS_KEY` for staging, pull-request copies and production, and, for staging and pull-request copies only, a `SEED_ADMIN_PASSWORD` and a `SEED_LIBRARY_KEY`. Each set as a Railway variable by the owner, and each given to the harness's secret store | F-36 (PR copies and staging), F-28 (production's ops key) | not done | Random values, made by the owner (a password manager can make them). Never in chat or the repo |
 
-*Provisional until the harness, designed in its own chat (D-15), settles its format. This section and the card format in `features.md` are this project's interface to it.*
+## 4. Working with the harness (format 1; D-62..D-66)
 
-**What the harness reads**
-- `CLAUDE.md`, for the rules.
-- [features.md](features.md), the cards in build order, each in a fixed field format.
-- [../spec/requirements.md](../spec/requirements.md) and [../spec/architecture.md](../spec/architecture.md), for anything a card cites.
-- [../contracts/portraits-api.openapi.json](../contracts/portraits-api.openapi.json), the API it must serve unchanged.
+The harness's own rules are in `../../Coding Harness Instructions.md` (from the harness chat). Its settings for this project are in `../../harness.yaml`. Where the two differ, the owner's decisions and this project's rules win, and the harness adapts.
 
-**Per feature (as the owner has described the harness, D-12)**
+**What a build session reads:** `CLAUDE.md` always, then what its packet names: the card, and the specs and contracts in its `Reads`.
 
-1. Build the feature on its own branch.
-2. **Run the checks:**
-   - the feature's own: `npm test -- --test-name-pattern "F-NN"`;
-   - then everything: `npm run check && npm test && npm run build`.
-3. Push, so Railway makes the pull request's copy. Run the card's smoke checks against it where the card has any (HT-26).
-4. A second and a third model review it. An "A" grade means every check passes across models.
-5. Merge to staging. Production changes only after the owner's veto window, announced in the digest (HT-05).
-6. Add a line to the digest.
+**One card's path** (D-65)
+1. **Pick** the next ready card: every card in its *Depends on* merged, its owner inputs `done` (§3), in the file's order.
+2. **Tests first.** Gemini lists the cases; Codex writes the card's acceptance tests (`test/fNN-*.test.ts`, fixtures in `test/fixtures/fNN/`). Any recording named in `Test data` is made first, once, with network. The conductor checks the tests fail on the code as it stands, then locks them. F-01, the setup card, skips this step.
+3. **Contract** for size L cards (F-23, F-28): Claude says how it will build and prove each check; Codex approves.
+4. **Build:** Claude, in the worker box, on the card's branch, changing only the card's `Owns`. It may add its own unit tests and fakes.
+5. **Check,** in a fresh box from the exact commit: `npm run check`, the card's tests, the full suite, `npm run build`, and a scan for gaming.
+6. **Review:** Codex and Gemini, independently. P0 and P1 findings block.
+7. **Smoke,** for cards with smoke checks: on the pull request's copy, with `npm run smoke -- --url {url}`. Phase 6's prove-it cards (F-27, F-52, F-29) say `staging only` in their side effects: their checks run on staging, which already has the code they test.
+8. **Grade:** A only if every blocking check, both reviews and the smoke checks pass, for one commit. The conductor computes it.
+9. **Merge at once** (D-62), with the evidence on the control issue (D-63). The merge deploys staging. The conductor runs the health check there (RUN-12); a failure rolls staging back and stops new cards until it's fixed.
+10. **Record** the evidence, spend and lessons.
 
-**Blocked features.** A card needing an owner input (O-n) that isn't there is skipped. The harness goes on with features that don't depend on it, and the digest says what is waiting and on what.
+**Environments and the veto window** (D-66)
+- **Pull-request copies:** stub mode, no AI key, no cron, seeded test credentials (RUN-10, O-13).
+- **Staging:** Railway environment `staging`, deployed from `main` on every merge (`deploy.staging: on-merge`).
+- **Production:** Railway environment `production`. Only the conductor promotes to it, with a production token kept outside the worker box. It promotes one exact release:
+  - after a notice on the control issue, and only once **24 hours** have passed without a `/veto`;
+  - the window restarts if the release changes;
+  - it promotes only if it has read the control issue within the last 10 minutes.
+- **Production is first deployed at the release, and only then.** No check touches production (the harness's rule), so everything live runs on staging first:
+  1. **F-27** (smoke test, one real teacher), **F-52** (the trial) and **F-29** (the examples) start their jobs on staging over the web (RUN-11). They add no product code, so they test what's already merged and deployed there.
+  2. **F-50** writes the trial's winner into the settings. It merges at once, with its notice on the control issue; `/veto` reverts it.
+  3. **F-47, the release,** proves the release candidate on its deployed copy. The conductor then posts the promotion notice and, after the 24-hour window, promotes that commit to production. Production's schedule is on from that first deploy (RUN-08).
+  4. **After the release,** production is promoted again only for a fix, each through its own window.
+- **The owner's own path stays:** the owner can always deploy or roll back by hand in Railway (D-35).
 
-**Live features** (F-27, F-28, F-29, F-38, F-47) run only with the keys present and only through the tool's own caps. The digest reports what each spent.
+**Never idle** (D-63). A question goes out as an alert on the control issue at once, and the harness carries on with every card it doesn't block. A card whose owner input is missing is skipped (§3).
 
-**Parking.** A stuck feature may be parked only if its card says *Parkable: yes*. Features that depend on it then wait. A stuck feature marked *Parkable: no* stops the build and goes to the digest.
+**Stuck cards.** After the harness's rounds (the builder, then Codex, then Gemini, then the Tech Lead), a card marked *Parkable: yes* is parked. A card marked *Parkable: no* stops the build and alerts the owner. There are no soft dependencies: a card lists only the cards that must be merged first, so if a parkable card is parked, the cards that list it wait, and the others go on.
+
+**When a spec or a test looks wrong,** the build agent stops and explains in `BLOCKED.md`. The Tech Lead rules, or asks the owner on the control issue.
 
 **Never change, to make a check pass:**
 - a *fixed* requirement;
 - the API contract;
 - the style rules.
 
-**Recipe numbers** come from the prototype and the trial. The harness may change them only through the trial (TRI-06), always with a `recipeVersion` bump.
+**What the harness may write** (`notes_writable`):
+- `brain/status.md`, its status lines;
+- `brain/rulings.md`, the Tech Lead's rulings. A ruling is never an owner decision;
+- `brain/gotchas/`, gotchas found while building.
+
+Everything else in `brain/` is protected. **Recipe numbers** change only through the trial: F-50 writes them, with a `recipeVersion` bump.
+
+**Keys and spend** (D-67)
+- The app's OpenRouter key is a Railway variable in production and staging, set by the owner (O-4). Its limit at OpenRouter is the boundary; the caps in code are the second line.
+- **Live checks start the app's own jobs over the web** (RUN-11), so the app spends with its own key, under its own caps. The harness reads the spend at `GET /api/ops/spend` for its own count.
+- Test credentials per environment are in the harness's store (O-13). A check that needs one gets it in a fresh box with no agent running.
+- The digest reports spend as three lines: the agents' usage, the app's paid calls, and hosting.
+
+**Things the harness must not do here:** run project code with `railway run`; touch production from a check; deploy production outside the window.
 
 ## 5. Testing approach (D-09: features work reasonably well and without bugs)
 
@@ -86,7 +114,8 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 
 - **One command:** `npm test` (`tsx --test`, Node's own test runner). It runs offline: the outbound client refuses all hosts in tests, and no keys are set. `npm run check` (`tsc`) and `npm run build` run beside it, as in the library.
 - **The database in tests:** PGlite (Postgres compiled to WebAssembly, in-process). The same Drizzle migrations run against it, so tests need no database server. The PR copy's real Postgres is covered by the smoke tests.
-- **Per-feature checks:** every check on a card is a test named after the feature, in a file named after it (`test/f12-crop.test.ts`). So `npm test -- --test-name-pattern=F-12` runs one feature's checks.
+- **Per-card checks:** each check on a card is a test named after the card, in a file named after it (`test/f12-crop.test.ts`), written first by the test author (Codex, D-65) and locked. So `npm test -- --test-name-pattern "F-12"` runs one card's checks. The builder may add its own unit tests, but never edits the locked ones.
+- **Fixtures** for a card's acceptance tests go in `test/fixtures/fNN/`, made by the test author. Recordings of real responses are made by the command named in the card's `Test data`, run once by the harness with network before the tests are locked.
 - **Fixtures:**
   - recorded responses from Wikidata, Commons, loc.gov, id.loc.gov and Wellcome, recorded once and committed;
   - canned model responses: JSON for the checks, and images for the AI copy (made from the prototype's synthetic keyed copies);
@@ -97,12 +126,12 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 - **API tests:**
   - **contract:** every route's answers in tests are validated with `ajv` against `contracts/portraits-api.openapi.json`, and the samples in `portraits-api.sample.json` must validate too;
   - **behaviour:** the library's flows are tested in-process against PGlite: pull the feed, fetch a portrait, send each decision and request, resend safely, key refused when off.
-- **Smoke tests on deployed copies** (HT-26): against the PR copy, then staging:
+- **Smoke tests on deployed copies** (HT-26): `npm run smoke -- --url {url}`, against the PR copy, with that environment's test credentials (O-13). Over HTTP only:
   - `/api/v1/health`;
   - 401 without the key and 200 with it;
   - one fixture teacher end to end in stub mode;
   - the admin page behind its login.
-- **Live tests** run only on cards marked *live* (the coverage survey, the trial, the first run), under the caps (D-54, RUN-10), with `PORTRAITS_LIVE=1`.
+- **Live checks** make paid calls. They're marked `live` on their line, on cards whose `Side effects` allow paid calls (F-27, F-52, F-29, all on staging), under the caps (D-54, RUN-10). A check that only uses free public APIs is marked by the card's `Side effects: network`, not "live".
 - **Not machine-tested:** whether a portrait looks good. The trial's board, the owner's veto and the library's approval judge that.
 - **Not wanted:** coverage targets, evaluation suites, statistical scoring.
 
@@ -113,7 +142,7 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 | Coding and reviewing during the build | The owner's subscriptions, through the harness | Subscription limits |
 | The throwaway test | A separate low-limit OpenRouter key (HT-18) | ≤ $0.50 |
 | F-27 live smoke test (one teacher) | The tool's OpenRouter key | ≤ $2 |
-| F-28 trial (three enhance models on about 23 originals) and F-29 (the examples, reusing the trial's cache) | The tool's key | $30 trial budget (D-54), as $27 + $3 sub-budgets; estimate about $11 |
+| F-52 trial on staging (three enhance models on about 23 originals) and F-29 (the examples, reusing the trial's cache) | The tool's key | $30 trial budget (D-54), as $27 + $3 sub-budgets; estimate about $11 |
 | F-47 first full run | The tool's key | $100 cap (D-54); estimate $40–80 |
 | After that | The tool's key | $10 a night, $30 a month (D-54) |
 | Hosting | Railway | About $8–15 a month (T-01 notes) |
@@ -122,7 +151,7 @@ Fixture recording and the coverage survey use free public APIs, with a polite cl
 
 ## 7. After the build
 
-- **F-47 is the release.** Production is deployed after the owner's veto window. The owner makes the library's key (O-11), and the first nightly run works through the list under the $100 cap, over as many nights as it needs.
+- **F-47 is the release.** Production is first deployed after the 24-hour veto window, with its nightly schedule on. The owner works through the [release checklist](release-checklist.md): the key's limit at OpenRouter, the library's key (O-11), and watching the first pass over the nights it takes, under the $100 cap.
 - **From then on**, it runs nightly (RUN-08):
   - the library pulls new portraits and sends its decisions back;
   - requests are handled at once;
