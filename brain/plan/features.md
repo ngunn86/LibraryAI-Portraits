@@ -7,7 +7,7 @@
 **How checks run** ([build-plan.md §4–5](build-plan.md)):
 - **Tests first** (D-65): Codex writes each card's acceptance tests from Gemini's list of cases, in `test/fNN-*.test.ts` with fixtures in `test/fixtures/fNN/`, and they're locked before Claude builds. Each test is named with its card (`"F-07: …"`), so `npm test -- --test-name-pattern "F-07"` runs one card. F-01, the setup card, skips this step.
 - Offline by default: outbound calls refused, no keys, PGlite for the database.
-- *Smoke* checks run on the pull request's deployed copy (`npm run smoke -- --url {url}`), over HTTP, with that environment's test credentials (O-13). *Live* checks make paid calls, on staging only. No check touches production.
+- *Smoke* checks run on a deployed copy (`npm run smoke -- --url {url}`), over HTTP, with that environment's test credentials (O-13): the pull request's copy, or staging for Phase 6's prove-it cards. Their tests are `test/fNN-*.smoke.ts`, which `npm test` never runs. *Live* checks make paid calls, on staging only. No check touches production.
 - **Shared files without overlap:** commands (`src/cli/commands/<name>.ts`), job kinds (`src/jobs/<kind>.ts`), admin pages (`src/admin/pages/<page>.ts`) and sources (`src/sources/registered/<name>.ts`) are one file each, loaded from their folder, so each card owns its own file.
 
 ## Card format (format 1)
@@ -80,7 +80,7 @@ Each phase ends with a **gate card** (F-53, F-54, F-16, F-55, F-26, F-47), where
 | 37 | F-24 | Publishing a portrait | 5 | F-03, F-04, F-07, F-37, F-41 | none | none | no | draft 3 |
 | 38 | F-23 | Per-teacher pipeline and failure policy | 5 | F-11, F-16, F-18, F-19, F-21, F-24 | none | none | no | 1 |
 | 39 | F-25 | Queue, schedule and run reports | 5 | F-23, F-31, F-36 | none | none | no | draft 3 |
-| 40 | F-44 | API: reads, change feed, files, keys | 5 | F-03, F-24 | none | none | no | draft 3 |
+| 40 | F-44 | API: reads, change feed, files, keys | 5 | F-03, F-24, F-49 | none | none | no | draft 3 |
 | 41 | F-45 | API: decisions and requests | 5 | F-44, F-25 | none | none | no | draft 3 |
 | 42 | F-48 | Later runs: better copies, turn-downs, corrections | 5 | F-23, F-45 | none | none | no | draft 3 |
 | 43 | F-46 | Admin site | 5 | F-25, F-32, F-44 | none | none | no | draft 3 |
@@ -89,10 +89,10 @@ Each phase ends with a **gate card** (F-53, F-54, F-16, F-55, F-26, F-47), where
 | 46 | F-26 | End-to-end offline run | 5 | F-05, F-46, F-48 | none | none | no | draft 3 |
 | 47 | F-27 | Live smoke test on staging | 6 | F-26 | none | paid (≤ $2), staging only; external write | no | 1 |
 | 48 | F-28 | The trial, its board and its result | 6 | F-26, F-38 | none | none | no | 1 |
-| 49 | F-52 | Run the trial on staging | 6 | F-28 | none | paid (≤ $27), staging only; network | no | 1 |
+| 49 | F-52 | Run the trial on staging | 6 | F-28 | none | paid (≤ $27), staging only; network; external write | no | 1 |
 | 50 | F-50 | The trial's winner in the settings | 6 | F-52 | none | network | no | 1 |
-| 51 | F-29 | The examples reproduced | 6 | F-50 | none | paid (≤ $3), staging only | yes | 1 |
-| 52 | F-47 | The release | 6 | F-27, F-50 | none | deploy; production | no | 1 |
+| 51 | F-29 | The examples reproduced | 6 | F-50 | none | paid (≤ $3), staging only; external write | yes | 1 |
+| 52 | F-47 | The release | 6 | F-27, F-50 | none | deploy (pull-request copies; production, after the window); external write | no | 1 |
 | — | F-20 | ~~Model-drawn outline~~ | — | — | — | — | — | *withdrawn* (D-49) |
 | — | F-33 | ~~Internet Archive book plates~~ | — | — | — | — | — | *withdrawn* (D-24) |
 
@@ -117,6 +117,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: `npm ci` installs from the lock file, including `@techstark/opencv-js` and `sharp` (so F-36's health check can report them)
   - blocking: `npm run check` passes with no keys set
   - blocking: `npm test` passes with every outbound call refused, and prints a line matching `harness.yaml`'s `test_count`
+  - blocking: `npm test` runs every `test/**/*.test.ts` and never a smoke test (`*.smoke.ts`), which needs a deployed copy
   - blocking: `npm run build` writes `dist/cli.js`
   - blocking: `node dist/cli.js --help` lists `doctor`, `sync`, `survey`, `run`, `trial`, `keys`, `password` and `status`; one with no file in `src/cli/commands/` yet prints "not built yet" and exits non-zero
 - Test data: none
@@ -143,7 +144,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-51 a checking model of the same family as an enhance model is refused at start-up
   - blocking: F-51 a missing secret is reported by name only, and no fake secret's value appears in any output
   - blocking: F-51 the command-line tool uses `DATABASE_PUBLIC_URL` when it's set; the services use `DATABASE_URL`
-  - blocking: F-51 `USER_AGENT_CONTACT` fills the User-Agent; without it, tests use a placeholder and staging and production refuse to start
+  - blocking: F-51 `USER_AGENT_CONTACT` fills the User-Agent. Without it, tests use a placeholder; staging and production still start and answer health, but refuse calls to the sources, naming the missing variable
 - Test data: valid and invalid settings objects
 - Side effects: none
 - Parkable: no
@@ -163,7 +164,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - the contract and samples copied to `contracts/` at the repo root, byte for byte.
 - **Checks:**
   - Every sample in `portraits-api.sample.json` validates against its schema with ajv, and parses with the matching zod type.
-  - The twelve refused payloads from `check_api.py` are refused by both ajv and zod. Examples: a turn-down without a reason; an unknown field in a decision; an `approx_date` given as text; a `refused_reason` that isn't one of the codes.
+  - The thirteen refused payloads from `check_api.py` are refused by both ajv and zod. Examples: a turn-down without a reason; an unknown field in a decision; an `approx_date` given as text; a `refused_reason` that isn't one of the codes; a health answer without `database`.
   - zod and ajv agree on 10 good and 10 bad generated payloads per request body. The contract constrains a `correct` decision's `value` by its `field` (a year or null for `approx_date`, true or false for `best_known`), so a discriminated zod union agrees with it.
   - A test fails if `contracts/portraits-api.openapi.json` differs from `brain/contracts/portraits-api.openapi.json`, so the two copies can't drift.
 - **Test data:** the contract's samples.
@@ -226,7 +227,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-36 health's answers validate against the contract's `Health`
   - blocking: F-36 in staging and pull-request environments, start-up seeds the test admin password and library key as hashes; in production it never does
   - blocking: F-36 the cron entry exits 0 with "nothing to do"
-  - blocking: F-36 `npm run smoke -- --url <url>` runs every `*.smoke.test.ts` against that address, with the environment's test credentials passed in
+  - blocking: F-36 `npm run smoke -- --url <url>` runs every `test/**/*.smoke.ts` (and nothing else) against that address, with the environment's test credentials passed in
   - blocking: `npm run check` type-checks `.railway/railway.ts`
   - blocking, smoke: F-36 the deployed copy's `/api/v1/health` answers 200 with this commit, and the database and bucket working
   - report: F-36 anything `.railway/railway.ts` can't express is listed in `docs/railway-dashboard-steps.md`
@@ -244,7 +245,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Defers: none (each job kind arrives with its own card)
 - Depends on: F-04, F-36
 - Owner input: none
-- Owns: `src/api/ops.ts`, `src/jobs/index.ts` (loads every file in `src/jobs/`), `src/jobs/noop.ts`
+- Owns: `src/api/ops.ts`, `src/jobs/index.ts` (loads every file in `src/jobs/`), `src/jobs/noop.ts`, `src/web.ts` and `src/worker.ts` (to mount the routes and load the jobs), `scripts/record-ops.ts` and `package.json` (its `record-ops` script)
 - Reads: `brain/spec/requirements.md` RUN-04, RUN-10, RUN-11; `brain/spec/architecture.md` (Modules, Secrets, Environments)
 - Checks:
   - blocking: F-49 `POST /api/ops/jobs` without the ops key answers 401, and with a wrong one 401
@@ -253,6 +254,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-49 each environment's rules hold, with stand-in kinds: `trial` and `trial_examples` are refused outside staging, and `seed_fixtures` in production
   - blocking: F-49 `GET /api/ops/spend` sums fixture spend by environment, budget and cap
   - blocking: F-49 a new file in `src/jobs/` is picked up without editing any other file
+  - blocking: F-49 `npm run record-ops -- F-NN --kind <kind>` fetches the latest finished job of that kind from the address and ops key it's given, and saves its report in `test/fixtures/fNN/`
   - blocking, smoke, needs O-13: F-49 on the deployed copy, a `noop` job started with its ops key finishes
 - Test data: none
 - Side effects: deploy (pull-request copies)
@@ -263,14 +265,14 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 ### F-53: Phase 1 gate
 - Phase: 1
 - Goal: Prove it: the foundation holds together on a deployed copy (health, migrations, the bucket and jobs over the web), with no secret anywhere. This is Phase 1's gate card; the verifier adds its tests here.
-- Covers: none (a gate)
+- Covers: none
 - Defers: none
 - Depends on: F-03, F-49
 - Owner input: none
 - Owns: none
 - Reads: `brain/plan/build-plan.md` §4–5
 - Checks:
-  - blocking: the full suite passes
+  - blocking: `npm test` (the full suite)
   - blocking: F-53 a scan of the repo and of the suite's output finds none of the fake secrets
   - blocking, smoke, needs O-13: F-53 on the deployed copy, health answers 200 and a `noop` job finishes
 - Test data: none
@@ -363,7 +365,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-31 each teacher's eligibility (IN-04) is set: `qid`, `lcnaf_or_years` or `none`
   - blocking: F-31 a broken file (F-02's whole-file refusals) leaves the existing teachers exactly as they were
   - blocking: F-31 the only GitHub call is a GET of `collection/authors.csv`; the client has no write method
-  - report, smoke, needs O-9: F-31 a `sync` job on the deployed copy reads the real `authors.csv` and reports 182 ± 20 active authors
+  - report, smoke, needs O-9, needs O-13: F-31 a `sync` job on the deployed copy reads the real `authors.csv` and reports 182 ± 20 active authors
 - Test data: a GitHub contents response in GitHub's own format, with a fixture CSV (made by hand; no recording needed)
 - Side effects: network (GitHub, in the smoke check), deploy (pull-request copies)
 - Parkable: no
@@ -417,7 +419,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - **Covers:** SRC-03 (R1, R2), SRC-08
 - **Depends on:** F-07, F-08
 - **Owner input:** none (its recording needs O-10)
-- **Build:** `src/sources/commons.ts` (`imageinfo` with `extmetadata`; search with `haswbstatement:P180=<Q-id>` in the file namespace); `src/sources/registered/commons.ts`, which registers it with the gatherer (F-11).
+- **Build:** `src/sources/commons.ts` (`imageinfo` with `extmetadata`; search with `haswbstatement:P180=<Q-id>` in the file namespace); `src/sources/registry.ts`, which loads every source in `src/sources/registered/` (the survey, F-38, and the gatherer, F-11, both use it); `src/sources/registered/commons.ts`.
 - **Checks:**
   - **R1:** the P18 file becomes a candidate (`wikidata_p18`) with its licence, author, credit, size and file link.
   - **R2:** each depicts-tagged file becomes a candidate (`commons_p180`); a file that is only in the teacher's category doesn't (negative fixture).
@@ -494,8 +496,8 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-38 on the recorded responses for five teachers, the report's counts by source, rule and licence tier match the expected counts
   - blocking: F-38 no file download, model call or portrait is made (the clients assert it)
   - blocking: F-38 the report lists the teachers with no candidate and, per teacher with two or more candidates, the pairs worth comparing (PIP-20)
-  - blocking: F-38 the survey uses every registered source, and runs without one that isn't registered (F-10 or F-34 parked)
-  - report, smoke, needs O-9, needs O-10: F-38 on the deployed copy, a `sync` job, then a `survey` job for ten teachers, finish within the sources' limits, and the report counts their candidates
+  - blocking: F-38 the survey uses every source in F-09's registry, and runs without one that isn't registered (F-10 or F-34 parked)
+  - report, smoke, needs O-9, needs O-10, needs O-13: F-38 on the deployed copy, a `sync` job, then a `survey` job for ten teachers, finish within the sources' limits, and the report counts their candidates
 - Test data: record: `npm run record -- F-38` (needs O-10), the responses for five teachers from each registered source, listed in `test/fixtures/f38/record.json`
 - Side effects: network (the recording and the smoke check), deploy (pull-request copies)
 - Parkable: no
@@ -506,14 +508,14 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 ### F-54: Phase 2 gate
 - Phase: 2
 - Goal: Prove it: Phase 2's pieces work together offline, from the authors list to candidates in the rights log, and every recorded request went only to an allowed host. This is Phase 2's gate card; the verifier adds its tests here.
-- Covers: none (a gate)
+- Covers: none
 - Defers: none
 - Depends on: F-32, F-38
 - Owner input: none
 - Owns: none
 - Reads: `brain/spec/requirements.md` SRC-01, SRC-03, SRC-12; `brain/spec/sources.md`
 - Checks:
-  - blocking: the full suite passes
+  - blocking: `npm test` (the full suite)
   - blocking: F-54 a recorded teacher goes from a fixture `authors.csv`, through every registered source, to candidates and refusals in the rights log, offline
   - blocking: F-54 every request in every Phase 2 recording went to a host on SRC-01's list
   - report: F-54 which sources are registered (whether F-10 or F-34 was parked)
@@ -588,9 +590,9 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - **Phase:** 3
 - **Goal:** Detect a printed dot pattern by frequency analysis, notch it out, and give every original an edge-preserving blur sized in dot cells.
 - **Covers:** PIP-05, PIP-23
-- **Depends on:** F-12 (the working region)
+- **Depends on:** F-12
 - **Owner input:** none
-- **Build:** `src/imaging/descreen.ts` (port of `descreen` and `detect_screen` in `prototype/recipe.py`), on the working region.
+- **Build:** `src/imaging/descreen.ts` (port of `descreen` and `detect_screen` in `prototype/recipe.py`), on F-12's working region.
 - **Checks:**
   - The owner's Fillmore and Cady originals are detected as screened, and Holmes isn't (the prototype's result).
   - A synthetic screened image has its screen peaks reduced by at least the factor the prototype achieves.
@@ -824,7 +826,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - **Covers:** PIP-21 (steps 1–3, and the download of step 6), SRC-07, SRC-08, PIP-15, PIP-01 (part), OUT-12 (originals), IN-05
 - **Depends on:** F-09, F-32, F-37, F-42, F-43
 - **Owner input:** none
-- **Build:** `src/sources/candidates.ts`. The gatherer loads every source in `src/sources/registered/`, so the LoC and Wellcome join when their cards are merged, and nothing waits if one is parked. Tests use fakes for any source not registered.
+- **Build:** `src/sources/candidates.ts`. The gatherer uses F-09's registry of `src/sources/registered/`, so the LoC and Wellcome join when their cards are merged, and nothing waits if one is parked. Tests use fakes for any source not registered.
 - **Checks:**
   - A fixture teacher with candidates from three sources (one refused licence, one exact duplicate, two copies of one photograph, one different photograph) gives:
     - two photographs;
@@ -844,14 +846,14 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 ### F-55: Phase 4 gate
 - Phase: 4
 - Goal: Prove it: in stub mode, one teacher's candidates go through every model step with every cap enforced, and no model is ever sent a TIFF or an oversized image. This is Phase 4's gate card; the verifier adds its tests here.
-- Covers: none (a gate)
+- Covers: none
 - Defers: none
 - Depends on: F-11, F-18, F-19, F-21
 - Owner input: none
 - Owns: none
 - Reads: `brain/spec/requirements.md` PIP-02, PIP-09, PIP-13, PIP-20, PIP-21, PIP-22, RUN-04, RUN-10
 - Checks:
-  - blocking: the full suite passes
+  - blocking: `npm test` (the full suite)
   - blocking: F-55 in stub mode, one teacher's candidates go through the pre-check, the AI copy, the draft check and the tie-break, and the spend ledger records each call
   - blocking: F-55 no request to a model carries a TIFF, an image over 1,600 px or an image over 5 MB
   - blocking: F-55 a pull-request environment refuses every paid call
@@ -939,7 +941,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - **Phase:** 5
 - **Goal:** Serve the read side of the contract (teachers, portraits, history, files and the change feed) behind the library's key, with rate limits.
 - **Covers:** OUT-14, SCOPE-02, RUN-10 (key, rate limit, signed links)
-- **Depends on:** F-03, F-24
+- **Depends on:** F-03, F-24, F-49
 - **Owner input:** none
 - **Build:** `src/api/` (Express routes, key middleware, change feed with cursors); `keys new|off|list`
 - **Checks:**
@@ -1117,8 +1119,8 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Owns: none (prove it: the tests come from the test author, and the code is already merged)
 - Reads: `brain/spec/requirements.md` OUT-10, OUT-14, RUN-04, RUN-10, RUN-11; the contract
 - Checks:
-  - blocking, live, needs O-4, needs O-13: F-27 a `run` job for `charles-fillmore` on staging publishes at least one real portrait within $2, and every file passes its checker
-  - blocking, live, needs O-13: F-27 the spend shows each call's actual cost, and the night's total is under staging's cap
+  - blocking, smoke, live, needs O-4, needs O-9, needs O-10, needs O-13: F-27 on staging, a `sync` job, then a `run` job for `charles-fillmore`, publish at least one real portrait within $2, and every file passes its checker
+  - blocking, smoke, needs O-13: F-27 staging's spend shows each of those calls' actual cost, and the night's total is under staging's cap
   - blocking, smoke, needs O-13: F-27 staging's health answers 200; the API answers 401 without the library key and 200 with the test key
   - blocking, smoke, needs O-13: F-27 after a `seed_fixtures` job, the library stub completes against staging, SHA-256s included, and the seeded portraits are marked as fixtures
   - blocking, smoke, needs O-13: F-27 logging in to the admin site with the test password works, and the front page and the teacher list open
@@ -1135,7 +1137,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Defers: TRI-02 (the real set, from staging's survey: F-52), TRI-06 (written into the settings: F-50), TRI-08 (the examples: F-29)
 - Depends on: F-26, F-38
 - Owner input: none
-- Owns: `src/pipeline/trial.ts`, `src/pipeline/trialSet.ts`, `src/jobs/trial.ts`, `src/jobs/trial_examples.ts`, `src/admin/pages/trial.ts`
+- Owns: `src/pipeline/trial.ts`, `src/pipeline/trialSet.ts`, `src/jobs/trial.ts`, `src/jobs/trial_examples.ts`, `src/admin/pages/trial.ts`, `src/cli/commands/trial.ts`
 - Reads: `brain/spec/requirements.md` TRI-01..TRI-09, PIP-13, PIP-20, OUT-13; `brain/decisions.md` D-47, D-56, D-68; `design/portraits/README.md`
 - Checks:
   - blocking: F-28 the set picked from a fixture survey report covers every case in TRI-02
@@ -1162,13 +1164,13 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Owns: none (prove it)
 - Reads: `brain/spec/requirements.md` TRI-01..TRI-07, RUN-11
 - Checks:
-  - blocking, live, needs O-4, needs O-9, needs O-13: F-52 on staging, a `sync` job, a `survey` job and a `trial` job finish, and the trial's spend is at most $27
-  - blocking, live, needs O-13: F-52 the trial's result names a winner by TRI-04, with every contender scored
-  - report, live, needs O-13: F-52 each item's expected outcome held (for example, the group photo refused at the pre-check)
-  - report, live, needs O-13: F-52 the engraving results, for the owner's verdict on `allowedMedia` (D-47)
-  - report, live, needs O-13: F-52 PIP-20's thresholds on the survey's real pairs, flagging any two sittings of one teacher that would be judged "same"
+  - blocking, smoke, live, needs O-4, needs O-9, needs O-10, needs O-13: F-52 on staging, a `sync` job, a `survey` job and a `trial` job finish, and the trial's spend is at most $27
+  - blocking, smoke, needs O-13: F-52 the trial's result names a winner by TRI-04, with every contender scored
+  - report, smoke, needs O-13: F-52 each item's expected outcome held (for example, the group photo refused at the pre-check)
+  - report, smoke, needs O-13: F-52 the engraving results, for the owner's verdict on `allowedMedia` (D-47)
+  - report, smoke, needs O-13: F-52 PIP-20's thresholds on the survey's real pairs, flagging any two sittings of one teacher that would be judged "same"
 - Test data: none
-- Side effects: paid (≤ $27), staging only; network
+- Side effects: paid (≤ $27), staging only; network; external write (the trial's rows and files, staging only)
 - Parkable: no
 - Size: M
 - Stop if: the trial would pass $27
@@ -1188,7 +1190,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-50 STY-05's hash check passes for the new version
   - blocking: F-50 F-16's parity test still uses its frozen 0.5.0 copy, and passes
   - report: F-50 the change, set out for the notice: the winner, its scores and cost, and the engraving results
-- Test data: record: `npm run record -- F-50` (needs O-13), saving the latest trial result from staging's ops API to `test/fixtures/f50/trial-result.json`
+- Test data: record: `npm run record-ops -- F-50 --kind trial` (needs O-13), run against staging: it saves the latest trial result from staging's ops API to `test/fixtures/f50/` (F-49's recorder)
 - Side effects: network (the recording, from staging)
 - Parkable: no
 - Size: S
@@ -1205,12 +1207,12 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Owns: none (prove it)
 - Reads: `brain/spec/requirements.md` TRI-08, IN-09; `design/portraits/README.md`
 - Checks:
-  - blocking, live, needs O-4, needs O-13: F-29 a `trial_examples` job on staging finishes within $3, reusing the trial's cache
-  - blocking, live, needs O-13: F-29 the examples appear in no portrait, candidate or change
-  - report, live, needs O-13: F-29 "compare with target" passes for each example
-  - report, live, needs O-13: F-29 the code measures at the owner's framing meet TRI-08: overlap ≥ 0.85, tone error ≤ 0.08, dots across 110 ± 2, no STY-06 problems
+  - blocking, smoke, live, needs O-4, needs O-13: F-29 a `trial_examples` job on staging finishes within $3, reusing the trial's cache
+  - blocking, smoke, needs O-13: F-29 the examples appear in no portrait, candidate or change
+  - report, smoke, needs O-13: F-29 "compare with target" passes for each example
+  - report, smoke, needs O-13: F-29 the code measures at the owner's framing meet TRI-08: overlap ≥ 0.85, tone error ≤ 0.08, dots across 110 ± 2, no STY-06 problems
 - Test data: none
-- Side effects: paid (≤ $3), staging only
+- Side effects: paid (≤ $3), staging only; external write (the examples' trial rows, staging only)
 - Parkable: yes (the measures are reported; the release doesn't depend on this card)
 - Size: S
 
@@ -1225,14 +1227,14 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Owns: none (prove it)
 - Reads: `brain/plan/build-plan.md` §4 and §7; `brain/plan/release-checklist.md`; `brain/spec/requirements.md` RUN-04, RUN-08, RUN-12
 - Checks:
-  - blocking: the full suite passes
+  - blocking: `npm test` (the full suite)
   - blocking: F-47 the settings carry the trial's `recipeVersion` (F-50), and production's schedule is on from its first deploy
   - blocking, smoke, needs O-13: F-47 the deployed copy's health shows this commit, with the database and bucket working
-  - blocking, smoke, needs O-13: F-47 the library stub completes against the deployed copy
-  - blocking, needs O-13: F-47 staging's spend so far is within the trial's and staging's caps
-  - report, needs O-13: F-47 for the release notice: teachers with no candidate and teachers skipped for missing ids (from staging's survey), and the spend so far
+  - blocking, smoke, needs O-13: F-47 after a `seed_fixtures` job, the library stub completes against the deployed copy
+  - blocking, smoke, needs O-13: F-47 staging's spend so far is within the trial's and staging's caps
+  - report, smoke, needs O-13: F-47 for the release notice: teachers with no candidate and teachers skipped for missing ids (from staging's survey), and the spend so far
 - Test data: none
-- Side effects: deploy (pull-request copies); production (the promotion, by the conductor, after the 24-hour window)
+- Side effects: deploy (pull-request copies; and production, promoted by the conductor after the 24-hour window, D-66); external write (the seed, on the deployed copy)
 - Parkable: no
 - Size: S
 - Stop if: the trial's winner (F-50) was vetoed and not replaced

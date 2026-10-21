@@ -2,10 +2,17 @@
 
 Steps around the release that a card can't do: they need the owner, or they take longer than a card may run. The harness alerts on the control issue when each one is due (D-63). Tick them here or in chat.
 
+## Before the build's first smoke checks (Phase 1, F-49)
+
+- [ ] **O-13:** the ops keys, and staging's test admin password and library key, set in Railway and in the harness's store.
+
+## Before Phase 2's smoke checks (F-31, F-38)
+
+- [ ] **O-9:** the GitHub token, and **O-10:** the User-Agent contact, set in Railway (staging and production); O-10 in the harness's store too, for recordings.
+
 ## Before the first live card (F-27)
 
 - [ ] **O-4:** the OpenRouter key set as a Railway variable in **production and staging only** (never in pull-request copies). Its limit at OpenRouter: **$50, no reset** (D-67).
-- [ ] **O-13:** the ops keys and staging's test credentials set in Railway and in the harness's store.
 
 ## The release (F-47): production's first deploy
 
@@ -18,6 +25,7 @@ Steps around the release that a card can't do: they need the owner, or they take
 - [ ] Each morning, glance at the admin site's front page: the night's run, the first pass's spend against $100, errors.
 - [ ] When the front page says the first pass is done, **switch the key's limit at OpenRouter to $40 a month** (production's $30 and staging's $10, D-67).
 - [ ] Check the teachers to identify, and add the suggested ids and dates to `authors.csv` (O-3). They're searched on a later night.
+- [ ] Look at the trial board's engraving results (F-52). If engravings look bad, reply `/direct turn off engravings` on the control issue (D-47).
 
 ## After
 

@@ -44,11 +44,11 @@ The harness reads the **Status** column: a card whose owner input isn't `done` i
 | O-6 | The Claude GitHub App installed on this repo (Q-20) | — | done | 2026-10-19 |
 | O-7 | The harness, ready to run, with the throwaway test passed | Phase 1 | not done | Designed in its own chat (D-15) |
 | O-8 | A Railway account (Hobby to start) with the project created, PR environments on, and the harness's conductor given a staging-deploy token and a production token, kept in the harness's store, outside the worker box (D-36, D-65) | F-36 | not done | After the throwaway test (`handoffs/harness-throwaway-test.md`) |
-| O-9 | A read-only, fine-grained GitHub token for library-pipeline, limited to that repo's contents (D-32), set as a Railway variable | F-31's live check | not done | Never in chat or the repo |
-| O-10 | A contact email address for the tool's User-Agent (D-46), one meant for the app rather than a personal one | The recordings of F-07, F-08, F-09, F-10, F-34 and F-35 | not done | Wikimedia's 2026 limits require it. Set as the variable `USER_AGENT_CONTACT` in Railway and in the harness's store (for recordings). It isn't a secret, but this way no one edits code to add it; tests use a placeholder |
+| O-9 | A read-only, fine-grained GitHub token for library-pipeline, limited to that repo's contents (D-32), set as the Railway variable `GITHUB_TOKEN` in staging (which pull-request copies take it from) and production | The smoke checks of F-31 and F-38; F-27 and F-52 | not done | Never in chat or the repo |
+| O-10 | A contact email address for the tool's User-Agent (D-46), one meant for the app rather than a personal one | The recordings of F-07, F-08, F-09, F-10, F-34, F-35 and F-38; every check that calls a source on a deployed copy (F-38, F-27, F-52) | not done | Wikimedia's 2026 limits require it. Set as the variable `USER_AGENT_CONTACT` in Railway (staging and production) and in the harness's store (for recordings). It isn't a secret, but this way no one edits code to add it. Without it, a deployed copy starts but refuses calls to the sources; tests use a placeholder |
 | O-11 | The library's key for this API, made by the owner once production is released (`portraits keys new`, run from the owner's PC), and handed to the library's settings (D-44) | The release checklist | not done | Not a card's input: F-47 doesn't wait for it |
 | O-12 | Answer Q-27 (the zip, and the restated acceptance checks) | Before F-05 | done | 2026-10-20 (D-58) |
-| O-13 | **Test credentials per environment** (RUN-10, RUN-11): an `OPS_KEY` for staging, pull-request copies and production, and, for staging and pull-request copies only, a `SEED_ADMIN_PASSWORD` and a `SEED_LIBRARY_KEY`. Each set as a Railway variable by the owner, and each given to the harness's secret store | F-36 (PR copies and staging), F-28 (production's ops key) | not done | Random values, made by the owner (a password manager can make them). Never in chat or the repo |
+| O-13 | **Test credentials per environment** (RUN-10, RUN-11): an `OPS_KEY` for staging, pull-request copies and production, and, for staging and pull-request copies only, a `SEED_ADMIN_PASSWORD` and a `SEED_LIBRARY_KEY`. Each set as a Railway variable by the owner, and each given to the harness's secret store | F-49's smoke check (Phase 1), then every check that calls a deployed copy | not done | Random values, made by the owner (a password manager can make them). Production needs only its ops key, for later use; no check touches it. Never in chat or the repo |
 
 ## 4. Working with the harness (format 1; D-62..D-66)
 
@@ -126,7 +126,7 @@ Everything else in `brain/` is protected. **Recipe numbers** change only through
 - **API tests:**
   - **contract:** every route's answers in tests are validated with `ajv` against `contracts/portraits-api.openapi.json`, and the samples in `portraits-api.sample.json` must validate too;
   - **behaviour:** the library's flows are tested in-process against PGlite: pull the feed, fetch a portrait, send each decision and request, resend safely, key refused when off.
-- **Smoke tests on deployed copies** (HT-26): `npm run smoke -- --url {url}`, against the PR copy, with that environment's test credentials (O-13). Over HTTP only:
+- **Smoke tests on deployed copies** (HT-26): `npm run smoke -- --url {url}`, against the PR copy (or staging, for Phase 6's prove-it cards), with that environment's test credentials (O-13). Over HTTP only. They're `test/fNN-*.smoke.ts`, which `npm test` never runs:
   - `/api/v1/health`;
   - 401 without the key and 200 with it;
   - one fixture teacher end to end in stub mode;

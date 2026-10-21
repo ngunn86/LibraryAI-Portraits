@@ -98,7 +98,7 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 
 | ID | What must be shown | Passed when |
 |---|---|---|
-| HT-26 | The harness runs smoke tests against a **deployed URL** (PR copy, staging, production) as part of a feature's checks | A card's smoke check runs against the PR copy, with that environment's test credentials from the harness's store, and its result appears in the grade |
+| HT-26 | The harness runs smoke tests against a **deployed URL** (PR copy or staging; never production) as part of a feature's checks | A card's smoke check runs against the PR copy, with that environment's test credentials from the harness's store, and its result appears in the grade |
 | HT-27 | The control issue carries each merge's evidence, alerts and anything waiting for the owner, with `/veto` and `/approve`; the morning digest summarizes deploys, failures and costs (D-62, D-63) | The owner sees a merge's notice and a test alert on the phone, and a `/veto` from the GitHub app is obeyed |
 | HT-28 | The harness waits for the owner only for veto windows and `/approve`, and otherwise carries on with every card a question doesn't block | The run doesn't stall on any step that isn't a veto window or an authorization |
 | HT-29 | **Teardown**: the throwaway project, its environments and the repo are removed, with no running costs left | The host shows no services, and the next day's cost is $0 |

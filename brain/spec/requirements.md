@@ -918,7 +918,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 *Verify:* a kill-and-resume test counts stubbed calls (F-04, F-25).
 
 **RUN-04 · Spend caps and ledger** *fixed* · B2, D-54; method *proposed* · C
-- One OpenRouter key, the only AI key (D-19). The owner sets a credit limit on it as a backstop (O-4).
+- One OpenRouter key, the only AI key (D-19). The owner sets its limit at OpenRouter, in steps (O-4, D-67). That limit is the boundary the provider enforces; the caps below are the second line.
 - **Caps in production** (D-54):
   - **$100 for the first full run** (D-59). The first full run is the first pass over the list, from the release (F-47) until the queue first empties. Its $100 is a total across the nights it takes, and the night cap doesn't apply during it. If it reaches $100, the rest of the pass carries on from the next night under the regular caps.
   - **After the first pass: $10 a night and $30 a calendar month**, whichever comes first. The first pass's spend doesn't count toward a month.
@@ -1002,7 +1002,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - **Environments, since the key is shared** (D-55, D-67):
   - **pull-request copies** run in stub mode only: no AI key, no paid calls, no cron;
   - **staging** (Railway environment `staging`, deployed from `main` on every merge) has no cron, runs jobs only when started (RUN-11), and spends at most $2 a night and $10 a month;
-  - **production** (Railway environment `production`, deployed only by the harness's conductor after the veto window, D-66) has the caps of RUN-04.
+  - **production** (Railway environment `production`, promoted by the harness's conductor after the veto window, D-66, or deployed by the owner by hand, D-35) has the caps of RUN-04.
 - The environment is read from Railway's `RAILWAY_ENVIRONMENT_NAME`, and its rules come from settings. The key's limit at OpenRouter (O-4) is the boundary across all of them; the caps in code are the second line.
 - **Test credentials for checks** (O-13): staging and pull-request copies seed, at start-up, a test admin password and a test library key from the Railway variables `SEED_ADMIN_PASSWORD` and `SEED_LIBRARY_KEY`, stored as hashes like any other. **Production never seeds.** The harness keeps the plain values in its own secret store, to log in and call the API in smoke checks.
 
@@ -1114,7 +1114,7 @@ AC-01..AC-03 restate B2's checks for the hosted API (D-58).
 | AC-02 | Every published portrait's record validates against the OpenAPI contract, with its files present and checked (all eight, or seven when the AI copy couldn't be made); a record missing its licence is refused, naming the field | F-03, F-24, F-26 |
 | AC-03 | The library stub, run against staging, pulls the change feed, fetches portraits and files (SHA-256 checked) and sends one decision and one request of each kind. The next run then: handles the request first; skips a teacher whose slots are full; sets aside a turned-down photograph; publishes a swap | F-05, F-26, F-27 |
 | AC-04 | The owner's three examples are reproduced closely enough that the check passes them against the hand-made targets | F-29 (TRI-08) |
-| AC-05 | The trial's board exists and the defaults are set from it. One full harness run (plan, build, tests, digest, veto) has completed on this project. The veto now goes through the control issue, and the digest is its summary (D-63) | F-28, F-50, plus the harness's own record |
+| AC-05 | The trial's board exists and the defaults are set from it. One full harness run (plan, build, tests, digest, veto) has completed on this project. The veto now goes through the control issue, and the digest is its summary (D-63) | F-28, F-52, F-50, plus the harness's own record |
 | AC-06 | Nothing reads the library's scans or reference shelf. Originals come only from the adopted sources (SRC-01), by the match rules of SRC-03 | F-06, F-09, F-10, F-34 |
 
 ---

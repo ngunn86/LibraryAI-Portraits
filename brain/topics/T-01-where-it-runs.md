@@ -214,8 +214,10 @@ Railway project "nexus-portraits"   (one GitHub repo)
 
 1. **Open a pull request.** Railway creates a temporary copy with its own database and bucket. The harness runs the smoke tests against that copy's URL.
 2. **Merge.** Staging deploys automatically. The harness runs the smoke tests again and reads the logs (CLI or MCP).
-3. **Promote.** After the owner's veto window in the digest, production deploys, either by merging to the production branch or with a CLI command. The healthcheck blocks a broken release.
-4. **Recover.** If something slips through, the owner rolls back with one click (from a phone), and the harness redeploys the fix.
+3. **Promote.** After the owner's veto window on the control issue (24 hours, D-63, D-66), the conductor promotes the release to production. The healthcheck blocks a broken release.
+4. **Recover.** If the health check fails on staging after a merge, the harness rolls staging back by itself and stops new cards. A `/veto` reverts a card, and the conductor redeploys. The owner can still roll back with one click, from a phone (D-35).
+
+*(Updated 2026-10-21 for the harness's current design; the digest is now only a summary.)*
 
 ### Caveats to know about
 

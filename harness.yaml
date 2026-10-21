@@ -25,7 +25,7 @@ owner_inputs: brain/plan/build-plan.md#3   # the table's Status column: done, no
 notes_writable: [brain/status.md, brain/rulings.md, brain/gotchas/]
 rulings: brain/rulings.md
 held_back: []
-acceptance_tests: "test/{slug}-*.test.ts"      # F-07 -> test/f07-*.test.ts
+acceptance_tests: "test/{slug}-*"              # F-07 -> test/f07-*.test.ts (offline) and test/f07-*.smoke.ts (deployed copy)
 acceptance_fixtures: "test/fixtures/{slug}/"
 
 box: { apt: [] }                # sharp, OpenCV.js and onnxruntime-node come from npm
@@ -48,7 +48,8 @@ limits:
   paid_calls:
     # The app spends with its own key, in jobs the live checks start over the web (RUN-11); the harness
     # counts from GET /api/ops/spend. A card's own "paid (≤ $N)" sets its cap.
-    # Live checks: F-27 $2, F-28 $27, F-29 $3. The first pass's $100 is the app's own nightly spend, not a check.
+    # Live checks: F-27 $2, F-52 $27, F-29 $3, each card's own cap overriding per_card_usd.
+    # The first pass's $100 is the app's own nightly spend, not a check. (Question 2 in brain/handoffs/harness-questions.md.)
     openrouter: { per_card_usd: 2, per_month_usd: 35, total_usd: 35 }
 
 deploy:
@@ -56,6 +57,7 @@ deploy:
   pr_copies: true               # stub mode, no AI key, seeded test credentials (RUN-10)
   staging: on-merge             # Railway environment "staging", deployed from main
   health: /api/v1/health        # 200 only when the database, bucket and image libraries work (RUN-12)
-  production: { mode: veto-window, hours: 24 }  # D-66; the conductor promotes, with a token outside the box
+  production: { mode: veto-window, hours: 24 }  # D-66; the conductor promotes, with a token outside the box.
+                                                # Production is first deployed at the release (F-47): see question 5
 
 digest: { issue: TODO, time: "07:30" }   # the control issue's number, set when the harness creates it (D-63)
