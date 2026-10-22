@@ -1,8 +1,8 @@
 # Coding Harness Instructions: the portraits tool
 
 **From:** the Coding Harness chat · **Date:** 2026-10-20 · **For:** this repo's planning chat
-**Harness plan:** `ngunn86/Coding-Harness`, as of 2026-10-21 (its decisions up to HD-57). That repo is private, so this file is complete on its own.
-**Updated** 2026-10-21: pull-request copies are based on staging, never production, and the health check names its environment, database and bucket (Codex's third review); earlier the same day, per-card spending caps became soft, with the provider's limit as the hard ceiling (the owner's choice); and before that, `test_card` never uses `npx` and each test case gets a unique name starting with its card's ID (Argon's third review), TAP output with each named case checked, `deploy.starts_at`, contracts before tests on size L cards, fast-forward merges (Codex's second), and tests run by file path with each card saying what it creates (Argon's second). Earlier, 2026-10-20: the veto window is 72 hours, the one paid key stays, library-pipeline may run on a second PC.
+**Harness plan:** `ngunn86/Coding-Harness`, as of 2026-10-21 (its decisions up to HD-59). That repo is private, so this file is complete on its own.
+**Updated** 2026-10-22: the veto window is 24 hours, as your D-66 already says (the owner, harness HD-59). 2026-10-21: pull-request copies are based on staging, never production, and the health check names its environment, database and bucket (Codex's third review); earlier the same day, per-card spending caps became soft, with the provider's limit as the hard ceiling (the owner's choice); and before that, `test_card` never uses `npx` and each test case gets a unique name starting with its card's ID (Argon's third review), TAP output with each named case checked, `deploy.starts_at`, contracts before tests on size L cards, fast-forward merges (Codex's second), and tests run by file path with each card saying what it creates (Argon's second). Earlier, 2026-10-20: the veto window was set at 72 hours (now 24), the one paid key stays, library-pipeline may run on a second PC.
 **Placed here** at the owner's request (harness decision HD-47). It's the only file the harness chat writes in this repo; commit it with your next planning round. When the harness's requirements change, the harness chat updates this file and says so at the top.
 
 ## 1. What this file is, and how to use it
@@ -201,7 +201,7 @@ References are to commit `a2a5ce5`.
 
 ### Releases, deploys and the veto window
 
-- [ ] **The veto window is 72 hours** (owner, harness HD-50: "Set the portrait veto period to 72 hours"). Record it, and write its rules into the build plan:
+- [ ] **The veto window is 24 hours** (owner, harness HD-59, 2026-10-22: "Switch to 24 hours for the portraits", replacing HD-50's 72 hours; your D-66 already records it). Record it, and write its rules into the build plan:
   - it covers one exact release, and restarts if the release changes;
   - the harness promotes only after its notice is posted on the control issue, and only if it has read the control issue within the last 10 minutes;
   - the conductor promotes, with a production token kept outside the worker box.
@@ -298,6 +298,6 @@ deploy:
   staging: on-merge                           # TODO: confirm
   health: /api/v1/health
   starts_at: TODO                             # the card that makes the app deployable (F-02's Railway setup?)
-  production: { mode: veto-window, hours: 72 }   # owner, HD-50
+  production: { mode: veto-window, hours: 24 }   # owner, HD-59 (your D-66)
 digest: { issue: TODO, time: "07:30" }        # the control issue, created when the build starts
 ```
