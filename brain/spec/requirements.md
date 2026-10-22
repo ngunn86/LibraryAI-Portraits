@@ -918,7 +918,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 *Verify:* a kill-and-resume test counts stubbed calls (F-04, F-25).
 
 **RUN-04 · Spend caps and ledger** *fixed* · B2, D-54; method *proposed* · C
-- One OpenRouter key, the only AI key (D-19). The owner sets its limit at OpenRouter, in steps (O-4, D-67). That limit is the boundary the provider enforces; the caps below are the second line.
+- One OpenRouter key, the only AI key (D-19). The caps below are the first line, and normally stop spending. The key's limit at OpenRouter, set by the owner in steps (O-4, D-67), is the hard ceiling the provider enforces.
 - **Caps in production** (D-54):
   - **$100 for the first full run** (D-59). The first full run is the first pass over the list, from the release (F-47) until the queue first empties. Its $100 is a total across the nights it takes, and the night cap doesn't apply during it. If it reaches $100, the rest of the pass carries on from the next night under the regular caps.
   - **After the first pass: $10 a night and $30 a calendar month**, whichever comes first. The first pass's spend doesn't count toward a month.
@@ -1000,10 +1000,11 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - **Rate limits:** about 600 API calls a minute per key, plus the login limit.
 - **Outbound calls** go only to the adopted sources, OpenRouter and (for the teacher list) GitHub (SRC-01).
 - **Environments, since the key is shared** (D-55, D-67):
-  - **pull-request copies** run in stub mode only: no AI key, no paid calls, no cron;
+  - **pull-request copies**, based on staging, run in stub mode only: no paid calls, no cron, and no AI key where Railway allows (HT-32);
   - **staging** (Railway environment `staging`, deployed from `main` on every merge) has no cron, runs jobs only when started (RUN-11), and spends at most $2 a night and $10 a month;
   - **production** (Railway environment `production`, promoted by the harness's conductor after the veto window, D-66, or deployed by the owner by hand, D-35) has the caps of RUN-04.
-- The environment is read from Railway's `RAILWAY_ENVIRONMENT_NAME`, and its rules come from settings. The key's limit at OpenRouter (O-4) is the boundary across all of them; the caps in code are the second line.
+- The environment is read from Railway's `RAILWAY_ENVIRONMENT_NAME`, and its rules come from settings. The caps in code are the first line; the key's limit at OpenRouter (O-4) is the hard ceiling across all of them.
+- **Pull-request copies are based on staging, never production** (D-65): each gets staging's test credentials and its own test database and bucket, so it can never carry production's keys or reach its data. If Railway can't leave the AI key out of them (HT-32), they still make no paid calls, by code (stub mode), under the key's ceiling.
 - **Test credentials for checks** (O-13): staging and pull-request copies seed, at start-up, a test admin password and a test library key from the Railway variables `SEED_ADMIN_PASSWORD` and `SEED_LIBRARY_KEY`, stored as hashes like any other. **Production never seeds.** The harness keeps the plain values in its own secret store, to log in and call the API in smoke checks.
 
 *Verify:*
@@ -1033,11 +1034,12 @@ The harness never runs the app's commands against Railway, so a deployed copy ru
   - the bucket accepts a small write and read;
   - OpenCV.js and `sharp` are loaded.
 - Otherwise it answers 503, naming what failed. It shows the version and the commit either way.
+- **It names where it runs** (D-65): the environment's name and the names of the database and bucket it uses, never a secret or a connection string. Before smoke checks, the harness uses them to confirm a pull-request copy isn't using production's database or bucket.
 - The database and bucket checks are cached for up to 30 seconds, so frequent health calls stay cheap.
 - The harness runs it on staging after every merge that deploys it. A failure rolls staging back and stops new cards (D-65), so it must never pass while something is broken.
 - **Database changes are additive from the first deploy to staging,** not only once live: add tables and columns, never drop, rename or rewrite in place, so a rolled-back release keeps working against the newer database.
 
-*Verify:* with the database or the bucket unreachable (faked), health answers 503 naming it; on the deployed copy, it answers 200 with the commit (F-36).
+*Verify:* with the database or the bucket unreachable (faked), health answers 503 naming it; no secret or connection string appears in any answer; on the deployed copy, it answers 200 with the commit, and a pull-request copy names its own database and bucket, not production's (F-36).
 
 ---
 

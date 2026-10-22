@@ -4,8 +4,11 @@
   "status": "ok",
   "version": "1.0.0",
   "commit": "31e2a9e",
+  "environment": "production",
   "database": true,
+  "database_name": "railway",
   "bucket": true,
+  "bucket_name": "portraits-production",
   "opencv": true,
   "sharp": true,
   "failing": []

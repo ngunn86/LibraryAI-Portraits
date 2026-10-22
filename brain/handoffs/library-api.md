@@ -1,7 +1,7 @@
 # Hand-off to the library's planning: the portraits API
 
 **From:** Nexus Portraits planning, 2026-10-19 (night). **For:** the Library-AI (Rev1) chat, relayed by the owner.
-**Contract:** `brain/contracts/portraits-api.openapi.json` in ngunn86/LibraryAI-Portraits (draft 6, 2026-10-21), with `portraits-api.md` (plain words), `portraits-api.sample.json` and `check_api.py`. Copy them unchanged, with the commit, as you would any outside contract.
+**Contract:** `brain/contracts/portraits-api.openapi.json` in ngunn86/LibraryAI-Portraits (draft 7, 2026-10-22), with `portraits-api.md` (plain words), `portraits-api.sample.json` and `check_api.py`. Copy them unchanged, with the commit, as you would any outside contract.
 
 ## What was decided here that the library needs
 

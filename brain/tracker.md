@@ -639,3 +639,4 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - Cards: draft 4, with F-49..F-55 and 18 cards in format 1 as a sample. HT-01..HT-32 updated in the throwaway test.
 
   Next: the owner relays `handoffs/harness-questions.md` to the harness chat, which runs `harness cards check` on the sample; then the other 34 cards are converted (T-25).
+- **2026-10-22 08:30.** The harness chat's updated instructions (to its HD-59) merged into `main`: they had been committed on the owner's PC, behind GitHub. Applied the new rules (tests by path with TAP, unique test names, each card saying what it creates, contracts before tests, fast-forward merges, `deploy.starts_at`, pull-request copies based on staging, a health check naming its environment, soft per-card caps as D-69). Contract draft 7. The questions in `handoffs/harness-questions.md` stay open; next is still the harness chat's `harness cards check` on the sample (T-25).

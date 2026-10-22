@@ -35,10 +35,10 @@ commands:
   install: npm ci
   check: npm run check
   test: npm test
-  test_card: npm test -- --test-name-pattern "{card}"
+  test_card: ./node_modules/.bin/tsx --test --test-reporter=tap "test/{slug}-*.test.ts"   # the card's own files, by path, printing TAP; never npx
   build: npm run build
-  smoke: npm run smoke -- --url {url}           # F-36 adds the script
-  test_count: '^ℹ tests (\d+)'                 # node:test's default reporter; F-01 confirms it against a real run
+  smoke: npm run smoke -- --url {url}           # F-36 adds the script; runs test/**/*.smoke.ts only
+  # test_count: withdrawn (2026-10-21); the harness reads each named case from the TAP output
 
 # models: left out, so the harness's defaults apply
 
@@ -47,16 +47,17 @@ limits:
   hours_per_card: 6
   paid_calls:
     # The app spends with its own key, in jobs the live checks start over the web (RUN-11); the harness
-    # counts from GET /api/ops/spend. A card's own "paid (≤ $N)" sets its cap.
+    # counts from GET /api/ops/spend after each check (caps are soft, D-69). A card's own "paid (≤ $N)" sets its cap.
     # Live checks: F-27 $2, F-52 $27, F-29 $3, each card's own cap overriding per_card_usd.
     # The first pass's $100 is the app's own nightly spend, not a check. (Question 2 in brain/handoffs/harness-questions.md.)
     openrouter: { per_card_usd: 2, per_month_usd: 35, total_usd: 35 }
 
 deploy:
   host: railway
-  pr_copies: true               # stub mode, no AI key, seeded test credentials (RUN-10)
+  pr_copies: true               # based on staging, never production; stub mode, no AI key if Railway allows (HT-32), staging's test credentials (RUN-10)
   staging: on-merge             # Railway environment "staging", deployed from main
-  health: /api/v1/health        # 200 only when the database, bucket and image libraries work (RUN-12)
+  starts_at: F-36               # the card that makes the app deployable, with its health endpoint
+  health: /api/v1/health        # 200 only when the database, bucket and image libraries work; names its environment, database and bucket (RUN-12)
   production: { mode: veto-window, hours: 24 }  # D-66; the conductor promotes, with a token outside the box.
                                                 # Production is first deployed at the release (F-47): see question 5
 

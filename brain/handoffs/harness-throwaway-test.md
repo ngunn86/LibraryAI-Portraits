@@ -104,7 +104,7 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
 | HT-29 | **Teardown**: the throwaway project, its environments and the repo are removed, with no running costs left | The host shows no services, and the next day's cost is $0 |
 | HT-30 | **A veto after a merge:** `/veto <id>` reverts a merged card, and staging is redeployed without it | Staging's `/health` shows the commit before the card within a few minutes, and the cards built on it are sent back to have their checks run again |
 | HT-31 | **A failed health check after a merge** rolls staging back and stops new cards until it's fixed | A merge whose `/health` answers 503 on staging is rolled back automatically; no new card starts; an alert names the failure |
-| HT-32 | **Pull-request copies get only the variables they should.** They have the test credentials and the GitHub token, but not the AI key *(Railway: the PR environments' base environment, or per-variable settings)* | A PR copy's `/health` shows the key absent, and the variables it needs present |
+| HT-32 | **Pull-request copies are based on staging, never production, and get only the variables they should.** Each has its own test database and bucket, staging's test credentials and the GitHub token, and, if Railway allows, not the AI key *(Railway: the PR environments' base environment, or per-variable settings)* | A PR copy's `/health` names its own environment, database and bucket, none of them production's; the variables it needs are present; whether the AI key can be left out is recorded (if not, the real app relies on stub mode, D-67) |
 
 ## Limits for the test
 
@@ -169,3 +169,4 @@ Each requirement has an ID (HT-nn), what the test must show, and when it counts 
   - **HT-09** keeps the owner's own rollback, and adds `/veto` reverting a card;
   - **HT-23 withdrawn:** the conductor uses the Railway CLI, not the MCP server;
   - **HT-30..HT-32 added:** a veto that reverts a merged card and redeploys staging; a failed health check that rolls staging back; pull-request copies without the AI key (the portraits app keeps one key, D-67, and gives it to production and staging only).
+- **2026-10-22 (the harness's instructions, as of HD-59):** pull-request copies are based on staging, never production, and the health check names its environment, database and bucket. HT-32 now checks both, and records whether Railway can leave the AI key out of the copies (if it can't, the portraits app relies on stub mode in code, with the key's OpenRouter limit as the ceiling). The throwaway app can also use `deploy.starts_at`, so its early scaffolding never deploys.

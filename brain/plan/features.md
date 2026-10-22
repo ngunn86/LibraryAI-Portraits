@@ -5,7 +5,8 @@
 - The harness builds them one at a time, **in the order of the overview table**, each once every card in its *Depends on* is merged. IDs are permanent, so the build order isn't numeric. Retired cards keep their IDs as *withdrawn*.
 
 **How checks run** ([build-plan.md §4–5](build-plan.md)):
-- **Tests first** (D-65): Codex writes each card's acceptance tests from Gemini's list of cases, in `test/fNN-*.test.ts` with fixtures in `test/fixtures/fNN/`, and they're locked before Claude builds. Each test is named with its card (`"F-07: …"`), so `npm test -- --test-name-pattern "F-07"` runs one card. F-01, the setup card, skips this step.
+- **Tests first** (D-65): Codex writes each card's acceptance tests from Gemini's list of cases, in `test/fNN-*.test.ts` with fixtures in `test/fixtures/fNN/`, and they're locked before Claude builds (after the contract, on size L cards). Each test case has a unique name starting with its card's ID (`"F-07: …"`). One card's tests run by path, printing TAP: `./node_modules/.bin/tsx --test --test-reporter=tap "test/f07-*.test.ts"`. F-01, the setup card, skips this step.
+- **Each card says what it creates** (module paths and exported names, routes or commands) in its `Goal`, so the test author's tests and the builder's code meet. The converted cards do; the others will when they're converted.
 - Offline by default: outbound calls refused, no keys, PGlite for the database.
 - *Smoke* checks run on a deployed copy (`npm run smoke -- --url {url}`), over HTTP, with that environment's test credentials (O-13): the pull request's copy, or staging for Phase 6's prove-it cards. Their tests are `test/fNN-*.smoke.ts`, which `npm test` never runs. *Live* checks make paid calls, on staging only. No check touches production.
 - **Shared files without overlap:** commands (`src/cli/commands/<name>.ts`), job kinds (`src/jobs/<kind>.ts`), admin pages (`src/admin/pages/<page>.ts`) and sources (`src/sources/registered/<name>.ts`) are one file each, loaded from their folder, so each card owns its own file.
@@ -15,7 +16,8 @@
 ```
 ### F-NN: Title
 - Phase:         1–6
-- Goal:          one observable result, with its main example and its failure example
+- Goal:          one observable result, with its main example and its failure example,
+                 and what it creates (module paths and exported names, routes or commands)
                  ("Prove it" for a card that shows something already works)
 - Covers:        the requirement IDs it delivers (IDs only)
 - Defers:        requirement IDs it leaves for a later card, and which, or "none"
@@ -106,7 +108,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-01: Repo, toolchain and offline test runner
 - Phase: 1
-- Goal: A TypeScript repo on Node 24, matching the library's toolchain, whose `check`, `test` and `build` commands run offline. Main example: `npm test` runs with every outbound call refused and reports how many tests ran. Failure example: a test that tries to reach the network fails at once. This is a setup card: its checks are the commands themselves, so it skips the tests-first step.
+- Goal: A TypeScript repo on Node 24, matching the library's toolchain, whose `check`, `test` and `build` commands run offline. Main example: `npm test` runs with every outbound call refused and reports how many tests ran. Failure example: a test that tries to reach the network fails at once. This is a setup card: its checks are the commands themselves, so it skips the tests-first step. It creates: the scripts `check`, `test` (`tsx --test` over `test/**/*.test.ts`) and `build` in `package.json`; the command-line entry `src/cli.ts` (`node dist/cli.js <command>`), which loads every file in `src/cli/commands/`, each exporting `command: { name: string; describe: string; run(args: string[]): Promise<number> }`.
 - Covers: RUN-06
 - Defers: RUN-05 (each command arrives with its own card; F-22 finishes them)
 - Depends on: none
@@ -116,7 +118,8 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Checks:
   - blocking: `npm ci` installs from the lock file, including `@techstark/opencv-js` and `sharp` (so F-36's health check can report them)
   - blocking: `npm run check` passes with no keys set
-  - blocking: `npm test` passes with every outbound call refused, and prints a line matching `harness.yaml`'s `test_count`
+  - blocking: `npm test` passes with every outbound call refused
+  - blocking: `./node_modules/.bin/tsx --test --test-reporter=tap "test/setup.test.ts"` prints TAP naming each case, all passing (the form of `harness.yaml`'s `test_card`)
   - blocking: `npm test` runs every `test/**/*.test.ts` and never a smoke test (`*.smoke.ts`), which needs a deployed copy
   - blocking: `npm run build` writes `dist/cli.js`
   - blocking: `node dist/cli.js --help` lists `doctor`, `sync`, `survey`, `run`, `trial`, `keys`, `password` and `status`; one with no file in `src/cli/commands/` yet prints "not built yet" and exits non-zero
@@ -129,7 +132,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-51: Settings and secrets
 - Phase: 1
-- Goal: Typed, committed settings and secrets from the environment. Main example: recipe 0.5.0's settings load and start-up goes ahead. Failure example: a setting of the wrong type, or a recipe change without a new `recipeVersion`, stops start-up and names it.
+- Goal: Typed, committed settings and secrets from the environment. Main example: recipe 0.5.0's settings load and start-up goes ahead. Failure example: a setting of the wrong type, or a recipe change without a new `recipeVersion`, stops start-up and names it. It creates: `settings` and `loadSettings(overrides?)` in `src/config/settings.ts`; `readEnv(env = process.env): Env` (throwing `ConfigError`, which names the variable) and `databaseUrl(kind: "cli" | "service")` in `src/config/env.ts`; `recipeHash(recipe)` and `RECIPE_HASHES` (version → hash) in `src/config/recipeHash.ts`.
 - Covers: IN-10, IN-11, STY-05
 - Defers: PIP-09 (the family rule is enforced here at start-up, and again at call time in F-17)
 - Depends on: F-01
@@ -174,7 +177,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-04: Database, queue and step cache
 - Phase: 1
-- Goal: The records in Postgres through Drizzle, a job queue that survives crashes, and a cache of paid step results. Main example: the migrations run from empty and every table records and reads back. Failure example: a job whose worker stops is claimed again and resumes at its last finished step.
+- Goal: The records in Postgres through Drizzle, a job queue that survives crashes, and a cache of paid step results. Main example: the migrations run from empty and every table records and reads back. Failure example: a job whose worker stops is claimed again and resumes at its last finished step. It creates: the Drizzle tables in `src/db/schema.ts`, named as in T-07; `openDb(url)` and `openTestDb()` (PGlite, migrated, for every later card's tests) in `src/db/client.ts`; `enqueue`, `claim`, `heartbeat`, `finish`, `fail` and `reclaimStale` in `src/queue.ts`; `cacheKey({ images, step, model, promptVersion, note, attempt })`, `getCached` and `putCached` in `src/cache.ts`.
 - Covers: RUN-03
 - Defers: RUN-04 (the spend ledger is stored here; caps in F-17, the first pass in F-25), PIP-12 (set-asides used in F-23), IN-08 (applied once in F-45), TRI-09 (the trial tables are used in F-28)
 - Depends on: F-01, F-51
@@ -214,7 +217,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-36: Railway setup, deploys and the health check
 - Phase: 1
-- Goal: The app deploys itself to Railway as web, worker and cron services with Postgres and a bucket, set up as code, and its health check proves it really works. Main example: the pull request's copy answers `/api/v1/health` with this commit, and the database and bucket working. Failure example: with the database unreachable, health answers 503 and names it.
+- Goal: The app deploys itself to Railway as web, worker and cron services with Postgres and a bucket, set up as code, and its health check proves it really works. Main example: the pull request's copy answers `/api/v1/health` with this commit, and the database and bucket working. Failure example: with the database unreachable, health answers 503 and names it. It creates: `createApp(deps)` (Express) in `src/web.ts`, serving `GET /api/v1/health`; `checkHealth(deps): Promise<Health>` in `src/health.ts`; `hashSecret(plain)` and `verifySecret(plain, hash)` in `src/auth/hash.ts`; `seedTestCredentials(db, env)` in `src/config/seed.ts`; the worker and cron entries (`src/worker.ts`, `src/cron.ts`); and `npm run smoke -- --url <url>` (`scripts/smoke.ts`).
 - Covers: RUN-01, RUN-12
 - Defers: RUN-08 (the nightly jobs: F-25), RUN-10 (keys, login and caps: F-44, F-46, F-17)
 - Depends on: F-01, F-04, F-37
@@ -222,7 +225,8 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Owns: `.railway/railway.ts`, `src/web.ts`, `src/worker.ts`, `src/cron.ts`, `src/health.ts`, `src/auth/hash.ts`, `src/config/seed.ts`, `scripts/smoke.ts`, `package.json` (the `smoke` script), `docs/railway-dashboard-steps.md`
 - Reads: `brain/spec/architecture.md` (Stack, Railway layout, Modules, Secrets, Environments); `brain/spec/requirements.md` RUN-01, RUN-10, RUN-12; the contract's `Health` and `/api/v1/health`; `harness.yaml` (deploy); `brain/handoffs/harness-throwaway-test.md` (what HT-02..HT-04, HT-07 and HT-11 proved)
 - Checks:
-  - blocking: F-36 health answers 200 with the version, the commit and `database`, `bucket`, `opencv` and `sharp` true, against working fakes
+  - blocking: F-36 health answers 200 with the version, the commit, the environment's name, the database's and bucket's names, and `database`, `bucket`, `opencv` and `sharp` true, against working fakes
+  - blocking: F-36 no health answer contains a secret or a connection string
   - blocking: F-36 with the database or the bucket failing (faked), health answers 503 and names it in `failing`
   - blocking: F-36 health's answers validate against the contract's `Health`
   - blocking: F-36 in staging and pull-request environments, start-up seeds the test admin password and library key as hashes; in production it never does
@@ -230,6 +234,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-36 `npm run smoke -- --url <url>` runs every `test/**/*.smoke.ts` (and nothing else) against that address, with the environment's test credentials passed in
   - blocking: `npm run check` type-checks `.railway/railway.ts`
   - blocking, smoke: F-36 the deployed copy's `/api/v1/health` answers 200 with this commit, and the database and bucket working
+  - blocking, smoke: F-36 the pull request's copy names its own environment, database and bucket, none of them production's
   - report: F-36 anything `.railway/railway.ts` can't express is listed in `docs/railway-dashboard-steps.md`
 - Test data: none
 - Side effects: deploy (pull-request copies), migration (pull-request copies, staging)
@@ -240,7 +245,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-49: Jobs started over the web
 - Phase: 1
-- Goal: The harness starts work on a deployed copy over HTTPS, never with `railway run`. Main example: `POST /api/ops/jobs` with the ops key and kind `noop` answers 202, and the job's state reads `done`. Failure example: without the ops key, 401; a trial job on a pull-request copy is refused.
+- Goal: The harness starts work on a deployed copy over HTTPS, never with `railway run`. Main example: `POST /api/ops/jobs` with the ops key and kind `noop` answers 202, and the job's state reads `done`. Failure example: without the ops key, 401; a trial job on a pull-request copy is refused. It creates: `opsRouter(deps)` in `src/api/ops.ts`, serving `POST /api/ops/jobs`, `GET /api/ops/jobs/{id}` and `GET /api/ops/spend`; `loadJobKinds()` and the type `JobKind = { kind; environments; run(ctx, params): Promise<report> }` in `src/jobs/index.ts`; the `noop` kind; and `npm run record-ops -- F-NN --kind <kind>`.
 - Covers: RUN-11
 - Defers: none (each job kind arrives with its own card)
 - Depends on: F-04, F-36
@@ -264,7 +269,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-53: Phase 1 gate
 - Phase: 1
-- Goal: Prove it: the foundation holds together on a deployed copy (health, migrations, the bucket and jobs over the web), with no secret anywhere. This is Phase 1's gate card; the verifier adds its tests here.
+- Goal: Prove it: the foundation holds together on a deployed copy (health, migrations, the bucket and jobs over the web), with no secret anywhere. This is Phase 1's gate card; the verifier adds its tests here. It creates nothing: it's a gate.
 - Covers: none
 - Defers: none
 - Depends on: F-03, F-49
@@ -348,7 +353,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-31: Teacher sync through GitHub
 - Phase: 2
-- Goal: Sync the active authors from the private library-pipeline repo into the database, with stable teacher ids, as a job and by command. Main example: a recorded `authors.csv` syncs to the expected teachers, and a second sync changes nothing. Failure example: a broken file leaves the existing teachers exactly as they were.
+- Goal: Sync the active authors from the private library-pipeline repo into the database, with stable teacher ids, as a job and by command. Main example: a recorded `authors.csv` syncs to the expected teachers, and a second sync changes nothing. Failure example: a broken file leaves the existing teachers exactly as they were. It creates: `syncTeachers(db, csvText, opts): Promise<SyncReport>` in `src/teachers/sync.ts`; `fetchAuthorsCsv(client, token): Promise<string>` in `src/teachers/github.ts`; the job kind `sync`; the command `portraits sync`.
 - Covers: IN-01, IN-03, IN-04, IN-12
 - Defers: AC-01 (the whole chain: F-26), RUN-08 (nightly, through the cron job: F-25)
 - Depends on: F-02, F-04, F-06, F-08, F-49
@@ -374,7 +379,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-07: Licence classifier and credit lines
 - Phase: 2
-- Goal: Map any Commons, LoC or Wellcome rights statement to tier 1, tier 2, held or refused, and build each file's licence and credit line. Main example: "No known restrictions on publication" is tier 1. Failure example: CC BY-NC is refused, and CC BY-SA 1.0 is held before anything is spent.
+- Goal: Map any Commons, LoC or Wellcome rights statement to tier 1, tier 2, held or refused, and build each file's licence and credit line. Main example: "No known restrictions on publication" is tier 1. Failure example: CC BY-NC is refused, and CC BY-SA 1.0 is held before anything is spent. It creates: `classifyLicence(evidence: RightsEvidence): LicenceVerdict` (tier 1 or 2, or `held` or `refused` with a reason and the raw text) and `adaptationLicence(verdict)` in `src/sources/licences.ts`; `originalCredit(record)` and `adaptationCredit(record, fileKind)` in `src/sources/credits.ts`.
 - Covers: SRC-02, SRC-11
 - Defers: none
 - Depends on: F-06
@@ -485,7 +490,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-38: Coverage survey
 - Phase: 2
-- Goal: Search every active teacher on every registered source, without downloading or spending, and report coverage, so Smithsonian, the trial set and PIP-20's real pairs can be decided. Main example: five recorded teachers give the expected counts by source, rule and licence tier. Failure example: any file download or model call fails the check.
+- Goal: Search every active teacher on every registered source, without downloading or spending, and report coverage, so Smithsonian, the trial set and PIP-20's real pairs can be decided. Main example: five recorded teachers give the expected counts by source, rule and licence tier. Failure example: any file download or model call fails the check. It creates: `runSurvey(db, sources, teachers, opts): Promise<SurveyReport>` in `src/sources/survey.ts`; the job kind `survey`; the command `portraits survey [--teacher ID]`.
 - Covers: SRC-14
 - Defers: TRI-02 (the trial set is picked from the survey's report in F-28, from staging's real survey in F-52), PIP-20 (its thresholds are checked on the real pairs in F-52)
 - Depends on: F-09, F-31, F-49
@@ -507,7 +512,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-54: Phase 2 gate
 - Phase: 2
-- Goal: Prove it: Phase 2's pieces work together offline, from the authors list to candidates in the rights log, and every recorded request went only to an allowed host. This is Phase 2's gate card; the verifier adds its tests here.
+- Goal: Prove it: Phase 2's pieces work together offline, from the authors list to candidates in the rights log, and every recorded request went only to an allowed host. This is Phase 2's gate card; the verifier adds its tests here. It creates nothing: it's a gate.
 - Covers: none
 - Defers: none
 - Depends on: F-32, F-38
@@ -845,7 +850,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-55: Phase 4 gate
 - Phase: 4
-- Goal: Prove it: in stub mode, one teacher's candidates go through every model step with every cap enforced, and no model is ever sent a TIFF or an oversized image. This is Phase 4's gate card; the verifier adds its tests here.
+- Goal: Prove it: in stub mode, one teacher's candidates go through every model step with every cap enforced, and no model is ever sent a TIFF or an oversized image. This is Phase 4's gate card; the verifier adds its tests here. It creates nothing: it's a gate.
 - Covers: none
 - Defers: none
 - Depends on: F-11, F-18, F-19, F-21
@@ -888,7 +893,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-23: Per-teacher pipeline and failure policy
 - Phase: 5
-- Goal: Take one teacher from candidates to published portraits: open slots, the choice of photographs, pre-check, AI copy, draft, check, remake and set-asides, all with stubs. Main example: a teacher with five different photographs gets three portraits, the best-known one first, then spread across their life. Failure example: a draft failing twice sets its original aside, and the next photograph is tried.
+- Goal: Take one teacher from candidates to published portraits: open slots, the choice of photographs, pre-check, AI copy, draft, check, remake and set-asides, all with stubs. Main example: a teacher with five different photographs gets three portraits, the best-known one first, then spread across their life. Failure example: a draft failing twice sets its original aside, and the next photograph is tried. It creates: `processTeacher(ctx, teacherId): Promise<TeacherRunResult>` in `src/pipeline/teacher.ts`; `choosePhotographs(photographs, openSlots, teacher): Photograph[]` in `src/pipeline/choose.ts`; `recordFailure(...)` and `isSetAside(...)` in `src/pipeline/failures.ts`. The contract step settles their exact types.
 - Covers: PIP-01, PIP-10, PIP-11, PIP-12, PIP-14, PIP-16, PIP-19, PIP-21
 - Defers: PIP-17 and PIP-18 (later runs and the library's corrections: F-48)
 - Depends on: F-11, F-16, F-18, F-19, F-21, F-24
@@ -907,7 +912,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-23 a source date beats an estimated one; an estimate uses the birth year
   - blocking: F-23 a cut-out limit failure, or a failed enhance call, triggers one fallback call; a failing fallback fails the draft, and the remake tries once more
   - blocking: F-23 a second run never tries a set-aside photograph again
-- Test data: a stub world (sources, models and images) for three teachers, in `test/fixtures/f23/`; F-25, F-26 and F-48 reuse it
+- Test data: a stub world for three teachers in `test/fixtures/f23/` (recorded source responses, canned model answers and images), served through the product's own replay client (F-06) and stub model client (F-17); F-25, F-26 and F-48 reuse it
 - Side effects: none
 - Parkable: no
 - Size: L
@@ -1111,7 +1116,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-27: Live smoke test on staging
 - Phase: 6
-- Goal: Prove it: on staging, with the real models, one real teacher goes end to end within $2, and the library stub completes against staging. Main example: a `run` job for Charles Fillmore publishes at least one portrait whose files all pass their checkers. Failure example: a file failing its checker fails the card.
+- Goal: Prove it: on staging, with the real models, one real teacher goes end to end within $2, and the library stub completes against staging. Main example: a `run` job for Charles Fillmore publishes at least one portrait whose files all pass their checkers. Failure example: a file failing its checker fails the card. It creates nothing: it's a prove-it card.
 - Covers: OUT-10
 - Defers: none
 - Depends on: F-26
@@ -1132,7 +1137,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-28: The trial, its board and its result
 - Phase: 6
-- Goal: Build the trial: pick the set from a survey report, run each enhance model on each original with and without the blend, score them, choose the winner and show the board, all offline with stubs. Main example: from a fixture survey report and canned answers, the result names the winner by TRI-04 and the board shows every contender side by side. Failure example: a stubbed trial that touches the portraits, candidates or changes tables fails the card.
+- Goal: Build the trial: pick the set from a survey report, run each enhance model on each original with and without the blend, score them, choose the winner and show the board, all offline with stubs. Main example: from a fixture survey report and canned answers, the result names the winner by TRI-04 and the board shows every contender side by side. Failure example: a stubbed trial that touches the portraits, candidates or changes tables fails the card. It creates: `pickTrialSet(surveyReport, examples): TrialItem[]` in `src/pipeline/trialSet.ts`; `runTrial(ctx, opts): Promise<TrialResult>` and `chooseWinner(scores): Winner` in `src/pipeline/trial.ts`; the job kinds `trial` and `trial_examples`; the page `GET /admin/trial`; the command `portraits trial`. The contract step settles their exact types.
 - Covers: TRI-01, TRI-03, TRI-04, TRI-05, TRI-07, TRI-09
 - Defers: TRI-02 (the real set, from staging's survey: F-52), TRI-06 (written into the settings: F-50), TRI-08 (the examples: F-29)
 - Depends on: F-26, F-38
@@ -1156,7 +1161,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-52: Run the trial on staging
 - Phase: 6
-- Goal: Prove it: the trial runs on staging with the real models, within $27, and its result names a winner for F-50 to apply. Main example: sync, survey and trial jobs finish, and the result scores every contender. Failure example: the trial's spend passing $27 fails the card.
+- Goal: Prove it: the trial runs on staging with the real models, within $27, and its result names a winner for F-50 to apply. Main example: sync, survey and trial jobs finish, and the result scores every contender. Failure example: the trial's spend passing $27 fails the card. It creates nothing: it's a prove-it card.
 - Covers: TRI-02
 - Defers: TRI-06 (F-50)
 - Depends on: F-28
@@ -1178,7 +1183,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-50: The trial's winner in the settings
 - Phase: 6
-- Goal: Write the trial's result into the settings with a new `recipeVersion`. A job on Railway can't change the repo, so this card does (TRI-06). Main example: the recorded result's winning model and thresholds land in `settings.ts` under a new version. Failure example: changing the recipe without a new version fails STY-05's check. It merges at once, with its notice on the control issue; the owner's `/veto` reverts it.
+- Goal: Write the trial's result into the settings with a new `recipeVersion`. A job on Railway can't change the repo, so this card does (TRI-06). Main example: the recorded result's winning model and thresholds land in `settings.ts` under a new version. Failure example: changing the recipe without a new version fails STY-05's check. It merges at once, with its notice on the control issue; the owner's `/veto` reverts it. It changes only `src/config/settings.ts`: the enhance model, the blend and any thresholds the trial set, under a new `recipeVersion`.
 - Covers: TRI-06
 - Defers: none
 - Depends on: F-52
@@ -1199,7 +1204,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-29: The examples reproduced
 - Phase: 6
-- Goal: Prove it: with the trial's defaults, the pipeline reproduces the owner's three hand-made portraits closely enough. Main example: each example passes "compare with target", and the code measures meet TRI-08. Failure example: an example appearing in any portrait, candidate or change fails the card (D-13).
+- Goal: Prove it: with the trial's defaults, the pipeline reproduces the owner's three hand-made portraits closely enough. Main example: each example passes "compare with target", and the code measures meet TRI-08. Failure example: an example appearing in any portrait, candidate or change fails the card (D-13). It creates nothing: it's a prove-it card.
 - Covers: TRI-08, IN-09, AC-04
 - Defers: none
 - Depends on: F-50
@@ -1219,7 +1224,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-47: The release
 - Phase: 6
-- Goal: Prove it: the release candidate works on its deployed copy, with the trial's defaults in its settings. The conductor then promotes that exact commit to production after the 24-hour veto window (D-66). It's production's first deploy, and its nightly schedule is on from then (RUN-08). The owner's steps around it are on the release checklist. This is Phase 6's gate card; the verifier adds its tests here.
+- Goal: Prove it: the release candidate works on its deployed copy, with the trial's defaults in its settings. The conductor then promotes that exact commit to production after the 24-hour veto window (D-66). It's production's first deploy, and its nightly schedule is on from then (RUN-08). The owner's steps around it are on the release checklist. This is Phase 6's gate card; the verifier adds its tests here. It creates nothing: it's a prove-it card and Phase 6's gate.
 - Covers: RUN-08
 - Defers: RUN-04 (the first pass is watched over the nights it takes, on the release checklist), AC-05 (completed by the harness's own record)
 - Depends on: F-27, F-50

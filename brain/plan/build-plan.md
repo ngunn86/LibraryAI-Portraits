@@ -58,18 +58,19 @@ The harness's own rules are in `../../Coding Harness Instructions.md` (from the 
 
 **One card's path** (D-65)
 1. **Pick** the next ready card: every card in its *Depends on* merged, its owner inputs `done` (§3), in the file's order.
-2. **Tests first.** Gemini lists the cases; Codex writes the card's acceptance tests (`test/fNN-*.test.ts`, fixtures in `test/fixtures/fNN/`). Any recording named in `Test data` is made first, once, with network. The conductor checks the tests fail on the code as it stands, then locks them. F-01, the setup card, skips this step.
-3. **Contract** for size L cards (F-23, F-28): Claude says how it will build and prove each check; Codex approves.
-4. **Build:** Claude, in the worker box, on the card's branch, changing only the card's `Owns`. It may add its own unit tests and fakes.
-5. **Check,** in a fresh box from the exact commit: `npm run check`, the card's tests, the full suite, `npm run build`, and a scan for gaming.
-6. **Review:** Codex and Gemini, independently. P0 and P1 findings block.
+2. **Contract** for size L cards (F-23, F-28): Claude says how it will build and prove each check, including the interfaces it will create; Codex approves.
+3. **Tests first.** Gemini lists the cases; Codex writes the card's acceptance tests from the card (including what its `Goal` says it creates), its specs and any contract: `test/fNN-*.test.ts`, plus `test/fNN-*.smoke.ts` for smoke checks, with fixtures in `test/fixtures/fNN/`. Each test case has a unique name starting with the card's ID (`F-07: …`). Any recording named in `Test data` is made first, once, with network. The conductor checks the tests fail on the code as it stands, for the right reason (a missing module or a failed assertion, never a syntax error), then locks them. F-01, the setup card, skips this step.
+4. **Build:** Claude, in the worker box, on the card's branch, changing only the card's `Owns`, with the locked tests in its packet and the project installed. It may add its own unit tests and fakes.
+5. **Check,** in a fresh box with no logins, from the exact commit: `npm run check`; the card's own tests by path, printing TAP (`./node_modules/.bin/tsx --test --test-reporter=tap "test/fNN-*.test.ts"`), where every named case must run and pass; the full suite; `npm run build`; and a scan for gaming.
+6. **Review,** only of a commit whose checks passed: Codex and Gemini, independently. P0 and P1 findings block.
 7. **Smoke,** for cards with smoke checks: on the pull request's copy, with `npm run smoke -- --url {url}`. Phase 6's prove-it cards (F-27, F-52, F-29) say `staging only` in their side effects: their checks run on staging, which already has the code they test.
 8. **Grade:** A only if every blocking check, both reviews and the smoke checks pass, for one commit. The conductor computes it.
-9. **Merge at once** (D-62), with the evidence on the control issue (D-63). The merge deploys staging. The conductor runs the health check there (RUN-12); a failure rolls staging back and stops new cards until it's fixed.
+9. **Merge at once** (D-62), by a fast-forward push to `main`, with the evidence on the control issue (D-63). If `main` moved meanwhile (a planning push, say), the card brings it in and is checked again. The merge deploys staging, from F-36 on (`deploy.starts_at`). The conductor runs the health check there (RUN-12); a failure rolls staging back and stops new cards until it's fixed.
 10. **Record** the evidence, spend and lessons.
 
 **Environments and the veto window** (D-66)
-- **Pull-request copies:** stub mode, no AI key, no cron, seeded test credentials (RUN-10, O-13).
+- **Pull-request copies:** based on staging, never production, each with its own test database and bucket and staging's test credentials (RUN-10, O-13); stub mode, no cron, and no AI key where Railway allows (HT-32). Before smoke checks, the harness reads the copy's health to confirm it isn't using production's database or bucket (RUN-12).
+- **Nothing deploys before F-36** (`deploy.starts_at`), the card that makes the app deployable with its health endpoint.
 - **Staging:** Railway environment `staging`, deployed from `main` on every merge (`deploy.staging: on-merge`).
 - **Production:** Railway environment `production`. Only the conductor promotes to it, with a production token kept outside the worker box. It promotes one exact release:
   - after a notice on the control issue, and only once **24 hours** have passed without a `/veto`;
@@ -81,6 +82,8 @@ The harness's own rules are in `../../Coding Harness Instructions.md` (from the 
   3. **F-47, the release,** proves the release candidate on its deployed copy. The conductor then posts the promotion notice and, after the 24-hour window, promotes that commit to production. Production's schedule is on from that first deploy (RUN-08).
   4. **After the release,** production is promoted again only for a fix, each through its own window.
 - **The owner's own path stays:** the owner can always deploy or roll back by hand in Railway (D-35).
+
+**Planning during a build.** Planning commits still go to `main`. A running card brings them in and is checked again, and a change to the specs a running card reads voids its evidence. So planning changes during a build are batched, and pushed between cards where possible.
 
 **Never idle** (D-63). A question goes out as an alert on the control issue at once, and the harness carries on with every card it doesn't block. A card whose owner input is missing is skipped (§3).
 
@@ -114,7 +117,7 @@ Everything else in `brain/` is protected. **Recipe numbers** change only through
 
 - **One command:** `npm test` (`tsx --test`, Node's own test runner). It runs offline: the outbound client refuses all hosts in tests, and no keys are set. `npm run check` (`tsc`) and `npm run build` run beside it, as in the library.
 - **The database in tests:** PGlite (Postgres compiled to WebAssembly, in-process). The same Drizzle migrations run against it, so tests need no database server. The PR copy's real Postgres is covered by the smoke tests.
-- **Per-card checks:** each check on a card is a test named after the card, in a file named after it (`test/f12-crop.test.ts`), written first by the test author (Codex, D-65) and locked. So `npm test -- --test-name-pattern "F-12"` runs one card's checks. The builder may add its own unit tests, but never edits the locked ones.
+- **Per-card checks:** each check on a card is a test case named after the card (`F-12: …`, unique), in a file named after it (`test/f12-crop.test.ts`), written first by the test author (Codex, D-65) and locked. One card's checks run by path, printing TAP: `./node_modules/.bin/tsx --test --test-reporter=tap "test/f12-*.test.ts"`, never a name filter or `npx`. The builder may add its own unit tests, but never edits the locked ones.
 - **Fixtures** for a card's acceptance tests go in `test/fixtures/fNN/`, made by the test author. Recordings of real responses are made by the command named in the card's `Test data`, run once by the harness with network before the tests are locked.
 - **Fixtures:**
   - recorded responses from Wikidata, Commons, loc.gov, id.loc.gov and Wellcome, recorded once and committed;

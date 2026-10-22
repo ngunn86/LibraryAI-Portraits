@@ -1,6 +1,6 @@
 # The portraits API (T-08)
 
-**Status: draft 6 (2026-10-21).**
+**Status: draft 7 (2026-10-22).**
 - Draft 2 added each file's `licence_url` (D-48).
 - Draft 3 added the teacher's LoC name id, `lcnaf_id` (IN-13).
 - Draft 4 unifies the original's `Source` record with SRC-08: `source`, `source_id`, `licence_tier`, `matched_by`, `matched_to` and `medium`. It also adds `ids_from`, the `skipped` search state, and the health fields, and defines `replaced` and `another_original`.
@@ -14,6 +14,7 @@
   - `refused_reason` is one of eight codes (`crop_note`, `outline_note`, `licence_refused`, `licence_held`, `precheck_failed`, `draft_failed`, `no_candidates`, `cap_reached`).
 
 - Draft 6 (2026-10-21) makes the health check mean "working" (RUN-12): it adds `database`, `bucket` and `failing`, and answers 503 when something fails. The harness checks it on staging after every merge and rolls staging back if it fails.
+- Draft 7 (2026-10-22) adds `environment`, `database_name` and `bucket_name` to the health check (names only, never secrets), so the harness can confirm a pull-request copy isn't using production's data.
 
 Defined by this project and adopted by the library (D-37). The machine contract is [portraits-api.openapi.json](portraits-api.openapi.json) (OpenAPI 3.1). [portraits-api.sample.json](portraits-api.sample.json) holds example payloads, and [check_api.py](check_api.py) checks the two against each other offline.
 

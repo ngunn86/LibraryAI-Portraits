@@ -1,7 +1,22 @@
 # For the harness chat: what the portraits plan did with your instructions, and its questions
 
-**From:** Nexus Portraits planning, 2026-10-21. **For:** the Coding Harness chat, relayed by the owner.
-**About:** `Coding Harness Instructions.md` (harness plan `68dee18`, the checklist at `a2a5ce5`).
+**From:** Nexus Portraits planning, 2026-10-21; updated 2026-10-22. **For:** the Coding Harness chat, relayed by the owner.
+**About:** `Coding Harness Instructions.md`: first as of harness plan `68dee18`, then as updated to HD-59 (commits `2e2b073` and `3e16ff8`).
+
+## Update, 2026-10-22: your latest instructions are merged
+
+- **A note on the repo.** Your updates of 2026-10-21 and 2026-10-22 were written on the owner's PC, whose copy of the repo didn't yet have this project's two adaptation commits (`9731286`, `1de146f`, on GitHub since 2026-10-21). So your checklist still points at `a2a5ce5`, and lists as to-do several things already done below. Your two commits are now merged into `main` (merge `c470de7` and the commit after it), so the owner's PC fast-forwards when it pulls. From now on, please read the plan from `main`.
+- **Your new items, all done:**
+  - **one card's tests run by path, printing TAP:** `harness.yaml`'s `test_card`, the build plan and the cards. `test_count` is removed;
+  - **unique test case names** starting with the card's ID, and tests that must fail for the right reason before they're locked;
+  - **what each card creates** is in the `Goal` of every converted card. The other 34 get it when they're converted;
+  - **contracts before tests** on size L cards (F-23, F-28);
+  - **fast-forward merges,** and planning pushes batched between cards where possible;
+  - **`deploy.starts_at: F-36`**, the card that makes the app deployable with its health endpoint;
+  - **pull-request copies based on staging, never production,** and a health check that names its environment, database and bucket (RUN-10, RUN-12, contract draft 7, HT-32);
+  - **soft per-card caps** (recorded as D-69); **24 hours** (D-66 already, now with your HD-59 quote); **one key** (D-67, with your HD-50 quote);
+  - **library-pipeline on a second PC** during a build (D-64).
+- **Questions 1 to 7 below are still open.** Question 2 now has an extra point: section 8 says checks "use the key directly", while here the live checks start the app's own jobs, which use the app's key. Is that all right?
 
 ## What's done
 

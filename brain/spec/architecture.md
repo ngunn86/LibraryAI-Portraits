@@ -37,7 +37,8 @@ The aim is the simplest structure that meets the requirements, and that rehearse
 ```
 project nexus-portraits
   environments:
-    pr-<n>      one per pull request: stub mode, no AI key, no cron, seeded test credentials
+    pr-<n>      one per pull request, based on staging (never production): its own test database and bucket,
+                staging's test credentials, stub mode, no cron, and no AI key where Railway allows (HT-32)
     staging     deployed from `main` on every merge; jobs only when started (RUN-11)
     production  deployed only by the conductor, after the 24-hour veto window (D-66)
   web      node dist/web.js     API (OUT-14), ops jobs (RUN-11) + admin pages (OUT-13); healthcheck /api/v1/health

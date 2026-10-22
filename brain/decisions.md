@@ -570,7 +570,7 @@ The owner made these in the Coding Harness chat; the IDs in brackets are that ch
 
 **D-64 · 2026-10-20 · The harness's use of the PC and the plans** · owner · *HD-40, HD-41*
 - **No usage reserve** (HD-41): the harness uses each subscription until the tool stops it, including extra usage the owner turns on, then waits for the reset.
-- **The PC is dedicated to the build while it runs** (HD-40): library-pipeline doesn't run then.
+- **The PC is dedicated to the build while it runs** (HD-40): library-pipeline doesn't run on it then. If it's needed during a build, the owner runs it on a second PC (HD-49).
 
 → `plan/build-plan.md` §4
 
@@ -581,12 +581,19 @@ The owner made these in the Coding Harness chat; the IDs in brackets are that ch
 - **It runs in a worker box on the owner's PC:** a Docker container holding only the card's working copy, the agents' logins and the test services, with no GitHub or Railway credentials. Only the conductor pushes, merges and deploys, and it never runs project code with `railway run`.
 - **A build agent** reads what its packet names, changes only its card's `Owns`, never edits the notes, and writes `BLOCKED.md` when a spec or test looks wrong.
 - The cards follow the harness's **format 1**, and the project gets a `harness.yaml`.
+- **Added 2026-10-22** (the harness's instructions as of HD-59, after its own reviews):
+  - on size L cards, the **contract comes before the tests**, and the tests are written from it;
+  - each card's tests run **by file path, printing TAP** (`./node_modules/.bin/tsx --test --test-reporter=tap "test/fNN-*.test.ts"`), never by a name filter or with `npx`. Each test case has a unique name starting with its card's ID, and the harness checks that every named case ran and passed;
+  - **each card says what it creates** (module paths and exported names, or the routes and commands), so the tests and the code meet;
+  - a card merges by a **fast-forward push** to `main`. If `main` moved meanwhile (a planning push, say), the card brings it in and is checked again;
+  - **deploys and health checks start at one named card** (`deploy.starts_at`: F-36 here), so earlier scaffolding never triggers a rollback;
+  - **pull-request copies are based on staging, never production,** and the health check names its environment, database and bucket.
 
 → CLAUDE.md, AGENTS.md, GEMINI.md, `harness.yaml`, `plan/build-plan.md` §4–5, `plan/features.md`
 
 ## From the owner, on the harness's instructions (2026-10-21)
 
-**D-66 · 2026-10-21 · A 24-hour veto window for production** · owner
+**D-66 · 2026-10-21 · A 24-hour veto window for production** · owner · *the harness chat matched it on 2026-10-22 (HD-59: "Switch to 24 hours for the portraits", replacing its earlier 72)*
 "24 hours."
 - A production deploy, or switching something on there, waits 24 hours after its notice on the control issue, so the owner can `/veto` it.
 - The window covers one exact release, and restarts if the release changes. The conductor promotes only after the notice is posted, and only if it read the control issue within the last 10 minutes.
@@ -594,9 +601,9 @@ The owner made these in the Coding Harness chat; the IDs in brackets are that ch
 
 → `harness.yaml` (`deploy.production`), `plan/build-plan.md` §4
 
-**D-67 · 2026-10-21 · Keep one OpenRouter key** · owner · *confirms D-55*
+**D-67 · 2026-10-21 · Keep one OpenRouter key** · owner · *confirms D-55; the same as HD-50 in the harness chat ("Lets use the one paid key for portraits")*
 "Keep one key."
-- One key serves production and staging. Its limit at OpenRouter is the boundary the provider enforces; the per-environment caps in code are the second line.
+- One key serves production and staging. The per-environment caps in code are the first line, and normally stop spending. The key's limit at OpenRouter is the hard ceiling the provider enforces, since code the builder can edit isn't a boundary.
 - **Pull-request copies don't get the key at all,** so they can't spend even if their code is wrong (Claude's choice; it keeps one key).
 - **The key's limit is set in steps** by the owner (O-4), never higher than what the plan can spend by then (Claude's proposal):
   1. from the first live card to the release: **$50**, no reset (staging's $10 a month while building, the trial's $30, and a margin);
@@ -613,3 +620,10 @@ The owner made these in the Coding Harness chat; the IDs in brackets are that ch
 - Everything else stays plain: server-rendered pages, one stylesheet, nothing to design.
 
 → OUT-13, TRI-05, F-46
+
+**D-69 · 2026-10-21 · Per-card spending caps are soft** · owner, in the harness chat (HD-56)
+- The harness adds up spend after each check and stops a card once it's over its cap. A card's own `Side effects: paid (≤ $N)` sets that cap, overriding the default `per_card_usd`.
+- The key's limit at OpenRouter stays the hard ceiling (D-67).
+- Here, live checks start the app's own jobs over the web (RUN-11), so the harness reads the spend from `GET /api/ops/spend` after each check.
+
+→ `harness.yaml` (`limits`), RUN-04, RUN-11, F-27, F-52, F-29
