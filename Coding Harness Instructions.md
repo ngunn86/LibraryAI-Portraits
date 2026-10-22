@@ -1,7 +1,8 @@
 # Coding Harness Instructions: the portraits tool
 
 **From:** the Coding Harness chat · **Date:** 2026-10-20 · **For:** this repo's planning chat
-**Harness plan:** `ngunn86/Coding-Harness` at commit `68dee18`. That repo is private, so this file is complete on its own.
+**Harness plan:** `ngunn86/Coding-Harness`, as of 2026-10-21 (its decisions up to HD-59). That repo is private, so this file is complete on its own.
+**Updated** 2026-10-22: the veto window is 24 hours, as your D-66 already says (the owner, harness HD-59). 2026-10-21: pull-request copies are based on staging, never production, and the health check names its environment, database and bucket (Codex's third review); earlier the same day, per-card spending caps became soft, with the provider's limit as the hard ceiling (the owner's choice); and before that, `test_card` never uses `npx` and each test case gets a unique name starting with its card's ID (Argon's third review), TAP output with each named case checked, `deploy.starts_at`, contracts before tests on size L cards, fast-forward merges (Codex's second), and tests run by file path with each card saying what it creates (Argon's second). Earlier, 2026-10-20: the veto window was set at 72 hours (now 24), the one paid key stays, library-pipeline may run on a second PC.
 **Placed here** at the owner's request (harness decision HD-47). It's the only file the harness chat writes in this repo; commit it with your next planning round. When the harness's requirements change, the harness chat updates this file and says so at the top.
 
 ## 1. What this file is, and how to use it
@@ -16,7 +17,7 @@ The Coding Harness will build this project, right after its throwaway test app (
 
 ## 2. How the harness will build this project
 
-The harness is a script on the owner's PC (Windows, WSL Ubuntu) that builds a project one work card at a time, unattended, on the owner's subscriptions (Claude Max, ChatGPT, Google AI Ultra), never API billing for its agents. Its plan lives in the private repo `ngunn86/Coding-Harness`; this file carries everything a project needs from it, so you don't need that repo.
+The harness is a general-purpose script on the owner's PC (Windows, WSL Ubuntu) that builds the owner's projects, this one included, one work card at a time, unattended, on the owner's subscriptions (Claude Max, ChatGPT, Google AI Ultra), never API billing for its agents. Its plan lives in the private repo `ngunn86/Coding-Harness`; this file carries everything a project needs from it, so you don't need that repo.
 
 **Who does what**
 
@@ -33,19 +34,19 @@ The harness is a script on the owner's PC (Windows, WSL Ubuntu) that builds a pr
 **One card's path**
 
 1. **Pick** the next ready card: dependencies done, owner inputs present, in the file's order.
-2. **Tests first.** Gemini lists the cases the tests must cover. Codex writes the card's acceptance tests from the card, its specs and that list. The conductor checks they fail on the code as it stands (so they test something real), then locks them for the card.
-3. **Contract** (size L cards only). The builder says how it will build the card and prove each check; Codex approves or asks for changes.
-4. **Build.** Claude works on the card's branch in a fresh session, inside the worker box (below), and may add its own tests.
+2. **Contract** (size L cards only). The builder says how it will build the card and prove each check, including the interfaces it will create; Codex approves or asks for changes.
+3. **Tests first.** Gemini lists the cases the tests must cover. Codex writes the card's acceptance tests from the card, its specs, the contract and that list. The conductor checks they fail on the code as it stands, for the right reason, then locks them for the card.
+4. **Build.** Claude works on the card's branch in a fresh session, inside the worker box (below), with the card's locked acceptance tests in its packet and the project installed, so it can run `check` and its card's tests as it works. It may add its own tests.
 5. **Check,** in a fresh box from the exact commit: the project's `check`, the card's tests, the full suite, `build`, and a scan for gaming (skipped or deleted tests, swallowed errors, hard-coded answers). A check that runs no tests fails.
-6. **Review.** Codex and Gemini review the same commit and return structured verdicts. P0 and P1 findings block; P2 and P3 go to a backlog.
+6. **Review,** only of a commit whose checks passed. Codex and Gemini review the same commit and return structured verdicts. P0 and P1 findings block; P2 and P3 go to a backlog.
 7. **Deploy and smoke,** for cards with smoke checks: on the pull-request copy where the project uses them, otherwise on staging before the merge.
 8. **Grade.** A only if every blocking check, both reviews and the smoke checks pass, all for the same commit. No model can award it.
-9. **Merge** that commit only, as soon as it passes, with its evidence posted on the project's control issue at once. The owner's veto reverts it.
+9. **Merge** that commit only, as soon as it passes, by a fast-forward push to `main`, with its evidence posted on the project's control issue at once. If `main` moved meanwhile (a planning push, say), the card brings it in and is checked again. The owner's veto reverts a merge.
 10. **Record** the evidence, spend and lessons.
 
 **When a card is stuck:** rounds 1 and 2, the builder fixes the findings; round 3, Codex diagnoses and writes a fix plan, which Claude applies; round 4, Gemini does the same; then the Tech Lead, up to twice. Then a `Parkable: yes` card is parked, and retried only when something it depends on changes (at most twice); a `Parkable: no` card stops the build and alerts the owner at once. A missing or malformed review is no sign-off, and another model never stands in for it. A builder that finds a spec or test wrong stops and explains in `BLOCKED.md`; the Tech Lead rules or asks the owner. A test shown to be wrong is rewritten by the test author, the change is logged, and the card's earlier evidence is void. A change pushed to a card, or to the specs it reads, while the card is running also voids its evidence.
 
-**The worker box.** The agents, and all of the project's own commands (install, tests, build, the dev server), run inside a Docker container that holds only the card's working copy, the agents' logins and the test services. It has no GitHub or Railway credentials, no Windows drives and no Docker socket. Test services such as a database run as separate containers that the harness starts. So nothing in the project may depend on Windows paths, on the owner's own logins, or on tools that aren't installed by the project's `install` command or named in its setup.
+**The worker box.** The agents, and all of the project's own commands (install, tests, build, the dev server), run inside a Docker container that holds only the card's working copy, the harness's own logins for the agents and the test services; the checks run in a fresh box with no logins at all. It has no GitHub or Railway credentials, no Windows drives and no Docker socket. Test services such as a database run as separate containers that the harness starts. So nothing in the project may depend on Windows paths, on the owner's own logins, or on tools that aren't installed by the project's `install` command or named in its setup.
 
 **Build agents and your instruction files.** Claude Code, Codex and Gemini each load the project's own instruction file by themselves (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`). The harness's prompt tells each one it's a build agent: it reads what its packet names, changes only its card's `Owns`, never edits the notes, and skips the planning chats' "read first" and "update before you finish" lists. Add a short section saying the same to each of those files (wording in the checklist below), so the two never pull against each other.
 
@@ -60,7 +61,7 @@ Made in the harness chat; IDs are the harness's (`HD-`).
 - **Never idle waiting for the owner** (HD-42, HR-57): a question goes out as an alert at once, and the harness carries on with every card the question doesn't block.
 - **Authorizations** the owner keeps (email to a real address other than the owner's, a production deploy or switch-over, deleting production data, spend above a cap, new keys or accounts, anything irreversible outside the repo) are asked on the control issue with an instant alert, naming the exact action and reason, not in the digest.
 - **No usage reserve** (HD-41): the harness uses each plan until the tool stops it, including any extra usage the owner turns on, then waits for the reset.
-- **The PC is dedicated to the build while it runs** (HD-40): library-pipeline doesn't run then.
+- **The PC is dedicated to the build while it runs** (HD-40): library-pipeline doesn't run on it then; if it's needed during a build, the owner runs it on a second PC (HD-49).
 
 ## 4. `harness.yaml`, format 1
 
@@ -83,17 +84,19 @@ Put `harness.yaml` at the repo root. Format 1 is settled, so it can be written n
 | `commands.install` | e.g. `npm ci` |
 | `commands.check` | type-check and lint, e.g. `npm run check` |
 | `commands.test` | the full suite |
-| `commands.test_card` | one card's tests, with `{card}` for its ID |
+| `commands.test_card` | the card's own acceptance test files, by path, using `{slug}`, printing TAP: `node --test --test-reporter=tap "test/{slug}-*.test.ts"` for plain Node TypeScript, or `./node_modules/.bin/tsx --test --test-reporter=tap "test/{slug}-*.test.ts"` for a project that uses tsx. Never `npx`, which would try to download a missing tool in an offline check box, and never a name filter (on Node, `--test-name-pattern` can run every test in the repo, or count each file as a passing test). The harness takes each acceptance case's name from the test author and passes the check only if every one ran and passed; an empty file, a file that crashed, or one with only skipped tests fails |
 | `commands.build` | the production build |
 | `commands.smoke` | smoke checks against a deployed copy, with `{url}` |
-| `commands.test_count` | a pattern for the line that reports how many tests ran (for `node:test`: `'^# tests (\d+)'` with the TAP reporter, `'^ℹ tests (\d+)'` with the default one); a check that ran none fails |
+| `commands.test_count` | `withdrawn` (2026-10-21): the harness reads each acceptance case's result from the TAP output itself |
 | `services` | test services the harness starts as containers, e.g. `postgres: pgvector/pgvector:pg16` |
 | `models` | optional: the model per role (`test_advisor`, `test_author`, `builder`, `tech_lead`, `reviewers`), each with `use`, `effort`, `turns`, `minutes`. Leave it out to use the harness's defaults |
 | `limits` | `rounds_per_card`, `hours_per_card`, and `paid_calls`: one entry per paid key the harness holds, each with `per_card_usd`, `per_month_usd` and `total_usd` |
-| `deploy.host` | `railway` |
-| `deploy.pr_copies` | `true`, or `false` (then smoke checks run on staging before the merge) |
+| `deploy` | leave out, or `deploy: none`, for a project that isn't hosted (a tool or a library); otherwise the fields below |
+| `deploy.host` | `railway` (the only host the harness drives for now) |
+| `deploy.pr_copies` | `true` (each copy is based on staging, never production), or `false` (then smoke checks run on staging before the merge) |
 | `deploy.staging` | `on-merge`, or `harness` (the harness deploys it with `railway up` and a staging-only token) |
 | `deploy.health` | the health check path, run on staging after every merge that deploys it |
+| `deploy.starts_at` | the card from which deploys and health checks begin (the one that makes the app deployable, with its health endpoint), so early scaffolding never triggers a rollback |
 | `deploy.production` | `{ mode: veto-window, hours: N }`, or `{ mode: owner-promotes }` |
 | `digest` | `{ issue: N, time: "07:30" }`: the control issue's number and the morning summary's time |
 
@@ -129,7 +132,7 @@ Rules:
 - Each check line starts with its marks, then the check, for example: `- blocking: F-07 resolves a teacher with one portrait`, `- report, live: F-28 trial spend stays under $27`, `- blocking, smoke: GET /api/v1/health answers 200 with this commit`, `- blocking, live, needs O-10: …`. "live" means it makes **paid** calls; a check that only uses the network (free services) is marked by the card's `Side effects: network`, not "live".
 - Checks must finish within the card's time limit. Something that has to be watched over several nights belongs on the owner's release checklist, or in a later card that reads the results.
 - Checks reach a deployed copy over HTTP only, with that environment's test credentials from the harness's store. The harness never runs project code with `railway run`, and no check touches production.
-- A check may name a test that doesn't exist yet: the test author writes the card's acceptance tests before the code. Name tests so a single card's checks can run alone (for example `npm test -- --test-name-pattern "F-12"`).
+- A check may name a test that doesn't exist yet: the test author writes the card's acceptance tests before the code. Give each test case a unique name starting with the card's ID (`F-07: resolves a teacher with one portrait`). Name test files after their card (for example `test/f12-*.test.ts`), so `test_card` can run a single card's tests by path.
 - A size L card may take up to three builder sessions per review round, each ending with a commit and a handoff note.
 - `Owns` may overlap between cards on one dependency chain (a later card adding a command to `src/cli.ts`, say, when it depends on the card that made it). `harness cards check` flags overlaps only between cards that could run at the same time. `package.json` may be owned by any card that adds a dependency; the scripts the `harness.yaml` commands use are protected.
 - Each phase ends with a **gate card** carrying the phase's own checks (evals, audits, held-back runs); the verifier adds its tests there.
@@ -140,8 +143,10 @@ Rules:
 
 - Tests run offline in the box by default, on the project's own recorded responses; paid calls happen only in checks marked `live`, on cards whose `Side effects` allow them, within the caps.
 - Acceptance tests are written first, by Codex from Gemini's list, and locked; the builder can't change them. If your plan says the builder writes each card's tests, change it: the builder may add its own unit tests and fakes, but the acceptance tests and their fixtures come from the test author, in the places `acceptance_tests` and `acceptance_fixtures` name. Don't list those files in `Owns`.
+- **Say what each card creates.** The test author writes tests before the code exists, so it imports from the module paths and names the card gives. Put them in each card's `Goal` (or in a contract it `Reads`): for example "adds `resolveTeacher(name)` in `src/pipeline/resolve.ts`", or the HTTP route or CLI command it adds. Otherwise the test author has to guess, and the builder may build something different that the locked tests can't reach.
+- Before the tests are locked they must fail for the right reason (a missing module or a failed assertion, never a syntax error). A type error inside a locked test goes back to the test author, without costing the builder a round.
 - If a card's acceptance tests pass before any code is written, the reviewers judge whether the tests are too weak or the behaviour already exists. For a "prove it" card, whose job is to show something already works, that's the expected result: the tests merge and the card is done.
-- A setup card, whose checks are commands rather than tests (the card that sets up the test runner, say), skips the tests-first step; it owns the protected setup files it creates.
+- A setup card, whose checks are commands rather than tests (the card that sets up the test runner, say), skips the tests-first step; it owns the protected setup files it creates. A command check passes when it exits 0 within its time limit; `install` applies once the project has its lockfile; and nothing deploys before the card `deploy.starts_at` names.
 - Recorded responses a card's tests need are captured before its tests are locked: name the recording command in `Test data` (for example `record: npm run record -- F-07`), and the harness runs it once with network, then locks the recordings with the tests. If the recording needs an owner input, say `needs O-n` on it.
 - The harness adds no coverage targets, mutation scores or evaluation suites of its own (the owner wants features that "work reasonably well without bugs").
 
@@ -151,12 +156,14 @@ Rules:
 - After every merge that deploys staging, the harness runs the project's health check there (`deploy.health`). A failure rolls staging back and stops new cards until it's fixed. So the app needs a health endpoint that answers only when it's really working.
 - A rollback restores the app, not its data, so **database changes must be additive** (add tables and columns; never drop, rename or rewrite in place within a release), and an earlier release must keep working against the newer database.
 - A veto reverts the card and sends any card built on it back to have its checks run again.
+- **Pull-request copies are based on staging, never production.** Railway bases them on production unless told otherwise, and a copy based on production would carry production's keys and could reach its data. So each copy gets staging's test credentials and its own test database and storage, and the health endpoint reports its environment's name and which database and bucket it uses (names only, never a secret), so the harness can check before smoke checks run that a copy isn't using production's.
 - Leftover pull-request copies and temporary environments are removed daily and at the end of a run.
 
 ## 8. Keys and spending
 
 - Project keys live in the harness's own secret store on the PC. They're never in the repo, never in a `.env` file in the working copy, and never shown to the agents; a check that needs one gets it in a fresh box with no agent running.
-- **Every paid-API key the owner gives the harness has a spending limit set on the provider's own website, no higher than the project's cap.** A cap written into code the builder can edit isn't a boundary; the provider's limit is. The harness's own count is the second line.
+- **Every paid-API key the owner gives the harness has a spending limit set on the provider's own website, no higher than the project's cap.** That's the hard ceiling: a cap written into code the builder can edit isn't a boundary.
+- **Per-card caps are soft** (the owner's choice, HD-56): checks use the key directly, and the harness adds up spend after each check and stops the card once it's over. A card's own `Side effects: paid (≤ $N)` sets its cap, overriding the default `per_card_usd`, and only the card can say so.
 - The digest reports spend as three lines: the agents' usage, the app's paid calls, and hosting.
 
 ## 9. Your checklist
@@ -177,6 +184,8 @@ References are to commit `a2a5ce5`.
 - [ ] **F-01 is a setup card.** Its checks are the commands themselves (`npm run check`, `npm test`, `npm run build`), so it skips the tests-first step. It owns the protected setup files it creates: the `package.json` scripts, `tsconfig.json` and the test runner's settings.
 - [ ] **Shared files.** Overlapping `Owns` are fine along one dependency chain. Check that each of these pairs is on one: `src/cli.ts` (:104 and :918, plus commands added at :279, :409, :815, :893), `worker.ts` and `cron.ts` (:192 and :792), `teacher.ts` (:768 and :868), `settings.ts` (:98, :1014 and :586), and `src/admin` (:893 and :1009).
 - [ ] **Multi-night checks** (:1051-1052) can't be card checks, because a card has a time limit. Move them to the owner's release checklist, or to a later card that reads the results.
+- [ ] **Running one card's tests.** `features.md`:8 and `build-plan.md`:63 and :89 run one card with `npm test -- --test-name-pattern "F-07"`. On Node that filter can run every test in the repo, or count each file as a passing test, so a card with no tests would still pass. Run the card's own files by path instead: `./node_modules/.bin/tsx --test --test-reporter=tap "test/f07-*.test.ts"` (the `test_card` command in section 11; not `npx`, which would try to download tsx in an offline check box).
+- [ ] **Say what each card creates:** the module path and exported names (or the route or command) each card adds, in its `Goal`, so the test author's tests and the builder's code meet (section 6).
 - [ ] **Stale wording:** "provisional" format (CLAUDE.md:84, features.md:5, build-plan.md:51) — format 1 is settled. tracker.md:472 still says "draft 2".
 
 ### The build plan and decisions
@@ -192,7 +201,7 @@ References are to commit `a2a5ce5`.
 
 ### Releases, deploys and the veto window
 
-- [ ] **The veto window:** set its hours (in `harness.yaml`) and write its rules into the build plan:
+- [ ] **The veto window is 24 hours** (owner, harness HD-59, 2026-10-22: "Switch to 24 hours for the portraits", replacing HD-50's 72 hours; your D-66 already records it). Record it, and write its rules into the build plan:
   - it covers one exact release, and restarts if the release changes;
   - the harness promotes only after its notice is posted on the control issue, and only if it has read the control issue within the last 10 minutes;
   - the conductor promotes, with a production token kept outside the worker box.
@@ -206,11 +215,12 @@ References are to commit `a2a5ce5`.
   - :990 and :993 need a library key and an admin password seeded into the pull-request and staging copies. List them as per-environment test credentials the harness keeps in its store.
 - [ ] **Health** (`features.md`:191, `architecture.md`:33 and :39, the OpenAPI `Health` schema): add the database and the bucket to `/api/v1/health`, so the check after each staging merge means something. `T-01-where-it-runs.md`:218 has staging rolled back by the owner's click; the harness now rolls staging back automatically when that check fails.
 - [ ] **Migrations:** additive from the first staging deploy, not "once live" (`architecture.md`:142).
+- [ ] **Pull-request copies' base** (section 7): say they're based on staging, with its test database, bucket and keys, never production, and have `/api/v1/health` report the environment's name and the database's and bucket's names (never a secret).
 
 ### Keys and spending
 
 - [ ] **O-4** ("set as a Railway variable", `build-plan.md`:39): give the key's provider-side limit a number, no higher than the cap. Say who sets the Railway variables (the owner, in Railway), and that the harness keeps its own copies, for checks, in its secret store.
-- [ ] **Consider separate keys per environment.** Today one key serves every environment (`decisions.md`:128-130), with the per-environment caps enforced in code. Code the builder can edit isn't a boundary, so a separate low-limit key for staging and for the harness's live checks lets the provider enforce each cap. This one is the owner's call, with this chat.
+- [ ] **One key stays** (owner, harness HD-50: "Lets use the one paid key for portraits"): the single OpenRouter key serves every environment, as `decisions.md`:128-130 says. Its provider-side limit is the backstop across all of them, so set it no higher than the overall cap; the per-environment caps in code stay as the first line.
 - [ ] **Fix the contradiction:** `decisions.md`:475 gives pull-request copies "$2 a night", while `requirements.md`:994 has them in stub mode only.
 
 ### The throwaway test (`brain/handoffs/harness-throwaway-test.md`)
@@ -241,7 +251,7 @@ These lines were written for the earlier harness design.
 - File order is build order, and every card already has `Phase`, `Depends on`, `Owner input`, `Parkable`, `Size` and `Covers`.
 - IDs are permanent, and withdrawn cards (F-20, F-33) are kept.
 - Tests run offline, with stubs, replays and PGlite (no database container needed), and a missing recording fails.
-- One test file per card, named by card, so a single card's tests run by name pattern.
+- One test file per card, named by card, so a single card's tests run by file path.
 - Paid checks are capped, and pull-request copies run in stub mode.
 - The health endpoint reports the commit.
 - No keys in the repo, and `.env` is ignored. The OpenRouter key has a provider-side limit, and the throwaway test uses its own low-limit key.
@@ -273,10 +283,9 @@ commands:
   install: npm ci
   check: npm run check
   test: npm test
-  test_card: npm test -- --test-name-pattern "{card}"
+  test_card: ./node_modules/.bin/tsx --test --test-reporter=tap "test/{slug}-*.test.ts"   # the card's own files, by path, printing TAP
   build: npm run build
   smoke: npm run smoke -- --url {url}         # TODO: add this script
-  test_count: '^ℹ tests (\d+)'               # node:test's default reporter; TODO: confirm against a real run
 # models: left out, so the harness's defaults apply
 limits:
   rounds_per_card: 4
@@ -288,6 +297,7 @@ deploy:
   pr_copies: true
   staging: on-merge                           # TODO: confirm
   health: /api/v1/health
-  production: { mode: veto-window, hours: 24 }   # TODO: the owner's number
+  starts_at: TODO                             # the card that makes the app deployable (F-02's Railway setup?)
+  production: { mode: veto-window, hours: 24 }   # owner, HD-59 (your D-66)
 digest: { issue: TODO, time: "07:30" }        # the control issue, created when the build starts
 ```
