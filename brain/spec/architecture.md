@@ -30,7 +30,7 @@ The aim is the simplest structure that meets the requirements, and that rehearse
 | AI | OpenRouter only (D-19), through `fetch`, with a spend ledger and caps (RUN-04, D-54). Every request carries `"usage": {"include": true}` so the answer reports its cost. Images go as 8-bit sRGB PNG, never the original file (PIP-22) | One key |
 | Admin pages | Server-rendered HTML (a few templates, no client framework), behind one password (RUN-10) | Read-only browsing doesn't need React. The library's React and Vite stay the library's |
 | Tests | `node:test` through `tsx --test`, offline by default (RUN-06); `tsc` for types; esbuild for the build | As the library uses |
-| Deploys | **Northflank**, configured as code: its templates (projects, pipelines, release flows, the preview template, the cron job) live in `northflank/` as JSON, synced both ways with the dashboard, and hold no secret values (D-70). Readiness check `GET /api/v1/health`, which proves the database and bucket work; liveness check `GET /api/v1/live` (RUN-12) | The harness's conductor deploys and checks by itself through Northflank's API (HT-03, HT-07, HT-08); `harness.yaml` names the commands and the deploy rules |
+| Deploys | **Northflank**, configured as code: its templates (projects, pipelines, release flows, the preview template, the cron job) live in `northflank/` as JSON (`staging.json`, `preview.json`, `production.json`), applied from the repo one way, so a change made in the dashboard never lands on `main` by itself; they hold no secret values (D-70). Readiness check `GET /api/v1/health`, which proves the database and bucket work; liveness check `GET /api/v1/live` (RUN-12) | The harness's conductor deploys and checks by itself through Northflank's API (HT-03, HT-07, HT-08); `harness.yaml` names the commands and the deploy rules |
 
 ## Northflank layout
 
@@ -67,7 +67,7 @@ Cloudflare R2, outside Northflank (O-14)
 
 In an environment, every service and job runs the same image, built once per release from the repo, each with its own start command.
 
-**Production is promoted, never pushed to.** It deploys only through its own release flow, given a commit already merged to `main` and checked on staging: the conductor starts it through Northflank's API after the window, with the production token, which is kept outside the worker box; or the owner starts it from the dashboard. A Northflank pipeline can't reach across projects, so production builds the commit itself rather than reusing staging's image, from the same commit and lockfile (`npm ci`). (Claude's choice, D-70; if a release flow can't take a commit as its argument, the conductor moves a `production` branch that production's build follows instead; HT-07.) **Production is first deployed at the release (F-47)**, and only then. Before that, everything live (the smoke test, the survey, the trial and the examples) runs on staging, because no check may touch production (the harness's rule, D-65).
+**Production is promoted, never pushed to.** It deploys only through its own release flow, given a commit already merged to `main` and checked on staging: the conductor starts it through Northflank's API after the window, with the production token, which is kept outside the worker box; or the owner starts it from the dashboard. A Northflank pipeline can't reach across projects, so production builds the commit itself rather than reusing staging's image, from the same commit and lockfile (`npm ci`). (Claude's choice, D-70; if a release flow can't take a commit as its argument, the conductor moves a `production` branch that production's build follows instead; HT-33.) **Production is first deployed at the release (F-47)**, and only then. **Until the release, the production project stays empty:** F-36 writes `northflank/production.json` but never runs it. At the release, the conductor (with the production token) or the owner runs it once, which creates production's services, Postgres, cron job and release flow, and then starts the release flow. Before that, everything live (the smoke test, the survey, the trial and the examples) runs on staging, because no check may touch production (the harness's rule, D-65).
 
 ## Modules
 
@@ -191,15 +191,15 @@ Each environment has its own secret group: `production` in the production projec
 |---|---|
 | `OPENROUTER_API_KEY` | The tool's one AI key (D-55, D-67), in the production and staging groups only; **never in the preview group.** Its limit is set at OpenRouter, in steps (O-4) |
 | `GITHUB_TOKEN` | Read-only, fine-grained, library-pipeline contents only (D-32, O-9) |
-| `SESSION_SECRET` | Signs the admin session (RUN-10). The admin password's hash is in the database, set by `password set` |
+| `SESSION_SECRET` | Signs the admin session (RUN-10), a different random value in each group (O-8). The admin password's hash is in the database, set by `password set` |
 | `DATABASE_URL` | Linked from the environment's own Postgres add-on (a preview's from its own). Reachable only inside Northflank; nothing connects from outside |
 | `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Cloudflare R2: the account's endpoint, the environment's bucket, and a token limited to that bucket (O-14) |
-| `S3_PREFIX` | Previews only: a prefix unique to the copy (`pr-<n>/`), set by the preview template. Empty elsewhere |
+| `S3_PREFIX` | Previews only: a prefix unique to the copy (`pr-<n>/`), set by the preview template. Unset elsewhere (an empty value counts as unset) |
 | `PORTRAITS_ENV` | Not a secret: `production`, `staging` or `preview`, in each group. Picks the environment's rules (RUN-10); a missing or unknown value stops start-up |
 | `NF_DEPLOYMENT_SHA` | Set by Northflank: the commit running, which health reports (RUN-12). `unknown` in tests |
 | `USER_AGENT_CONTACT` | Not a secret: the contact address in the User-Agent (O-10, SRC-09). Tests use a placeholder |
 | `OPS_KEY` | Per environment: the key for starting jobs over the web (RUN-11). Compared as a hash; the harness keeps a copy in its store (O-13) |
-| `SEED_ADMIN_PASSWORD`, `SEED_LIBRARY_KEY` | Staging and pull-request copies only: test credentials seeded at start-up, for the harness's smoke checks (RUN-10, O-13). Production never reads them |
+| `SEED_ADMIN_PASSWORD`, `SEED_LIBRARY_KEY` | Staging and pull-request copies only (the preview group's values differ from staging's): test credentials seeded at start-up, for the harness's smoke checks (RUN-10, O-13). Production never reads them |
 
 `doctor` reports only whether each one is present, never its value.
 
@@ -256,6 +256,6 @@ These differ between the prototype's numpy, scipy and OpenCV calls and OpenCV.js
 - The OpenRouter request shape for image editing, and that answers include the actual cost when `usage.include` is sent (HT-18 checks it first).
 - The Commons API for depicts search (`haswbstatement:P180=<Q-id>` in the file namespace) and `imageinfo` with `extmetadata`; Wikimedia's current standard thumbnail widths (for previews, PIP-21).
 - The loc.gov JSON fields for names, dates, LoC name ids, rights advisory and image links; Wellcome's licence and contributor fields (marked *confirm* in `../topics/T-11-picture-sources.md`).
-- Northflank (HT-07, HT-12, HT-33): that a release flow can be started through the API with a commit as its argument; the preview template's lifetime setting and how it can give each copy a unique bucket prefix; the Postgres add-on's backup schedule and retention, and a backup as a release-flow step; that a cron job can forbid overlapping runs.
+- Northflank (HT-07, HT-12, HT-33): that templates can be applied one way, from the repo (if sync can only be two-way, its commits go to a branch other than `main`, which planning merges by hand); that a release flow can be started through the API with a commit as its argument; the preview template's lifetime setting and how it can give each copy a unique bucket prefix; the Postgres add-on's backup schedule and retention, and a backup as a release-flow step; that a cron job can forbid overlapping runs.
 - Cloudflare R2 (HT-13): bucket-scoped tokens, presigned GET links through the S3 SDK with region `auto`, and a lifecycle rule deleting the previews bucket's objects after 7 days.
 - Which OpenCV.js build has every function above (the porting spike).

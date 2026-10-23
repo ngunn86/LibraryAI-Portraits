@@ -833,7 +833,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 
 **OUT-12 · Storage** *fixed* · D-42, D-70; layout and buckets *proposed* · C
 - Files live in the tool's own private buckets on **Cloudflare R2** (S3-compatible, D-70). There is no Drive copy.
-  - **Three buckets:** production's, staging's, and one shared by the pull-request copies. Each has its own access token, limited to that bucket (O-14), so no copy can reach another's files.
+  - **Three buckets:** production's, staging's, and one shared by the pull-request copies. Each has its own access token, limited to that bucket (O-14), so no environment can reach another environment's bucket. Pull-request copies share the previews bucket, each under its own prefix: that keeps their files apart by convention, not as a barrier, which is enough for test data.
   - **Each pull-request copy writes under its own prefix** (`pr-<number>/`) in the previews bucket, which deletes objects older than 7 days by its own rule.
 - **Layout:** `portraits/<teacher_id>/<portrait_id>/` holds the files and a `record.json`, rewritten from the database whenever the portrait changes (after the copy's prefix, in the previews bucket).
 - **History is kept.** Replaced and turned-down portraits keep their files. Nothing is deleted automatically.
@@ -954,7 +954,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - `password set`: the admin password.
 - `status`: the queue, recent runs and spend.
 
-- The owner runs them in a shell on the environment's web service, opened from Northflank's dashboard (D-70), as `portraits <command>`. Nothing reaches the database from outside Northflank. The harness never does this (D-65); everything it needs on a deployed copy is a job it starts over the web (RUN-11).
+- The owner runs them in a shell on the environment's web service, opened from Northflank's dashboard (D-70), as `node dist/cli.js <command>` (`portraits` above is that file). Nothing reaches the database from outside Northflank. The harness never does this (D-65); everything it needs on a deployed copy is a job it starts over the web (RUN-11).
 
 *Verify:* each command has a test (F-22; `trial` in F-28).
 
@@ -1009,7 +1009,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
   - **staging** (the staging project's pipeline, deployed from `main` on every merge) has no cron, runs jobs only when started (RUN-11), and spends at most $2 a night and $10 a month;
   - **production** (the production project, deployed only by its release flow, which the harness's conductor starts after the veto window, D-66, or the owner starts from the dashboard, D-35) has the caps of RUN-04.
 - The environment is read from the variable `PORTRAITS_ENV` (`production`, `staging` or `preview`), set in each environment's secret group, and its rules come from settings. A missing or unknown value stops the service at start-up. The caps in code are the first line; the key's limit at OpenRouter (O-4) is the hard ceiling across all of them.
-- **Pull-request copies are based on staging, never production** (D-65): they live in the staging project, which holds no production secret, and each gets staging's test credentials, its own empty database (migrated and seeded at start-up) and its own prefix in the previews bucket, so it can never carry production's keys or reach its data. They also make no paid calls by code (stub mode), so a key that somehow reached one would still go unused.
+- **Pull-request copies are based on staging, never production** (D-65): they live in the staging project, which holds no production secret. Each gets its own empty database (migrated by its `migrate` job; the test credentials seeded at start-up; fixture portraits only through a `seed_fixtures` job), its own prefix in the previews bucket, and the preview secret group's test credentials, which are separate values from staging's, so a pull request's code can't use staging's ops key. So a copy can never carry production's keys or reach its data. Copies also make no paid calls by code (stub mode), so a key that somehow reached one would still go unused.
 - **Test credentials for checks** (O-13): staging and pull-request copies seed, at start-up, a test admin password and a test library key from the secrets `SEED_ADMIN_PASSWORD` and `SEED_LIBRARY_KEY`, stored as hashes like any other. **Production never seeds.** The harness keeps the plain values in its own secret store, to log in and call the API in smoke checks.
 
 *Verify:*

@@ -132,7 +132,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-51: Settings and secrets
 - Phase: 1
-- Goal: Typed, committed settings and secrets from the environment. Main example: recipe 0.5.0's settings load and start-up goes ahead. Failure example: a setting of the wrong type, or a recipe change without a new `recipeVersion`, stops start-up and names it. It creates: `settings` and `loadSettings(overrides?)` in `src/config/settings.ts`; `readEnv(env = process.env): Env` (throwing `ConfigError`, which names the variable), with `env.environment` from `PORTRAITS_ENV`, in `src/config/env.ts`; `recipeHash(recipe)` and `RECIPE_HASHES` (version → hash) in `src/config/recipeHash.ts`.
+- Goal: Typed, committed settings and secrets from the environment. Main example: recipe 0.5.0's settings load and start-up goes ahead. Failure example: a setting of the wrong type, or a recipe change without a new `recipeVersion`, stops start-up and names it. It creates: `settings` and `loadSettings(overrides?)` in `src/config/settings.ts`; `readEnv(env = process.env): Env` (throwing `ConfigError`, which names the variable), with `env.environment` from `PORTRAITS_ENV` and `env.bucket` (`endpoint`, `name`, `accessKeyId`, `secretAccessKey`, `prefix`), in `src/config/env.ts`; `recipeHash(recipe)` and `RECIPE_HASHES` (version → hash) in `src/config/recipeHash.ts`.
 - Covers: IN-10, IN-11, STY-05
 - Defers: PIP-09 (the family rule is enforced here at start-up, and again at call time in F-17)
 - Depends on: F-01
@@ -147,7 +147,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-51 a checking model of the same family as an enhance model is refused at start-up
   - blocking: F-51 a missing secret is reported by name only, and no fake secret's value appears in any output
   - blocking: F-51 `PORTRAITS_ENV` must be `production`, `staging` or `preview`; missing or any other value stops start-up, naming it
-  - blocking: F-51 the bucket settings come from `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`; in `preview`, a missing `S3_PREFIX` stops start-up, and outside `preview` one that is set does
+  - blocking: F-51 the bucket settings come from `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`; in `preview`, a missing or empty `S3_PREFIX` stops start-up, and outside `preview` a non-empty one does
   - blocking: F-51 `USER_AGENT_CONTACT` fills the User-Agent. Without it, tests use a placeholder; staging and production still start and answer health, but refuse calls to the sources, naming the missing variable
 - Test data: valid and invalid settings objects
 - Side effects: none
@@ -219,7 +219,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-36: Northflank setup, deploys and the health check
 - Phase: 1
-- Goal: The app deploys itself to Northflank (D-70), set up as code, and its health check proves it really works. The templates in `northflank/` make: in the staging project, a pipeline whose release flow builds, migrates and deploys `main` on each merge, and a preview template for pull-request copies (own empty Postgres, the preview secret group, a 3-day lifetime); in the production project, a release flow that builds a given commit, backs up the database, migrates and deploys; in each, web and worker services, a `migrate` job and a Postgres add-on; and production's nightly cron job, never two at once. Main example: the pull request's copy answers `/api/v1/health` with this commit, and the database and bucket working. Failure example: with the database unreachable, health answers 503 and names it. It creates: the templates in `northflank/`; `createApp(deps)` (Express) in `src/web.ts`, serving `GET /api/v1/health` (readiness) and `GET /api/v1/live` (liveness); `checkHealth(deps): Promise<Health>` in `src/health.ts`; `hashSecret(plain)` and `verifySecret(plain, hash)` in `src/auth/hash.ts`; `seedTestCredentials(db, env)` in `src/config/seed.ts`; the worker and cron entries (`src/worker.ts`, `src/cron.ts`); `runMigrations(db)` and the migrate job's entry in `src/migrate.ts`; and `npm run smoke -- --url <url>` (`scripts/smoke.ts`).
+- Goal: The app deploys itself to Northflank (D-70), set up as code, and its health check proves it really works. Three templates in `northflank/`: `staging.json` (the staging project's pipeline, whose release flow builds, migrates and deploys `main` on each merge, with web and worker services, a `migrate` job and a Postgres add-on); `preview.json` (the preview template for pull-request copies: the same services, its own empty Postgres, the preview secret group, a 3-day lifetime); and `production.json` (the production project's services, `migrate` job, Postgres, nightly cron job that never runs twice at once, and a release flow that builds a given commit, backs up the database, migrates and deploys). This card runs only the first two; `production.json` is run at the release (F-47). Main example: the pull request's copy answers `/api/v1/health` with this commit, and the database and bucket working. Failure example: with the database unreachable, health answers 503 and names it. It creates: `northflank/staging.json`, `northflank/preview.json` and `northflank/production.json`; `createApp(deps)` (Express) in `src/web.ts`, serving `GET /api/v1/health` (readiness) and `GET /api/v1/live` (liveness); `checkHealth(deps): Promise<Health>` in `src/health.ts`; `hashSecret(plain)` and `verifySecret(plain, hash)` in `src/auth/hash.ts`; `seedTestCredentials(db, env)` in `src/config/seed.ts`; the worker and cron entries (`src/worker.ts`, `src/cron.ts`); `runMigrations(db)` and the migrate job's entry in `src/migrate.ts`; and `npm run smoke -- --url <url>` (`scripts/smoke.ts`).
 - Covers: RUN-01, RUN-12
 - Defers: RUN-08 (the nightly jobs: F-25), RUN-10 (keys, login and caps: F-44, F-46, F-17)
 - Depends on: F-01, F-04, F-37
@@ -235,7 +235,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-36 in staging and pull-request environments, start-up seeds the test admin password and library key as hashes; in production it never does
   - blocking: F-36 the cron entry exits 0 with "nothing to do"
   - blocking: F-36 `npm run smoke -- --url <url>` runs every `test/**/*.smoke.ts` (and nothing else) against that address, with the environment's test credentials passed in
-  - blocking: F-36 every file in `northflank/` parses as JSON, and none holds a secret value: the scan finds none of the fake secrets
+  - blocking: F-36 `northflank/staging.json`, `preview.json` and `production.json` exist and parse as JSON, and none holds a secret value: the scan finds none of the fake secrets
   - blocking, smoke: F-36 the deployed copy's `/api/v1/health` answers 200 with this commit, and the database and bucket working
   - blocking, smoke: F-36 the pull request's copy names its own environment, database and bucket, none of them production's
   - report: F-36 the preview template links only the preview secret group (no AI key), production's release flow backs up the database before it migrates, and anything the templates can't express is listed in `docs/northflank-dashboard-steps.md`
@@ -1227,7 +1227,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-47: The release
 - Phase: 6
-- Goal: Prove it: the release candidate works on its deployed copy, with the trial's defaults in its settings. The conductor then promotes that exact commit to production after the 24-hour veto window (D-66). It's production's first deploy, and its nightly schedule is on from then (RUN-08). The owner's steps around it are on the release checklist. This is Phase 6's gate card; the verifier adds its tests here. It creates nothing: it's a prove-it card and Phase 6's gate.
+- Goal: Prove it: the release candidate works on its deployed copy, with the trial's defaults in its settings. The conductor then promotes that exact commit to production after the 24-hour veto window (D-66): it runs `northflank/production.json` once, which creates the production project's services, Postgres, cron job and release flow, then starts the release flow for that commit. It's production's first deploy, and its nightly schedule is on from then (RUN-08). The owner's steps around it are on the release checklist. This is Phase 6's gate card; the verifier adds its tests here. It creates nothing: it's a prove-it card and Phase 6's gate.
 - Covers: RUN-08
 - Defers: RUN-04 (the first pass is watched over the nights it takes, on the release checklist), AC-05 (completed by the harness's own record)
 - Depends on: F-27, F-50

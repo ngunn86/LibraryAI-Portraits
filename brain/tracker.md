@@ -71,7 +71,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - an admin page (D-33);
   - extra keys are fine when needed (D-34);
   - deploying by hand from Replit is fine (D-35).
-- **Host: Northflank since 2026-10-23** (D-70, superseding D-36). Before that, **Railway** (D-36), from the library's planning, so the two projects shared one hosting review. The Replit spike is skipped. Rev1's `brain/reference/hosting-railway-review.md` will be copied into `brain/reference/rev1/` once it's on GitHub.
+- **Host: Northflank since 2026-10-23** (D-70, superseding D-36). Before that, **Railway** (D-36), from the library's planning, so the two projects shared one hosting review. The Replit spike was skipped. Rev1's Railway hosting review is no longer needed here (D-70).
 - **Depends on:** nothing. It comes first because storage (T-06), the API (T-08), runs (T-19), security (T-21) and the stack (T-23) all follow from it.
 - **To decide:**
   1. Where processing runs: your PC (as planned so far), or a hosted service.

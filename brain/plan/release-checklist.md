@@ -7,12 +7,12 @@ Steps around the release that a card can't do: they need the owner, or they take
 All of these are in Northflank's and Cloudflare's dashboards, in a browser (Northflank has no phone app). Secrets go into Northflank's **secret groups**: `production` in the production project, `staging` and `preview` in the staging project (D-70).
 
 - [ ] **Rotate any key you ever put in Railway** (Railway's disclosure of 2026-10-21): make a new one at its provider, switch the old one off, and use only the new one below.
-- [ ] **O-8:** a Northflank account, the two empty projects (`nexus-portraits-staging`, `nexus-portraits-production`), this repo linked, a billing alert (about $60 a month), notifications for crashes and failed releases, and the two tokens for the harness (one per project) in the harness's store.
+- [ ] **O-8:** a Northflank account, the two empty projects (`nexus-portraits-staging`, `nexus-portraits-production`), this repo linked, the three secret groups (`production`; `staging` and `preview`), each with `PORTRAITS_ENV` set to its own name and its own random `SESSION_SECRET`, a billing alert (about $60 a month), notifications for crashes, failed health checks and failed releases, and the two tokens for the harness (one per project) in the harness's store.
 - [ ] **O-14:** Cloudflare R2: the three buckets (`portraits-production`, `portraits-staging`, `portraits-previews`, the last deleting objects after 7 days), one token per bucket, and their values in the matching secret group.
 
 ## Before the build's first smoke checks (Phase 1, F-49)
 
-- [ ] **O-13:** the ops keys (one per secret group), and the test admin password and library key (staging and preview groups only), set in Northflank and in the harness's store.
+- [ ] **O-13:** the ops keys (one per secret group), and the test admin password and library key (staging and preview groups only, with different values in each), set in Northflank and in the harness's store.
 
 ## Before Phase 2's smoke checks (F-31, F-38)
 
@@ -26,7 +26,7 @@ All of these are in Northflank's and Cloudflare's dashboards, in a browser (Nort
 
 - [ ] The harness posts the promotion notice on the control issue. `/veto` within **24 hours** if anything looks wrong (D-66). The nightly schedule is on from this first deploy.
 - [ ] **Raise the key's limit at OpenRouter by $100**, for the first pass ($150 in all since the key was made). Do this before the window ends; if you don't, the first night simply stops at the limit.
-- [ ] **O-11:** make the library's key: in Northflank's dashboard, open a shell on production's web service and run `portraits keys new`. Copy it into the library's settings. It's shown once.
+- [ ] **O-11:** make the library's key: in Northflank's dashboard, open a shell on production's web service and run `node dist/cli.js keys new`. Copy it into the library's settings. It's shown once.
 
 ## During the first pass (the nights it takes)
 
