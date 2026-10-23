@@ -162,8 +162,8 @@ A request or decision sent again with the same `request_id` or `decision_id` cha
 
 *Verify:* unit tests (F-01).
 
-**IN-11 · Keys live outside the repo** *fixed* · B2, D-55
-- Keys are Railway variables per environment (RUN-10): the OpenRouter key, the GitHub token, the session secret, and the database and bucket credentials. The admin password's hash is stored in the database (RUN-10).
+**IN-11 · Keys live outside the repo** *fixed* · B2, D-55, D-70
+- Keys are Northflank secrets, in each environment's secret group (RUN-10, D-70): the OpenRouter key, the GitHub token, the session secret, the ops key, and the database and bucket credentials. The owner sets them in Northflank's dashboard (O-4, O-8). The admin password's hash is stored in the database (RUN-10).
 - They are never written to the repo, logs, reports, the admin page or API answers.
 
 *Verify:* a test scans every file and answer a stubbed run produces and finds no key value (F-01, F-26).
@@ -218,7 +218,7 @@ A request or decision sent again with the same `request_id` or `decision_id` cha
     - `api.wellcomecollection.org` and `iiif.wellcomecollection.org`;
   - `openrouter.ai`;
   - `api.github.com`, for the teacher list only (IN-12);
-  - the environment's own bucket endpoint (from Railway's variables, OUT-12).
+  - the environment's own bucket endpoint, Cloudflare R2's `<account id>.r2.cloudflarestorage.com` (read from the environment's `S3_ENDPOINT`, OUT-12, D-70).
 
   Any other host is refused before a request leaves the process. This also enforces SRC-10.
 - **Redirects** are followed by hand, and each target is checked against the same list (argon-11).
@@ -831,13 +831,15 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 
 *Verify:* the fixture run produces every file per portrait, each passing its own check, and a fixture whose enhance call failed has the other seven (F-24).
 
-**OUT-12 · Storage** *fixed* · D-42; layout *proposed* · C
-- Files live in the tool's own private bucket (Railway, S3-compatible), one per environment. There is no Drive copy.
-- **Layout:** `portraits/<teacher_id>/<portrait_id>/` holds the files and a `record.json`, rewritten from the database whenever the portrait changes.
+**OUT-12 · Storage** *fixed* · D-42, D-70; layout and buckets *proposed* · C
+- Files live in the tool's own private buckets on **Cloudflare R2** (S3-compatible, D-70). There is no Drive copy.
+  - **Three buckets:** production's, staging's, and one shared by the pull-request copies. Each has its own access token, limited to that bucket (O-14), so no copy can reach another's files.
+  - **Each pull-request copy writes under its own prefix** (`pr-<number>/`) in the previews bucket, which deletes objects older than 7 days by its own rule.
+- **Layout:** `portraits/<teacher_id>/<portrait_id>/` holds the files and a `record.json`, rewritten from the database whenever the portrait changes (after the copy's prefix, in the previews bucket).
 - **History is kept.** Replaced and turned-down portraits keep their files. Nothing is deleted automatically.
 - **Candidates that never become portraits** are logged in the rights log, not stored.
 - **The library keeps its own copies** of what it pulls (D-42).
-- **Backups:** the database only, at first (Railway). The bucket can be rebuilt from the rights log and the recipe, except the AI copies.
+- **Backups:** the database only, at first: production's Postgres add-on is backed up daily by Northflank, and again by production's release flow before each release migrates it (D-70). The bucket can be rebuilt from the rights log and the recipe, except the AI copies.
 
 *Verify:* the layout and `record.json` match the database; a turned-down portrait's files remain; a failed candidate has a log row and no files (F-24, F-37).
 
@@ -878,16 +880,19 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 
 ## 7. Running, state and spend
 
-**RUN-01 · Where it runs** *fixed* · D-31, D-36, D-57
-- It runs on Railway:
+**RUN-01 · Where it runs** *fixed* · D-31, D-57, D-70; layout *proposed* · C
+- It runs on **Northflank** (D-70; it was Railway until 2026-10-23), in two projects:
+  - **staging**, which also holds the pull-request copies (Northflank preview environments);
+  - **production**, which the harness's everyday token can't reach.
+- Each environment has:
   - a web service (API and admin site);
   - a worker (the queue);
-  - a nightly cron job;
-  - Postgres;
-  - a bucket.
+  - a Postgres add-on;
+  - a bucket on Cloudflare R2 (OUT-12);
+  - in production only, a nightly cron job (RUN-08).
 - There are three kinds of environment: production, staging, and one per pull request.
 - It is built in **TypeScript on Node 24**, like the library (D-57). See [architecture.md](architecture.md).
-- A command-line tool runs steps by hand for the owner (RUN-05). **The harness never runs project code with Railway's credentials** (`railway run`, D-65): it starts jobs on a deployed copy over the web (RUN-11).
+- A command-line tool runs steps by hand for the owner (RUN-05). **The harness never runs project code through the host's command line or a shell in a container** (D-65): it starts jobs on a deployed copy over the web (RUN-11).
 
 **RUN-02 · What a run does, in order** *fixed* · B2, D-44, D-53, D-59
 1. The library's requests come first, as they arrive.
@@ -949,7 +954,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - `password set`: the admin password.
 - `status`: the queue, recent runs and spend.
 
-- The owner may run them from their own PC with `railway run`, which uses `DATABASE_PUBLIC_URL`. The harness never does (D-65); everything it needs on a deployed copy is a job it starts over the web (RUN-11).
+- The owner runs them in a shell on the environment's web service, opened from Northflank's dashboard (D-70), as `portraits <command>`. Nothing reaches the database from outside Northflank. The harness never does this (D-65); everything it needs on a deployed copy is a job it starts over the web (RUN-11).
 
 *Verify:* each command has a test (F-22; `trial` in F-28).
 
@@ -960,7 +965,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 *Verify:* `npm test` runs with outbound calls refused (F-01).
 
 **RUN-07 · Logs** *proposed* · C
-- Logs go to Railway's log stream, and each run is summarised on the admin page.
+- Logs go to Northflank's log stream, which the harness's conductor reads through Northflank's API, and each run is summarised on the admin page.
 - They hold no keys (IN-11).
 
 *Verify:* F-26's key scan covers the logs.
@@ -984,28 +989,28 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 **RUN-09 · How the owner hears about it** *fixed* · D-53
 - **The admin page** shows each run (OUT-06).
 - **The library's daily admin email** mentions new portraits waiting. That's the library's side; it's asked for in `handoffs/library-api.md`.
-- **Railway's alerts** cover crashes and failed deploys.
+- **Northflank's notifications** cover crashes, failed health checks and failed deploys or releases (set up by the owner, O-8).
 - The tool sends no email of its own.
 
 *Verify:* the admin page shows the fixture run's report; a dependency check finds no mail-sending package or SMTP code (F-46).
 
 **RUN-10 · Security** *fixed* · D-55; details *proposed* · C
 - **Admin login:** one password, stored in the database only as a slow hash (Argon2 or bcrypt).
-  - A secure, HTTP-only, SameSite session lasts 30 days, signed with the session secret (a Railway variable).
+  - A secure, HTTP-only, SameSite session lasts 30 days, signed with the session secret (a Northflank secret).
   - Attempts are rate-limited, with a short lockout.
   - The password is set by command (`password set`).
 - **The library's key:** random, at least 32 bytes, stored as a hash. It is made and switched off by command and shown once.
 - **Transport and files:** HTTPS only. The bucket is private; files leave only through 15-minute signed links.
-- **Secrets** are Railway variables (IN-11). One OpenRouter key serves production and staging (D-55, D-67); **pull-request copies don't get it.** Its limit at OpenRouter is set in steps by the owner (O-4, D-67).
+- **Secrets** are Northflank secret groups, one per environment, each linked only to that environment's services and jobs (IN-11, D-70). One OpenRouter key serves production and staging (D-55, D-67); **pull-request copies don't get it.** Its limit at OpenRouter is set in steps by the owner (O-4, D-67).
 - **Rate limits:** about 600 API calls a minute per key, plus the login limit.
 - **Outbound calls** go only to the adopted sources, OpenRouter and (for the teacher list) GitHub (SRC-01).
 - **Environments, since the key is shared** (D-55, D-67):
-  - **pull-request copies**, based on staging, run in stub mode only: no paid calls, no cron, and no AI key where Railway allows (HT-32);
-  - **staging** (Railway environment `staging`, deployed from `main` on every merge) has no cron, runs jobs only when started (RUN-11), and spends at most $2 a night and $10 a month;
-  - **production** (Railway environment `production`, promoted by the harness's conductor after the veto window, D-66, or deployed by the owner by hand, D-35) has the caps of RUN-04.
-- The environment is read from Railway's `RAILWAY_ENVIRONMENT_NAME`, and its rules come from settings. The caps in code are the first line; the key's limit at OpenRouter (O-4) is the hard ceiling across all of them.
-- **Pull-request copies are based on staging, never production** (D-65): each gets staging's test credentials and its own test database and bucket, so it can never carry production's keys or reach its data. If Railway can't leave the AI key out of them (HT-32), they still make no paid calls, by code (stub mode), under the key's ceiling.
-- **Test credentials for checks** (O-13): staging and pull-request copies seed, at start-up, a test admin password and a test library key from the Railway variables `SEED_ADMIN_PASSWORD` and `SEED_LIBRARY_KEY`, stored as hashes like any other. **Production never seeds.** The harness keeps the plain values in its own secret store, to log in and call the API in smoke checks.
+  - **pull-request copies** are Northflank preview environments in the staging project, made from its preview template for each pull request and deleted when it closes or merges, or after 3 days. They run in stub mode only: no paid calls, no cron, and no AI key, since the preview secret group doesn't hold it (HT-32);
+  - **staging** (the staging project's pipeline, deployed from `main` on every merge) has no cron, runs jobs only when started (RUN-11), and spends at most $2 a night and $10 a month;
+  - **production** (the production project, deployed only by its release flow, which the harness's conductor starts after the veto window, D-66, or the owner starts from the dashboard, D-35) has the caps of RUN-04.
+- The environment is read from the variable `PORTRAITS_ENV` (`production`, `staging` or `preview`), set in each environment's secret group, and its rules come from settings. A missing or unknown value stops the service at start-up. The caps in code are the first line; the key's limit at OpenRouter (O-4) is the hard ceiling across all of them.
+- **Pull-request copies are based on staging, never production** (D-65): they live in the staging project, which holds no production secret, and each gets staging's test credentials, its own empty database (migrated and seeded at start-up) and its own prefix in the previews bucket, so it can never carry production's keys or reach its data. They also make no paid calls by code (stub mode), so a key that somehow reached one would still go unused.
+- **Test credentials for checks** (O-13): staging and pull-request copies seed, at start-up, a test admin password and a test library key from the secrets `SEED_ADMIN_PASSWORD` and `SEED_LIBRARY_KEY`, stored as hashes like any other. **Production never seeds.** The harness keeps the plain values in its own secret store, to log in and call the API in smoke checks.
 
 *Verify:*
 - a scan of the repo, test logs and sample answers finds no secret;
@@ -1015,31 +1020,33 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - seeding happens in staging and pull-request copies, never in production (F-36).
 
 **RUN-11 · Jobs started over the web** *proposed* · C, D-65
-The harness never runs the app's commands against Railway, so a deployed copy runs its own jobs when asked over HTTPS:
+The harness never runs the app's commands through the host (D-65), so a deployed copy runs its own jobs when asked over HTTPS:
 - `POST /api/ops/jobs` with `{"kind": …, "params": {…}}` queues a job and answers 202 with its id. The kinds are:
   - `sync` (IN-12), `survey` (SRC-14), `run` (RUN-02, with `teacher` or `limit`);
   - `trial` and `trial_examples` (TRI-01..TRI-09), `seed_fixtures` (OUT-10);
   - `noop`, which does nothing, for testing the route itself.
 - `GET /api/ops/jobs/{id}` answers its state (`queued`, `working`, `done`, `failed`) and, when finished, its report as JSON: a run's report (OUT-06), the survey's report, or the trial's result (its winner and recommended settings, TRI-06).
 - `GET /api/ops/spend` answers the spend so far by environment, budget and cap (RUN-04), so the harness can keep its own count.
-- **They need the environment's ops key** (`OPS_KEY`, a Railway variable per environment, compared as a hash, O-13). It's separate from the library's key, and the library never gets it.
+- **They need the environment's ops key** (`OPS_KEY`, a secret per environment, compared as a hash, O-13). It's separate from the library's key, and the library never gets it.
 - **The environment's rules still apply:** a pull-request copy runs paid jobs in stub mode; staging and production keep their caps. `trial` and `trial_examples` run only on staging, under the trial's own budget (TRI-07) instead of staging's night and month caps. `seed_fixtures` never runs in production.
 - The admin site stays read-only (D-42): these routes are for the harness, not the browser.
 
 *Verify:* each kind starts, reports and refuses where its environment forbids it; a call without the ops key gets 401 (F-49).
 
-**RUN-12 · The health check means working** *proposed* · C, D-65
+**RUN-12 · The health check means working** *proposed* · C, D-65, D-70
 - `GET /api/v1/health` answers 200 only when the service can really work:
   - the database answers a query and its migrations are up to date;
   - the bucket accepts a small write and read;
   - OpenCV.js and `sharp` are loaded.
 - Otherwise it answers 503, naming what failed. It shows the version and the commit either way.
-- **It names where it runs** (D-65): the environment's name and the names of the database and bucket it uses, never a secret or a connection string. Before smoke checks, the harness uses them to confirm a pull-request copy isn't using production's database or bucket.
+- **It names where it runs** (D-65): the environment's name (`PORTRAITS_ENV`) and the names of the database and bucket it uses, with a pull-request copy's bucket prefix, never a secret or a connection string. Before smoke checks, the harness uses them to confirm a pull-request copy isn't using production's database or bucket.
 - The database and bucket checks are cached for up to 30 seconds, so frequent health calls stay cheap.
+- **On Northflank** (D-70), it is the web service's **readiness** check: a new deploy takes traffic only once it answers 200, and an instance that starts answering 503 is taken out of service until it recovers.
+- **`GET /api/v1/live`** is the **liveness** check: it answers 200 while the process is up and checks nothing else, so a database outage never makes Northflank restart the service in a loop. Neither route needs a key. The worker has no web port: Northflank restarts it if its process exits.
 - The harness runs it on staging after every merge that deploys it. A failure rolls staging back and stops new cards (D-65), so it must never pass while something is broken.
 - **Database changes are additive from the first deploy to staging,** not only once live: add tables and columns, never drop, rename or rewrite in place, so a rolled-back release keeps working against the newer database.
 
-*Verify:* with the database or the bucket unreachable (faked), health answers 503 naming it; no secret or connection string appears in any answer; on the deployed copy, it answers 200 with the commit, and a pull-request copy names its own database and bucket, not production's (F-36).
+*Verify:* with the database or the bucket unreachable (faked), health answers 503 naming it while `/api/v1/live` still answers 200; no secret or connection string appears in any answer; on the deployed copy, it answers 200 with the commit, and a pull-request copy names its own database and bucket, not production's (F-36).
 
 ---
 
@@ -1076,7 +1083,7 @@ The trial runs before the first full run, which then uses its defaults. Nothing 
 - Trial drafts are never shown to the library.
 
 **TRI-06 · Defaults come from the trial** *fixed* · B2; mechanism *proposed* · C, D-65
-- The trial's job reports its result: the winning model, any engraving verdict and the PIP-20 thresholds it re-measured (RUN-11). A job on Railway can't change the repo, so a separate card (F-50) writes that result into `src/config/settings.ts` with a new `recipeVersion`.
+- The trial's job reports its result: the winning model, any engraving verdict and the PIP-20 thresholds it re-measured (RUN-11). A job on a deployed copy can't change the repo, so a separate card (F-50) writes that result into `src/config/settings.ts` with a new `recipeVersion`.
 - That card merges at once (D-62), with its notice on the control issue. The owner's `/veto` reverses it.
 - **The trial runs on staging** (2026-10-21, D-65): the harness never lets a check touch production, and production is first deployed at the release. Trial drafts never appear in the API.
   - The first full run, in production, redoes the paid steps for the trial's originals that belong to real teachers: about 20, roughly $3.

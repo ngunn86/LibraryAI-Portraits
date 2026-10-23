@@ -22,7 +22,7 @@
 
 | T | Topic | Stage | Depends on | Status |
 |---|---|---|---|---|
-| T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **decided** (D-31..D-36): fully hosted on **Railway**, two-way API ([notes](topics/T-01-where-it-runs.md)) |
+| T-01 | Where the app runs and how the library reaches it | 1 Shape | none | **decided** (D-31..D-35, D-70): fully hosted on **Northflank** (Railway until 2026-10-23, D-36), two-way API ([notes](topics/T-01-where-it-runs.md)) |
 | T-02 | The three versions of a portrait, exactly | 1 Shape | none | **decided** (D-39): original + PNG viewing copy; white and black-edge B&W at 1,000 and 500 px; AI files offered ([notes](topics/T-02-three-versions.md)) |
 | T-03 | How many portraits per teacher, and what counts as different | 1 Shape | none | **decided** (D-40): different photographs, best-known first, better copies offered |
 | T-04 | Categories for each portrait | 1 Shape | T-03 | **decided** (D-41): no category scheme; an approximate date for the spread; the library can correct |
@@ -71,7 +71,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - an admin page (D-33);
   - extra keys are fine when needed (D-34);
   - deploying by hand from Replit is fine (D-35).
-- **Host: Railway** (D-36), from the library's planning, so the two projects share one hosting review. The Replit spike is skipped. Rev1's `brain/reference/hosting-railway-review.md` will be copied into `brain/reference/rev1/` once it's on GitHub.
+- **Host: Northflank since 2026-10-23** (D-70, superseding D-36). Before that, **Railway** (D-36), from the library's planning, so the two projects shared one hosting review. The Replit spike is skipped. Rev1's `brain/reference/hosting-railway-review.md` will be copied into `brain/reference/rev1/` once it's on GitHub.
 - **Depends on:** nothing. It comes first because storage (T-06), the API (T-08), runs (T-19), security (T-21) and the stack (T-23) all follow from it.
 - **To decide:**
   1. Where processing runs: your PC (as planned so far), or a hosted service.
@@ -167,7 +167,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   5. **Your view:** an admin page (D-33). What it shows: portraits by teacher, run status, the trial board, approvals?
 - **Decided so far:** organised by teacher (D-27).
 - **Decided (D-42):**
-  1. Files live in the tool's own Railway bucket, with no Drive copy. The library makes its own local copy of everything it pulls through the API.
+  1. Files live in the tool's own Railway bucket *(since D-70, Cloudflare R2)*, with no Drive copy. The library makes its own local copy of everything it pulls through the API.
   2. Layout `portraits/<teacher_id>/<portrait_id>/`, with the eight files and a `record.json`; the database is the source of truth (Claude's proposal).
   3. Replaced and turned-down portraits keep their files as history.
   4. Candidates that never become portraits are logged only (Claude's proposal). Backups: the database only, at first.
@@ -395,7 +395,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **Decided (D-53):**
   - nightly, with requests handled at once;
   - sources searched again monthly;
-  - you hear through the library's daily email, the admin page and Railway's alerts;
+  - you hear through the library's daily email, the admin page and Railway's alerts *(since D-70, Northflank's notifications)*;
   - a Try-again note guides a fresh AI copy.
 
   Q-02 and Q-08 resolved. **Written into:** RUN-01, RUN-02, RUN-07, RUN-08, RUN-09, IN-06; and a request in `handoffs/library-api.md`.
@@ -493,7 +493,7 @@ Topics within a stage can move in parallel when they don't depend on each other.
   - roll back a bad deploy;
   - keep live AI spend under the app's cap.
 - **Relaxed by D-35:** a deploy may be the owner's one-tap step, announced in the digest. Deploying without clicking is a nice-to-have.
-- **Output:** [handoffs/harness-throwaway-test.md](handoffs/harness-throwaway-test.md), the throwaway test's requirements (HT-01..HT-32) for the owner's harness planning. **Claude keeps it updated** whenever a decision changes what the hosted app needs, with a change-log line each time.
+- **Output:** [handoffs/harness-throwaway-test.md](handoffs/harness-throwaway-test.md), the throwaway test's requirements (HT-01..HT-33) for the owner's harness planning. **Claude keeps it updated** whenever a decision changes what the hosted app needs, with a change-log line each time.
 
 ---
 
@@ -640,3 +640,6 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
   Next: the owner relays `handoffs/harness-questions.md` to the harness chat, which runs `harness cards check` on the sample; then the other 34 cards are converted (T-25).
 - **2026-10-22 08:30.** The harness chat's updated instructions (to its HD-59) merged into `main`: they had been committed on the owner's PC, behind GitHub. Applied the new rules (tests by path with TAP, unique test names, each card saying what it creates, contracts before tests, fast-forward merges, `deploy.starts_at`, pull-request copies based on staging, a health check naming its environment, soft per-card caps as D-69). Contract draft 7. The questions in `handoffs/harness-questions.md` stay open; next is still the harness chat's `harness cards check` on the sample (T-25).
+- **2026-10-23 17:05.** **Host moved to Northflank** (D-70, from the harness chat's HD-60; supersedes D-36) after Railway's disclosure of 2026-10-21 about customers' environment variables. The plan is updated throughout: two Northflank projects (staging with preview environments for pull requests; production, reached only by the conductor's production token), release flows with a migrate step and production's backup, readiness `/api/v1/health` and a new liveness `/api/v1/live` (contract draft 8), files on Cloudflare R2 (new owner input O-14), `PORTRAITS_ENV`, the owner's commands in a dashboard shell. Hosting is now estimated at about $25 a month for production, plus staging while it runs. Throwaway test: HT-32 tightened, HT-33 added. Harness questions 8 to 12 added.
+
+  Next: the owner relays `handoffs/harness-questions.md`, and the harness chat runs `harness cards check` on the sample.

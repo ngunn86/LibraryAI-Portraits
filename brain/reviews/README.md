@@ -5,7 +5,7 @@ Other AI tools review the plan before the build starts. This folder holds their 
 ## What to review now (rounds from 2026-10-20)
 
 The plan changed a lot on 2026-10-19 and 2026-10-20. The tool is now:
-- a hosted Railway app in TypeScript, like the library;
+- a hosted Northflank app in TypeScript, like the library (D-70; it was Railway until 2026-10-23);
 - serving an API the library pulls from, with up to three portraits per teacher and three versions each.
 
 The owner's decisions (D-24..D-61) are settled. Review how well the plan carries them out:
@@ -13,7 +13,7 @@ The owner's decisions (D-24..D-61) are settled. Review how well the plan carries
 - [spec/requirements.md](../spec/requirements.md) (consolidated 2026-10-20) against the decisions: anything contradictory, missing or unverifiable;
 - [plan/features.md](../plan/features.md): cards too big for one build step, wrong dependencies, checks that can't run offline, live steps without a cap;
 - [contracts/portraits-api.openapi.json](../contracts/portraits-api.openapi.json): whether the library could build its side from it alone;
-- [spec/architecture.md](../spec/architecture.md): the TypeScript port of the image steps (OpenCV.js) and its fallbacks; the Railway layout;
+- [spec/architecture.md](../spec/architecture.md): the TypeScript port of the image steps (OpenCV.js) and its fallbacks; the Northflank layout;
 - rights, licences and credits (SRC-02, SRC-08, SRC-11);
 - spend and failure paths: anything that could stall an unattended build or spend money unexpectedly.
 

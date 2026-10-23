@@ -1,7 +1,7 @@
 # Hand-off to the library's planning: the portraits API
 
 **From:** Nexus Portraits planning, 2026-10-19 (night). **For:** the Library-AI (Rev1) chat, relayed by the owner.
-**Contract:** `brain/contracts/portraits-api.openapi.json` in ngunn86/LibraryAI-Portraits (draft 7, 2026-10-22), with `portraits-api.md` (plain words), `portraits-api.sample.json` and `check_api.py`. Copy them unchanged, with the commit, as you would any outside contract.
+**Contract:** `brain/contracts/portraits-api.openapi.json` in ngunn86/LibraryAI-Portraits (draft 8, 2026-10-23), with `portraits-api.md` (plain words), `portraits-api.sample.json` and `check_api.py`. Copy them unchanged, with the commit, as you would any outside contract.
 
 ## What was decided here that the library needs
 
@@ -48,7 +48,7 @@ Teachers are searched again monthly, even when all three slots are full (D-59). 
 
 ## What this project would like back
 
-1. **Push Rev1's latest planning to GitHub**, including `brain/reference/hosting-railway-review.md`, so it can be copied here unchanged (D-36) and the PORT lines reconciled (O-1).
+1. **Push Rev1's latest planning to GitHub**, including its portrait spec, so it can be copied here unchanged and the PORT lines reconciled (O-1). The Railway hosting review is no longer needed here: the portraits app moved to Northflank on 2026-10-23 (D-70).
 2. **How often the library will read the change feed** (hourly or nightly), for the cost and run planning (T-19).
 3. ~~Whether the library still wants the bulk-upload zip~~. **Settled (D-58):** the owner dropped it; the API replaces it.
 4. Anything in the contract the library's builders would change. Changes go through this project, because it owns the contract (D-37).

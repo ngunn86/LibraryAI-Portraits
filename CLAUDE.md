@@ -4,7 +4,7 @@ Read this first. `AGENTS.md` and `GEMINI.md` point here, so every agent works fr
 
 ## What this project is
 
-Nexus Portraits is a standalone hosted app on Railway (D-31, D-36). It reads the owner's list of New Thought teachers (library-pipeline's `authors.csv`, through GitHub). For each teacher it:
+Nexus Portraits is a standalone hosted app on Northflank (D-31, D-70; it was Railway until 2026-10-23). It reads the owner's list of New Thought teachers (library-pipeline's `authors.csv`, through GitHub). For each teacher it:
 
 - finds up to 3 different public-domain or openly licensed photographs that certainly show them, from the adopted sources by strict match rules (`brain/spec/sources.md`);
 - turns each into portraits in the owner's halftone style:
@@ -33,7 +33,7 @@ The project serves two purposes:
 - an API for the library;
 - no extraction from books.
 
-T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-61); see the tracker. The requirements were consolidated on 2026-10-20, and no questions are open. The first outside review (Argon) is merged. The plan is being adapted to the Coding Harness (D-62..D-68, `harness.yaml`): a sample of cards is in format 1, and the rest follow once the harness chat has checked the sample. The app is built in **TypeScript on Node 24**, like the library (D-57); `brain/spec/architecture.md` v2 describes it, and `prototype/` (Python, recipe 0.5.0) is the reference implementation of the recipe.
+T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-61); see the tracker. The requirements were consolidated on 2026-10-20, and no questions are open. The first outside review (Argon) is merged. The plan is being adapted to the Coding Harness (D-62..D-69, `harness.yaml`), and moved with it from Railway to Northflank (D-70, 2026-10-23): a sample of cards is in format 1, and the rest follow once the harness chat has checked the sample. The app is built in **TypeScript on Node 24**, like the library (D-57); `brain/spec/architecture.md` v2 describes it, and `prototype/` (Python, recipe 0.5.0) is the reference implementation of the recipe.
 
 ## Repo map
 
@@ -46,7 +46,7 @@ T-01..T-08, T-10..T-14 and T-16..T-23 are decided (D-31..D-61); see the tracker.
 | `brain/status.md` | Where planning stands, what's blocked, what's next, session log |
 | `brain/brief/` | The owner's briefs, verbatim. v2 (2026-10-19) is current; v1 is superseded and kept for history |
 | `brain/spec/requirements.md` | **The normative requirements**, with stable IDs. This is what gets built and tested |
-| `brain/spec/architecture.md` | The hosted app (v2): TypeScript stack, Railway layout, modules, database, settings, secrets, porting risks |
+| `brain/spec/architecture.md` | The hosted app (v2): TypeScript stack, Northflank layout, modules, database, settings, secrets, porting risks |
 | `brain/spec/sources.md` | Image sources: which to adopt, match rules, rights evidence, the rights log |
 | `brain/contracts/` | Contracts shared with the owner and with Library-AI. **The portraits API** (`portraits-api.openapi.json`, owned by this project, D-37) replaces the earlier files (requests, status, delivery folder, manifest) |
 | `brain/plan/build-plan.md` | Phases, gates, testing approach, spend plan and risks |
@@ -81,7 +81,7 @@ The rest of this file (the rules below, and the build section at the end) still 
    - Items marked **open** point to a question in `brain/open-questions.md`.
 2. **IDs are permanent.** Never renumber requirements (`IN-`, `SRC-`, `STY-`, `PIP-`, `OUT-`, `RUN-`, `TRI-`, `AC-`), features (`F-`), decisions (`D-`) or questions (`Q-`). Retire an ID by marking it *withdrawn*, and add new IDs at the end of their group.
 3. **Library-AI---Rev1 and library-pipeline are separate projects and read-only from here.** Never write to them. Anything this project needs from Rev1 is copied into `brain/reference/rev1/` unchanged, with the source commit noted. The tool reads library-pipeline's `collection/authors.csv` (IN-12) and nothing else of it.
-4. **Keys never go in the repo, chat, logs, reports or API answers.** Keys are Railway variables, read from the environment (see `brain/spec/architecture.md`, RUN-10).
+4. **Keys never go in the repo, chat, logs, reports or API answers.** Keys are Northflank secrets, read from the environment (see `brain/spec/architecture.md`, RUN-10).
 5. **Originals come only from the adopted sources in `brain/spec/sources.md`, by the match rules in `SRC-03`.**
    - The tool never reads Library-AI's scans or the owner's reference shelf.
    - The tool's network client refuses every other host except the configured model API (OpenRouter) and GitHub for the teacher list (SRC-01).

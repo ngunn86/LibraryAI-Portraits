@@ -12,7 +12,7 @@ protected:
   - prototype/                  # the Python reference, its fixtures and parity outputs
   - models/                     # the YuNet face model
   - contracts/                  # the contract's copy at the root (F-03 makes it)
-  - .railway/                   # deploy settings (F-36 makes them)
+  - northflank/                 # the Northflank templates: projects, pipelines, release flows, preview template (F-36 makes them)
   - .github/
   - tsconfig.json
   - harness.yaml
@@ -53,12 +53,14 @@ limits:
     openrouter: { per_card_usd: 2, per_month_usd: 35, total_usd: 35 }
 
 deploy:
-  host: railway
-  pr_copies: true               # based on staging, never production; stub mode, no AI key if Railway allows (HT-32), staging's test credentials (RUN-10)
-  staging: on-merge             # Railway environment "staging", deployed from main
+  host: northflank               # D-70 (harness HD-60): two projects, staging-and-previews and production
+  pr_copies: true               # Northflank preview environments in the staging project, never production: own database,
+                                # test secrets, no AI key, stub mode, a short lifetime (RUN-10, HT-32)
+  staging: on-merge             # the staging project's pipeline builds and deploys main on each merge
   starts_at: F-36               # the card that makes the app deployable, with its health endpoint
-  health: /api/v1/health        # 200 only when the database, bucket and image libraries work; names its environment, database and bucket (RUN-12)
-  production: { mode: veto-window, hours: 24 }  # D-66; the conductor promotes, with a token outside the box.
-                                                # Production is first deployed at the release (F-47): see question 5
+  health: /api/v1/health        # the readiness check: 200 only when the database, bucket and image libraries work; names its
+                                # environment, database and bucket (RUN-12). Liveness is /api/v1/live
+  production: { mode: veto-window, hours: 24 }  # D-66; the conductor starts production's release flow with the production
+                                                # token, kept outside the box. First deployed at the release (F-47): see question 5
 
 digest: { issue: TODO, time: "07:30" }   # the control issue's number, set when the harness creates it (D-63)

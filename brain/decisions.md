@@ -203,13 +203,13 @@ The app has admin pages for browsing portraits by teacher; what else they show i
 "I am not opposed to adding other API keys as needed, just trying to keep the complexity to a minimum."
 All AI still goes through OpenRouter (D-19). Other services (GitHub, data sources, the host) may have their own keys where needed, kept to a minimum.
 
-**D-35 · 2026-10-19 · The owner can deploy by hand** · owner · *T-27* · *Replit superseded by D-36: the owner's own path is Railway's dashboard or app*
+**D-35 · 2026-10-19 · The owner can deploy by hand** · owner · *T-27* · *Replit superseded by D-36, and Railway by D-70: the owner's own path is Northflank's dashboard, in a browser (it has no phone app)*
 "I am also not opposed to having to deploy myself from Replit. I can access it from my phone if necessary, and the harness is going to keep me updated remotely."
 A deploy may be a one-tap step by the owner, announced in the harness digest. Deploys without clicking are a nice-to-have, not a requirement for choosing the host.
 
 ## From the library's planning (relayed by the owner, 2026-10-19, 18:10)
 
-**D-36 · 2026-10-19 · Host: Railway** · owner · *closes T-01*
+**D-36 · 2026-10-19 · Host: Railway** · owner · *closes T-01* · ***superseded by D-70 (2026-10-23): the host is Northflank***
 "Take the host decision to Railway and skip the Replit spike; brain/reference/hosting-railway-review.md in Rev1 is written for both projects."
 - The app is hosted on Railway. No Replit spike is run.
 - Rev1's `brain/reference/hosting-railway-review.md` applies to both projects. It is copied here unchanged, with its commit, once it reaches GitHub.
@@ -270,9 +270,9 @@ Claude's proposals carried with this decision (marked *proposed* in PIP-14..PIP-
 → T-04, T-07, T-08, PIP-16, PIP-18
 
 **D-42 · 2026-10-19 · Storage, history, backups and the admin page** · owner · *closes T-06*
-1. **Where files live:** in the tool's own bucket on Railway. There is no Google Drive copy. The owner: "Library makes a local copy of all portraits it pulls through the api." So the library keeps its own copy of every portrait it pulls. The API must make that easy (T-08): a listing of what changed since a date, with each file's checksum.
+1. **Where files live:** in the tool's own bucket on Railway *(since D-70: Cloudflare R2)*. There is no Google Drive copy. The owner: "Library makes a local copy of all portraits it pulls through the api." So the library keeps its own copy of every portrait it pulls. The API must make that easy (T-08): a listing of what changed since a date, with each file's checksum.
 2. **History:** the files of a replaced or turned-down portrait are kept as history, and its status is marked.
-3. **Backups:** the database only, at first (Railway's Postgres backups). The bucket can be rebuilt from the rights log. Only the AI copies would cost again, and the library holds its own copies of everything it pulled.
+3. **Backups:** the database only, at first (Railway's Postgres backups; *since D-70, Northflank's*). The bucket can be rebuilt from the rights log. Only the AI copies would cost again, and the library holds its own copies of everything it pulled.
 4. **Admin page:** browse and run status, read-only. It shows:
    - portraits by teacher, with all versions, credits and the library's decisions;
    - runs, spend and errors.
@@ -430,7 +430,7 @@ The image model is unchanged: Nano Banana Pro, with Nano Banana 2 and GPT Image 
 3. **How the owner hears about it:**
    - the library's daily admin email mentions new portraits waiting (a request to the library's planning);
    - the tool's own errors, spend and runs are on its admin page (OUT-13);
-   - Railway alerts on crashes and failed deploys.
+   - Railway alerts on crashes and failed deploys *(since D-70, Northflank's notifications; the harness's alerts on the control issue cover the build)*.
 
    There is no email of the tool's own, and no extra key.
 4. **A Try-again note guides a fresh AI copy.**
@@ -469,7 +469,7 @@ Claude's proposals carried with this decision:
 Claude's choices carried with this decision (RUN-10):
 - **Transport and files:** HTTPS only. The bucket is private; files go out through 15-minute signed links.
 - **The library's key:** random, at least 32 bytes, stored as a hash, made and switched off by a command, and shown once (D-44).
-- **Secrets:** Railway variables per environment, never in the repo, logs or API answers. A test scans for them.
+- **Secrets:** Railway variables per environment *(since D-70, Northflank secret groups)*, never in the repo, logs or API answers. A test scans for them.
 - **Rate limits** on the API and the login.
 - **Outbound calls** only to the adopted sources and OpenRouter (SRC-01).
 - **Environment caps:** since the key is shared, staging gets its own low caps ($2 a night and $10 a month), and spend is recorded with the environment's name. Pull-request copies make no paid calls at all: they run in stub mode (RUN-10), and since D-67 they don't get the key. The key's credit limit (O-4) is the backstop across them all. *(Corrected 2026-10-21: this line had given pull-request copies "$2 a night", against RUN-10.)*
@@ -500,11 +500,11 @@ Claude's proposals carried with this decision:
 
 Claude's architecture carried with this decision (`spec/architecture.md` v2, proposed):
 - Node 24 LTS, Express, zod, Drizzle with SQL migrations, Postgres and a Postgres-backed queue;
-- the Railway bucket through the S3 SDK;
+- the Railway bucket through the S3 SDK *(since D-70, Cloudflare R2, still through the S3 SDK)*;
 - `sharp` and OpenCV.js; YuNet for faces;
 - server-rendered admin pages;
 - `node:test`;
-- Railway configured as code (`.railway/railway.ts`).
+- Railway configured as code (`.railway/railway.ts`) *(since D-70, Northflank templates in the repo)*.
 
 → T-23, T-24, T-25, RUN-01, RUN-05, RUN-06, F-16, Q-15
 
@@ -578,7 +578,7 @@ The owner made these in the Coding Harness chat; the IDs in brackets are that ch
 - **Only Claude (Opus 5.5) writes the product's code.** Gemini lists the cases each card's tests must cover; Codex writes the card's acceptance tests first, and they're locked; Codex and Gemini review each commit independently; a verifier from another family adds tests at each phase's gate card; the Tech Lead (Opus, maximum effort) rules from a fixed menu, and logs each ruling.
 - **An A grade** is computed by the conductor, never awarded by a model: every blocking check, both reviews and the smoke checks pass, for one commit.
 - **The digest they can veto** becomes the control issue (D-63).
-- **It runs in a worker box on the owner's PC:** a Docker container holding only the card's working copy, the agents' logins and the test services, with no GitHub or Railway credentials. Only the conductor pushes, merges and deploys, and it never runs project code with `railway run`.
+- **It runs in a worker box on the owner's PC:** a Docker container holding only the card's working copy, the agents' logins and the test services, with no GitHub or host credentials. Only the conductor pushes, merges and deploys, and it never runs project code with `railway run`.
 - **A build agent** reads what its packet names, changes only its card's `Owns`, never edits the notes, and writes `BLOCKED.md` when a spec or test looks wrong.
 - The cards follow the harness's **format 1**, and the project gets a `harness.yaml`.
 - **Added 2026-10-22** (the harness's instructions as of HD-59, after its own reviews):
@@ -627,3 +627,31 @@ The owner made these in the Coding Harness chat; the IDs in brackets are that ch
 - Here, live checks start the app's own jobs over the web (RUN-11), so the harness reads the spend from `GET /api/ops/spend` after each check.
 
 → `harness.yaml` (`limits`), RUN-04, RUN-11, F-27, F-52, F-29
+
+## From the harness chat: the host (2026-10-23)
+
+**D-70 · 2026-10-23 · Host: Northflank, not Railway** · owner, in the harness chat (HD-60) · *supersedes D-36*
+- **Why:** on 2026-10-21 Railway disclosed that attackers may have read customers' environment variables. The owner moved hosting to Northflank for every project the harness builds.
+- **Two Northflank projects:**
+  - **staging and the pull-request copies** share one. The harness's everyday token reaches only this project;
+  - **production** has its own. Only the harness's conductor holds a production token, and uses it only to promote after the veto window (D-66). The owner can promote by hand in Northflank's dashboard (D-35).
+- **Pull-request copies** are Northflank preview environments, made from a preview template for each pull request. Each has its own database and test secrets. They're deleted when the pull request closes or merges, or after the lifetime the template sets.
+- **Staging** deploys on each merge to `main`.
+- **Health checks** are the service's readiness and liveness checks. **Migrations** run as a job step in each release, and stay additive.
+- **No hard spending cap at Northflank,** only a billing threshold. So copies get a short lifetime, and the harness's daily clean-up removes leftovers.
+- **Files:** Cloudflare R2 or Northflank's MinIO add-on. Postgres add-ons have pgvector built in. There's no phone app; the owner uses the dashboard in the phone's browser.
+- As before, the harness reaches deployed copies over HTTP only, never through the host's command line or a shell in a container.
+
+Claude's choices carried with this decision (proposed; `spec/architecture.md`):
+- **Files in Cloudflare R2,** not MinIO. It's cheaper (10 GB free, then $0.015 per GB-month, with no egress fees), durable without a volume to look after, and the owner already uses R2 for the library's backups. There are three buckets, production, staging and previews, each with its own token that can reach only that bucket. Each pull-request copy works under its own prefix in the previews bucket, which empties itself after 7 days.
+- **Northflank templates in the repo** (`northflank/`), synced both ways, describe the two projects, the pipelines, the release flows and the preview template. They hold no secret values.
+- **Pull-request copies start with an empty database,** migrated and seeded with fixtures, rather than a copy of staging's. Nothing real ever reaches a test copy.
+- **Production builds the promoted commit itself.** A Northflank pipeline can't span two projects, so production's release flow, started after the window, backs up the database, runs the migrations and deploys that exact commit.
+- **The owner's own commands** (making the library's key, setting the admin password) run in a shell on the web service, from Northflank's dashboard. The harness never does this.
+- **If any key was ever stored in Railway, it's rotated.** The portraits app had no Railway project yet, but the throwaway test or another project may have.
+- **The environment is named by the app's own variable,** `PORTRAITS_ENV` (`production`, `staging` or `preview`), set in each secret group. A missing or unknown value stops start-up.
+- **Liveness is its own route,** `GET /api/v1/live`, which checks only that the process is up. `/api/v1/health` is the readiness check, so a database outage takes a copy out of service without making Northflank restart it in a loop (contract draft 8).
+- **Pull-request copies live at most 3 days** (the preview template's lifetime), and none has the AI key: the preview secret group doesn't hold it.
+- **Cost:** about $25 a month for production (web, worker, Postgres, the nightly job), and about as much again for staging while it runs. The owner can pause staging between builds. Railway was estimated at $8–15 a month, since it bills only what's used; Northflank bills each running instance by the hour. R2 stays within its free tier.
+
+→ RUN-01, RUN-05, RUN-07, RUN-09, RUN-10, RUN-11, RUN-12, IN-11, OUT-12, SRC-01, TRI-06, architecture, the contract (draft 8), `harness.yaml`, F-36, F-37, F-49, F-51, F-17, F-50, O-1, O-4, O-8..O-11, O-13, O-14, the build plan's §4 and §6, the release checklist, HT-02..HT-33, T-01

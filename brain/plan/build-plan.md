@@ -7,8 +7,8 @@
 | Phase | What | Cards | Who | Paid AI spend (tool key) |
 |---|---|---|---|---|
 | **0 · Planning** | Notes, decisions, API contract, style prototype, reviews | — | Claude with the owner; other AI tools review | none |
-| **— · Harness proof** | The throwaway app: build, deploy, test and tear down on Railway ([../handoffs/harness-throwaway-test.md](../handoffs/harness-throwaway-test.md)) | HT-01..HT-32 | Harness (planned in its own chat) | ≤ $0.50 |
-| **1 · Foundation and deploys** | Repo and test runner, settings and secrets, API contract in code, database and queue, bucket, Railway setup with staging and PR copies and the health check, jobs over the web; the phase's gate | F-01, F-51, F-03, F-04, F-37, F-36, F-49, F-53 | Harness | none |
+| **— · Harness proof** | The throwaway app: build, deploy, test and tear down on Northflank ([../handoffs/harness-throwaway-test.md](../handoffs/harness-throwaway-test.md)) | HT-01..HT-33 | Harness (planned in its own chat) | ≤ $0.50 |
+| **1 · Foundation and deploys** | Repo and test runner, settings and secrets, API contract in code, database and queue, bucket, Northflank setup with staging, PR copies and the health check, jobs over the web; the phase's gate | F-01, F-51, F-03, F-04, F-37, F-36, F-49, F-53 | Harness | none |
 | **2 · Teachers and sources** | The authors list, the outbound client, Wikidata, the teacher sync, licences, rights log, Commons, LoC, Wellcome, finding ids, the coverage survey; the phase's gate | F-02, F-06, F-08, F-31, F-07, F-32, F-09, F-10, F-34, F-35, F-38, F-54 | Harness | none (free public APIs) |
 | **3 · Imaging (ported from the Python prototype)** | Porting spike, face and crop, descreen, halftone, mask and outline, blend, versions, same-photo check; parity with the prototype is the phase's gate | F-39, F-12, F-13, F-14, F-15, F-30, F-41, F-42, F-16 | Harness | none |
 | **4 · Model steps** | OpenRouter client and caps, pre-check, AI copy and cut-out, draft check, same-photo tie-break, candidates; the phase's gate | F-17, F-18, F-19, F-21, F-43, F-11, F-55 | Harness | none (stubbed) |
@@ -21,7 +21,7 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 
 | # | Task | Needs | State |
 |---|---|---|---|
-| P0-1 | Copy in Rev1's portrait files and the shared hosting review; reconcile every `tool` PORT line (requirements §10) | O-1 | **Waiting** for the library chat to push |
+| P0-1 | Copy in Rev1's portrait files; reconcile every `tool` PORT line (requirements §10). The shared Railway hosting review is no longer needed here (D-70) | O-1 | **Waiting** for the library chat to push |
 | P0-2 | The owner's decisions on the tracker topics | the owner | **Done** for T-01..T-23 (D-31..D-57), plus Q-27 and Q-28 (D-58, D-59) and Argon's two calls (D-60, D-61) |
 | P0-3 | Style prototype (D-16) | O-2 | **Done:** recipe 0.4.0 accepted as the starting point (D-49); 0.5.0 (same look) re-measures the crop with the app's face detector. Per-operation references for the port in `prototype/parity/` |
 | P0-4 | Trial set curation (TRI-02) | the coverage survey | **Moved into the build:** F-28 picks the set from F-38's report, with the owner's veto |
@@ -36,19 +36,20 @@ The harness reads the **Status** column: a card whose owner input isn't `done` i
 
 | ID | What | Needed by | Status | Notes |
 |---|---|---|---|---|
-| O-1 | Rev1's latest planning pushed to GitHub (the library chat), including `brain/reference/hosting-railway-review.md` and its portrait spec, so Claude can copy them into `brain/reference/rev1/` unchanged | P0-1 (**now**) | not done | Rev1 is readable here through GitHub (read-only). At 3e444eb (2026-10-18) it predates the library adopting this API |
+| O-1 | Rev1's latest planning pushed to GitHub (the library chat), including its portrait spec, so Claude can copy it into `brain/reference/rev1/` unchanged (its Railway hosting review no longer applies here, D-70) | P0-1 (**now**) | not done | Rev1 is readable here through GitHub (read-only). At 3e444eb (2026-10-18) it predates the library adopting this API |
 | O-2 | The three hand-made portraits and their originals | P0-3 | done | 2026-10-19 (`design/portraits/`); sources unknown, so test use only (D-13) |
 | O-3 | The teacher list. **Taken from library-pipeline's `authors.csv`** (D-22, D-45, read-only). The owner adds the dates and ids the tool suggests (from the admin page's CSV) in `authors.csv`, including its optional `wikidata_qid` and `lcnaf_id` columns (D-60) | Ongoing | done | The list exists; adding suggestions is ongoing |
-| O-4 | The tool's one OpenRouter key (D-19, D-67), **set by the owner as a Railway variable in production and staging only**, never in pull-request copies, and given to the harness's secret store only if the harness chat says it needs it. **Its limit at OpenRouter, in steps** (D-67): $50 with no reset from the first live card; raised by $100 at the release; then $40 a month after the first pass (see the release checklist) | F-27 (the first live card) | not done | A key separate from other projects, so spend is easy to see. Never in chat or the repo |
+| O-4 | The tool's one OpenRouter key (D-19, D-67), **set by the owner in Northflank's production and staging secret groups only**, never in the preview group that pull-request copies use, and given to the harness's secret store only if the harness chat says it needs it. **Its limit at OpenRouter, in steps** (D-67): $50 with no reset from the first live card; raised by $100 at the release; then $40 a month after the first pass (see the release checklist) | F-27 (the first live card) | not done | A key separate from other projects, so spend is easy to see. Never in chat or the repo |
 | O-5 | ~~The delivery folder~~ (D-42: the library pulls through the API) | — | withdrawn | |
 | O-6 | The Claude GitHub App installed on this repo (Q-20) | — | done | 2026-10-19 |
 | O-7 | The harness, ready to run, with the throwaway test passed | Phase 1 | not done | Designed in its own chat (D-15) |
-| O-8 | A Railway account (Hobby to start) with the project created, PR environments on, and the harness's conductor given a staging-deploy token and a production token, kept in the harness's store, outside the worker box (D-36, D-65) | F-36 | not done | After the throwaway test (`handoffs/harness-throwaway-test.md`) |
-| O-9 | A read-only, fine-grained GitHub token for library-pipeline, limited to that repo's contents (D-32), set as the Railway variable `GITHUB_TOKEN` in staging (which pull-request copies take it from) and production | The smoke checks of F-31 and F-38; F-27 and F-52 | not done | Never in chat or the repo |
-| O-10 | A contact email address for the tool's User-Agent (D-46), one meant for the app rather than a personal one | The recordings of F-07, F-08, F-09, F-10, F-34, F-35 and F-38; every check that calls a source on a deployed copy (F-38, F-27, F-52) | not done | Wikimedia's 2026 limits require it. Set as the variable `USER_AGENT_CONTACT` in Railway (staging and production) and in the harness's store (for recordings). It isn't a secret, but this way no one edits code to add it. Without it, a deployed copy starts but refuses calls to the sources; tests use a placeholder |
-| O-11 | The library's key for this API, made by the owner once production is released (`portraits keys new`, run from the owner's PC), and handed to the library's settings (D-44) | The release checklist | not done | Not a card's input: F-47 doesn't wait for it |
+| O-8 | A **Northflank** account (pay as you go) with two empty projects, `nexus-portraits-staging` and `nexus-portraits-production`, this GitHub repo linked, a **billing alert** (Northflank has no hard spending cap; $60 a month suggested), notifications on for crashes, failed health checks and failed releases, and two API tokens for the harness's conductor: one limited to the staging project, one to the production project, both kept in the harness's store, outside the worker box (D-65, D-70) | F-36 | not done | After the throwaway test (`handoffs/harness-throwaway-test.md`). F-36's templates (`northflank/`) then make the pipelines, release flows, preview template, add-ons and cron job; anything they can't is a step in `docs/northflank-dashboard-steps.md` |
+| O-9 | A read-only, fine-grained GitHub token for library-pipeline, limited to that repo's contents (D-32), set as `GITHUB_TOKEN` in the production, staging and preview secret groups (pull-request copies sync through it in F-31's smoke check) | The smoke checks of F-31 and F-38; F-27 and F-52 | not done | Never in chat or the repo |
+| O-10 | A contact email address for the tool's User-Agent (D-46), one meant for the app rather than a personal one | The recordings of F-07, F-08, F-09, F-10, F-34, F-35 and F-38; every check that calls a source on a deployed copy (F-38, F-27, F-52) | not done | Wikimedia's 2026 limits require it. Set as `USER_AGENT_CONTACT` in all three secret groups and in the harness's store (for recordings). It isn't a secret, but this way no one edits code to add it. Without it, a deployed copy starts but refuses calls to the sources; tests use a placeholder |
+| O-11 | The library's key for this API, made by the owner once production is released (`portraits keys new`, run in a shell on production's web service, opened from Northflank's dashboard), and handed to the library's settings (D-44) | The release checklist | not done | Not a card's input: F-47 doesn't wait for it |
 | O-12 | Answer Q-27 (the zip, and the restated acceptance checks) | Before F-05 | done | 2026-10-20 (D-58) |
-| O-13 | **Test credentials per environment** (RUN-10, RUN-11): an `OPS_KEY` for staging, pull-request copies and production, and, for staging and pull-request copies only, a `SEED_ADMIN_PASSWORD` and a `SEED_LIBRARY_KEY`. Each set as a Railway variable by the owner, and each given to the harness's secret store | F-49's smoke check (Phase 1), then every check that calls a deployed copy | not done | Random values, made by the owner (a password manager can make them). Production needs only its ops key, for later use; no check touches it. Never in chat or the repo |
+| O-13 | **Test credentials per environment** (RUN-10, RUN-11): an `OPS_KEY` for staging, pull-request copies and production, and, for staging and pull-request copies only, a `SEED_ADMIN_PASSWORD` and a `SEED_LIBRARY_KEY`. Each set by the owner in its environment's secret group (production, staging, preview), and each given to the harness's secret store | F-49's smoke check (Phase 1), then every check that calls a deployed copy | not done | Random values, made by the owner (a password manager can make them). Production needs only its ops key, for later use; no check touches it. Never in chat or the repo |
+| O-14 | **Cloudflare R2 for files** (D-70, OUT-12): a Cloudflare account with R2 on; three private buckets, `portraits-production`, `portraits-staging` and `portraits-previews` (the last with a lifecycle rule deleting objects after 7 days); and one API token per bucket, with object read and write on that bucket only. Their values set in the matching secret group as `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` | F-36 | not done | R2 may ask for a payment method even within its free tier (10 GB). Never in chat or the repo |
 
 ## 4. Working with the harness (format 1; D-62..D-66)
 
@@ -69,10 +70,10 @@ The harness's own rules are in `../../Coding Harness Instructions.md` (from the 
 10. **Record** the evidence, spend and lessons.
 
 **Environments and the veto window** (D-66)
-- **Pull-request copies:** based on staging, never production, each with its own test database and bucket and staging's test credentials (RUN-10, O-13); stub mode, no cron, and no AI key where Railway allows (HT-32). Before smoke checks, the harness reads the copy's health to confirm it isn't using production's database or bucket (RUN-12).
+- **Pull-request copies:** Northflank preview environments in the staging project, never production, made from its preview template for each pull request and deleted when it closes or merges, or after 3 days. Each has its own empty database (migrated and seeded), its own prefix in the previews bucket and the preview secret group's test credentials (RUN-10, O-13); stub mode, no cron, and no AI key (HT-32). Before smoke checks, the harness reads the copy's health to confirm it isn't using production's database or bucket (RUN-12).
 - **Nothing deploys before F-36** (`deploy.starts_at`), the card that makes the app deployable with its health endpoint.
-- **Staging:** Railway environment `staging`, deployed from `main` on every merge (`deploy.staging: on-merge`).
-- **Production:** Railway environment `production`. Only the conductor promotes to it, with a production token kept outside the worker box. It promotes one exact release:
+- **Staging:** the staging project's pipeline, whose release flow builds, migrates and deploys `main` on every merge (`deploy.staging: on-merge`).
+- **Production:** the production project. Only the conductor promotes to it, by starting production's release flow (build the commit, back up the database, migrate, deploy) through Northflank's API, with a production token kept outside the worker box. It promotes one exact release:
   - after a notice on the control issue, and only once **24 hours** have passed without a `/veto`;
   - the window restarts if the release changes;
   - it promotes only if it has read the control issue within the last 10 minutes.
@@ -81,7 +82,7 @@ The harness's own rules are in `../../Coding Harness Instructions.md` (from the 
   2. **F-50** writes the trial's winner into the settings. It merges at once, with its notice on the control issue; `/veto` reverts it.
   3. **F-47, the release,** proves the release candidate on its deployed copy. The conductor then posts the promotion notice and, after the 24-hour window, promotes that commit to production. Production's schedule is on from that first deploy (RUN-08).
   4. **After the release,** production is promoted again only for a fix, each through its own window.
-- **The owner's own path stays:** the owner can always deploy or roll back by hand in Railway (D-35).
+- **The owner's own path stays:** the owner can always start production's release flow, or roll back to an earlier deployment, by hand in Northflank's dashboard, in a browser (D-35, D-70).
 
 **Planning during a build.** Planning commits still go to `main`. A running card brings them in and is checked again, and a change to the specs a running card reads voids its evidence. So planning changes during a build are batched, and pushed between cards where possible.
 
@@ -104,12 +105,12 @@ The harness's own rules are in `../../Coding Harness Instructions.md` (from the 
 Everything else in `brain/` is protected. **Recipe numbers** change only through the trial: F-50 writes them, with a `recipeVersion` bump.
 
 **Keys and spend** (D-67)
-- The app's OpenRouter key is a Railway variable in production and staging, set by the owner (O-4). Its limit at OpenRouter is the boundary; the caps in code are the second line.
+- The app's OpenRouter key is a secret in production's and staging's secret groups, set by the owner (O-4). Its limit at OpenRouter is the boundary; the caps in code are the second line.
 - **Live checks start the app's own jobs over the web** (RUN-11), so the app spends with its own key, under its own caps. The harness reads the spend at `GET /api/ops/spend` for its own count.
 - Test credentials per environment are in the harness's store (O-13). A check that needs one gets it in a fresh box with no agent running.
 - The digest reports spend as three lines: the agents' usage, the app's paid calls, and hosting.
 
-**Things the harness must not do here:** run project code with `railway run`; touch production from a check; deploy production outside the window.
+**Things the harness must not do here:** run project code through Northflank's command line or a shell in a container; touch production from a check; deploy production outside the window.
 
 ## 5. Testing approach (D-09: features work reasonably well and without bugs)
 
@@ -148,7 +149,8 @@ Everything else in `brain/` is protected. **Recipe numbers** change only through
 | F-52 trial on staging (three enhance models on about 23 originals) and F-29 (the examples, reusing the trial's cache) | The tool's key | $30 trial budget (D-54), as $27 + $3 sub-budgets; estimate about $11 |
 | F-47 first full run | The tool's key | $100 cap (D-54); estimate $40–80 |
 | After that | The tool's key | $10 a night, $30 a month (D-54) |
-| Hosting | Railway | About $8–15 a month (T-01 notes) |
+| Hosting | Northflank, billed by the hour per instance (D-70) | About $25 a month for production (web, worker, Postgres, the nightly cron job), and about as much again for staging while it runs: during the build and for fixes, and paused by the owner otherwise. Pull-request copies cost cents each. No hard cap: a billing alert (O-8) |
+| Files | Cloudflare R2 | Free up to 10 GB; this app needs a few GB |
 
 Fixture recording and the coverage survey use free public APIs, with a polite client (SRC-09).
 
@@ -171,7 +173,7 @@ Fixture recording and the coverage survey use free public APIs, with a polite cl
 | R-4 | Model ids, availability or prices change | Ids and prices live in settings; `doctor` checks them before a run |
 | R-5 | The vision checker passes bad drafts or fails good ones | The library's approval is the final gate; the trial calibrates it; "compare with target" is tested on the examples |
 | R-6 | Spend overruns | A cap check before every paid call (night, month, teacher, environment); the credit limit on the key (O-4); dry-run estimates |
-| R-7 | This is the harness's first project | The throwaway test proves the harness on Railway first; small cards with offline checks; owner inputs listed up front; clear parking rules |
+| R-7 | This is the harness's first project | The throwaway test proves the harness on Northflank first; small cards with offline checks; owner inputs listed up front; clear parking rules |
 | R-8 | ~~Drive sync order, WSL mount quirks~~ | *Gone:* no Drive folder (D-42) |
 | R-9 | Wikimedia or LoC rate limits or blocks (Wikimedia tightened its limits in 2026) | An identifying User-Agent, pacing to published limits and caching (SRC-09); tests replay recordings |
 | R-10 | The AI-enhanced copy quietly changes a face | A 50% blend; alignment and the local drift check refuse moved features; likeness checked against the original; the board shows the no-blend version; the library's approval |

@@ -1,6 +1,17 @@
 # T-01 · Where the app runs and how the library reaches it
 
-**Status: decided (2026-10-19). Host: Railway** (D-36), from the library's planning, which wrote one hosting review for both projects (Rev1 `brain/reference/hosting-railway-review.md`, to be copied to `brain/reference/rev1/`). The Replit spike is skipped.
+**Status: decided (2026-10-19); host changed 2026-10-23. Host: Northflank** (D-70), replacing Railway (D-36).
+
+> **Update, 2026-10-23.** The owner moved hosting to Northflank (the harness's HD-60, recorded as D-70) after Railway disclosed on 2026-10-21 that attackers may have read customers' environment variables. The Railway analysis below is kept for the record; it no longer describes the app. Now:
+> - **two Northflank projects:** staging, which also holds the pull-request copies (preview environments, at most 3 days each), and production, which the harness's everyday token can't reach;
+> - **staging** deploys on each merge to `main`; **production** only through its own release flow (build the commit, back up the database, migrate, deploy), started by the conductor after the 24-hour window or by the owner in the dashboard (D-35, D-66);
+> - **Postgres add-ons, files on Cloudflare R2,** settings as templates in `northflank/`, and secrets in one secret group per environment;
+> - **billed by the hour per instance:** about $25 a month for production, plus staging while it runs; no hard cap, only a billing alert;
+> - **the owner's path** is the dashboard in a browser (no phone app). D-31..D-35 still stand.
+>
+> The current layout is in [../spec/architecture.md](../spec/architecture.md) (Northflank layout), and the details in D-70.
+
+*Before 2026-10-23:* the host was Railway (D-36), from the library's planning, which wrote one hosting review for both projects (Rev1 `brain/reference/hosting-railway-review.md`). The Replit spike was skipped.
 
 - **Decided:**
   - Fully hosted, with a two-way API (D-31).
@@ -8,7 +19,7 @@
   - An admin page to browse (D-33).
   - Extra keys are fine when needed, kept to a minimum (D-34).
   - The owner can deploy by hand from Replit (D-35).
-- **Host:** Railway (D-36). The comparison below is kept for the record.
+- **Host:** Northflank (D-70), since 2026-10-23; Railway (D-36) before. The comparison below is kept for the record.
 
 *History:* the owner leaned towards fully hosted "simply for the goal of testing everything we need to test with the harness" and asked for a feasibility review. The review follows.
 

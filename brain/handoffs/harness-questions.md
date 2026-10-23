@@ -1,7 +1,24 @@
 # For the harness chat: what the portraits plan did with your instructions, and its questions
 
-**From:** Nexus Portraits planning, 2026-10-21; updated 2026-10-22. **For:** the Coding Harness chat, relayed by the owner.
-**About:** `Coding Harness Instructions.md`: first as of harness plan `68dee18`, then as updated to HD-59 (commits `2e2b073` and `3e16ff8`).
+**From:** Nexus Portraits planning, 2026-10-21; updated 2026-10-22 and 2026-10-23. **For:** the Coding Harness chat, relayed by the owner.
+**About:** `Coding Harness Instructions.md`: first as of harness plan `68dee18`, then as updated to HD-59 (commits `2e2b073` and `3e16ff8`), then to HD-60 (commit `c6d0199`, the move to Northflank).
+
+## Update, 2026-10-23: the move to Northflank is done here
+
+Your "Hosting change" section (HD-60) is applied. Recorded as **D-70**, the owner's decision, superseding D-36.
+- **`harness.yaml`:** `deploy.host: northflank`; `northflank/` (the templates F-36 makes) replaces `.railway/` among the protected paths. `deploy.starts_at` is F-36, as before.
+- **Your checklist items:**
+  - **no project code through the host's command line:** already so since 2026-10-21 (jobs over the web, RUN-11). The owner's own commands now run in a shell on the web service from Northflank's dashboard, and nothing reaches the database from outside Northflank;
+  - **O-4:** the owner sets every secret in Northflank's secret groups (one per environment: production, staging, preview); the harness keeps its own copies of the test credentials (O-13) in its store, and the AI key only if you need it (question 2);
+  - **HT-23:** reworded: the conductor reads logs and deploy status through Northflank's API; no host MCP server.
+- **The plan's Northflank layout** (architecture, RUN-01, RUN-10, RUN-12, F-36):
+  - the staging project: a pipeline whose release flow builds, migrates and deploys `main` on each merge; a preview template for pull-request copies (own empty Postgres, migrated and seeded; the preview secret group, **which has no AI key**; at most 3 days);
+  - the production project: a release flow that builds a given commit, backs up the database, migrates and deploys, started by the conductor with the production token after the 24-hour window, or by the owner in the dashboard;
+  - readiness is `/api/v1/health` (`deploy.health`), and liveness a new `/api/v1/live` that checks only the process (contract draft 8);
+  - the environment's name comes from the app's own `PORTRAITS_ENV` (`production`, `staging` or `preview`);
+  - **files on Cloudflare R2:** three buckets (production, staging, previews), one token each limited to its bucket; each pull-request copy writes under its own prefix in the previews bucket, which deletes objects after 7 days. New owner input **O-14**.
+- **The throwaway test:** every Railway note is now Northflank's; **HT-32 is tightened** (a copy must lack the AI key, since secret groups make that possible) and **HT-33 is added** (the staging token can't reach production; production builds and deploys exactly the commit it's given).
+- **Questions 8 to 12** below are new; 7 is settled by the move.
 
 ## Update, 2026-10-22: your latest instructions are merged
 
@@ -33,7 +50,7 @@ Everything in the checklist (§9), except converting the last 34 cards, which wa
   - environments and the veto window's rules;
   - owner inputs with a **Status** column (`done`, `not done`, `withdrawn`);
   - what the harness may write: `brain/status.md`, `brain/rulings.md` and `brain/gotchas/`.
-- **No `railway run`:** the app now has **jobs started over the web** (RUN-11): `POST /api/ops/jobs`, `GET /api/ops/jobs/{id}` and `GET /api/ops/spend`, behind a per-environment ops key (O-13). The survey, the trial, the live smoke test and the fixture seed all run that way.
+- **No project code through the host's command line** (it was `railway run`): the app now has **jobs started over the web** (RUN-11): `POST /api/ops/jobs`, `GET /api/ops/jobs/{id}` and `GET /api/ops/spend`, behind a per-environment ops key (O-13). The survey, the trial, the live smoke test and the fixture seed all run that way.
 - **Health** (RUN-12, contract draft 6): 200 only when the database, the bucket and the image libraries work, otherwise 503. Migrations are additive from the first staging deploy.
 - **No check touches production.** So the trial moved to staging, and **production's first deploy is the release** (F-47), after the 24-hour window, with its nightly schedule on from then. There is no separate switch-on.
 - **Multi-night checks** moved to the owner's release checklist (`brain/plan/release-checklist.md`).
@@ -67,7 +84,7 @@ Everything in the checklist (§9), except converting the last 34 cards, which wa
 ## Questions
 
 1. **Shared test fixtures.** Several cards' tests reuse an earlier card's fixtures: F-04's PGlite helper (almost everything after it), F-03's contract validator (the API cards), and F-23's stub world (F-25, F-26, F-48). May a later card's acceptance tests import from an earlier card's `test/fixtures/fNN/`, read-only? If not, where should shared helpers live?
-2. **The AI key.** Live checks start the app's own jobs over the web, so the app spends with its own key (a Railway variable), under its own caps, and the harness never needs to hold the key. The harness can count spend from `GET /api/ops/spend`. Does `limits.paid_calls.openrouter` work as a count like this, or must the harness hold the key itself?
+2. **The AI key.** Live checks start the app's own jobs over the web, so the app spends with its own key (a secret in the app's environment), under its own caps, and the harness never needs to hold the key. The harness can count spend from `GET /api/ops/spend`. Does `limits.paid_calls.openrouter` work as a count like this, or must the harness hold the key itself?
 3. **Credentials for recordings and smoke checks.**
    - F-50's recording (`npm run record-ops -- F-50 --kind trial`) fetches the trial's result from staging's ops API, with staging's ops key (O-13). Will the harness give a `record:` command an environment's address and test credentials, and under what names?
    - Under what names does the harness pass test credentials to `npm run smoke`? We'd use `PORTRAITS_URL`, `PORTRAITS_OPS_KEY`, `PORTRAITS_TEST_LIBRARY_KEY` and `PORTRAITS_TEST_ADMIN_PASSWORD` unless you name others.
@@ -78,4 +95,9 @@ Everything in the checklist (§9), except converting the last 34 cards, which wa
    - Gate cards and prove-it cards use `Covers: none` or `Owns: none`. Is that all right?
    - Smoke tests are named `test/fNN-*.smoke.ts`, and `acceptance_tests` is `test/{slug}-*`, so the test author writes both kinds and `npm test` runs only `*.test.ts`. Is a pattern without a file extension all right?
    - The setup card's checks are commands (`npm ci`, `npm run check`, …). Is that all right?
-7. **Pull-request copies without the AI key** (HT-32). The portraits app keeps one key (D-67) but gives it only to production and staging. Railway's pull-request environments may copy every variable from their base environment. The throwaway test should show how to keep the key out of them.
+7. ~~**Pull-request copies without the AI key** (HT-32).~~ *Settled by the move to Northflank (2026-10-23):* the preview template links only the preview secret group, which doesn't hold the key, and HT-32 now requires that.
+8. **Production builds its own image.** A Northflank pipeline can't span two projects, so production's release flow builds the promoted commit itself, from the same commit and lockfile, then backs up the database, migrates and deploys. Can the conductor start a release flow through Northflank's API with the commit as its argument? If not, the conductor would move a `production` branch that production's build follows. Which suits the harness (HT-33)?
+9. **Files on Cloudflare R2,** not the MinIO add-on: three buckets with a token each, and pull-request copies under their own prefix in the previews bucket, which R2 empties after 7 days. So the daily clean-up has nothing to delete in the bucket. Does that fit HT-13 and the clean-up?
+10. **Preview databases start empty,** migrated and seeded at start-up, rather than forked from staging's latest backup, so nothing real reaches a test copy. Is that all right?
+11. **The preview lifetime** is set to 3 days in the template. Does the harness have a default we should match?
+12. **Liveness.** `deploy.health` is the readiness check, `/api/v1/health`. The liveness check is `/api/v1/live`, set in the templates. Does `harness.yaml` need to name it too?

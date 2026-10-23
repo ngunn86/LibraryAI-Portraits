@@ -2,14 +2,14 @@
  "openapi": "3.1.0",
  "info": {
   "title": "Nexus Portraits API",
-  "version": "1.0.0-draft.7",
+  "version": "1.0.0-draft.8",
   "summary": "What the library reads from the portraits tool, and the decisions and requests it sends back.",
-  "description": "Defined by this project and adopted by the library (D-37). Draft for T-08, 2026-10-19; draft 5 (2026-10-20) merges the first outside review (Argon); draft 6 (2026-10-21) makes the health check prove the database and bucket work (RUN-12); draft 7 (2026-10-22) has it name its environment, database and bucket.\n\n- **Pull only** (D-44): the library reads the change feed on its own schedule; the tool never calls the library.\n- **One key** (D-44) for the library, for reading and sending. Made and switched off by the owner; stored only as a hash.\n- **Requests are handled right away** (D-44): a request answers 202, and its result appears in the change feed.\n- The library keeps its own copy of every file it pulls (D-42); each file carries its SHA-256.\n- Conventions mirror the library's own API (Rev1 `brain/contracts/api.openapi.json`): bearer keys, the same error object, the same change-feed pattern.\n- Within v1, changes are additive only: new optional fields and new routes. Response objects may gain fields; readers must ignore unknown ones."
+  "description": "Defined by this project and adopted by the library (D-37). Draft for T-08, 2026-10-19; draft 5 (2026-10-20) merges the first outside review (Argon); draft 6 (2026-10-21) makes the health check prove the database and bucket work (RUN-12); draft 7 (2026-10-22) has it name its environment, database and bucket. Draft 8 (2026-10-23) adds the liveness route for the move to Northflank (D-70).\n\n- **Pull only** (D-44): the library reads the change feed on its own schedule; the tool never calls the library.\n- **One key** (D-44) for the library, for reading and sending. Made and switched off by the owner; stored only as a hash.\n- **Requests are handled right away** (D-44): a request answers 202, and its result appears in the change feed.\n- The library keeps its own copy of every file it pulls (D-42); each file carries its SHA-256.\n- Conventions mirror the library's own API (Rev1 `brain/contracts/api.openapi.json`): bearer keys, the same error object, the same change-feed pattern.\n- Within v1, changes are additive only: new optional fields and new routes. Response objects may gain fields; readers must ignore unknown ones."
  },
  "servers": [
   {
-   "url": "https://portraits.example.up.railway.app",
-   "description": "Illustrative; the real address is set at deploy (T-23)."
+   "url": "https://portraits.example.code.run",
+   "description": "Illustrative; Northflank gives each public service a code.run address, and a custom domain may come later (T-23, D-70)."
   }
  ],
  "security": [
@@ -46,7 +46,7 @@
     "summary": "Is the service up",
     "security": [],
     "operationId": "health",
-    "description": "No key. Answers 200 only when the service can really work (RUN-12): the database, the bucket, OpenCV.js and sharp. Otherwise 503, naming what failed. Used by the host's healthcheck, the harness's check after each staging deploy (a failure rolls staging back), and the smoke checks.",
+    "description": "No key. Answers 200 only when the service can really work (RUN-12): the database, the bucket, OpenCV.js and sharp. Otherwise 503, naming what failed. Used by Northflank's readiness check (a copy answering 503 takes no traffic), the harness's check after each staging deploy (a failure rolls staging back), and the smoke checks.",
     "responses": {
      "200": {
       "description": "OK",
@@ -64,6 +64,29 @@
        "application/json": {
         "schema": {
          "$ref": "#/components/schemas/Health"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/live": {
+   "get": {
+    "tags": [
+     "health"
+    ],
+    "summary": "Is the process up",
+    "security": [],
+    "operationId": "live",
+    "description": "No key. Northflank's liveness check (RUN-12): answers 200 while the process is up, and checks nothing else, so a database outage never makes Northflank restart the service in a loop.",
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Live"
         }
        }
       }
@@ -2126,7 +2149,7 @@
      },
      "environment": {
       "type": "string",
-      "description": "The environment's name: production, staging, or a pull-request copy's (RUN-12)."
+      "description": "The environment's name, from PORTRAITS_ENV: production, staging or preview (a pull-request copy) (RUN-10, RUN-12)."
      },
      "database_name": {
       "type": "string",
@@ -2134,7 +2157,7 @@
      },
      "bucket_name": {
       "type": "string",
-      "description": "The name of the bucket this copy uses. A name only, never a key."
+      "description": "The name of the bucket this copy uses, with its prefix where it has one (a pull-request copy's portraits-previews/pr-12/). A name only, never a key."
      }
     },
     "required": [
@@ -2150,6 +2173,21 @@
      "sharp",
      "failing"
     ]
+   },
+   "Live": {
+    "type": "object",
+    "properties": {
+     "status": {
+      "type": "string",
+      "enum": [
+       "ok"
+      ]
+     }
+    },
+    "required": [
+     "status"
+    ],
+    "additionalProperties": false
    }
   }
  }

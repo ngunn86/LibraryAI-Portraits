@@ -1,6 +1,6 @@
 # The portraits API (T-08)
 
-**Status: draft 7 (2026-10-22).**
+**Status: draft 8 (2026-10-23).**
 - Draft 2 added each file's `licence_url` (D-48).
 - Draft 3 added the teacher's LoC name id, `lcnaf_id` (IN-13).
 - Draft 4 unifies the original's `Source` record with SRC-08: `source`, `source_id`, `licence_tier`, `matched_by`, `matched_to` and `medium`. It also adds `ids_from`, the `skipped` search state, and the health fields, and defines `replaced` and `another_original`.
@@ -15,6 +15,7 @@
 
 - Draft 6 (2026-10-21) makes the health check mean "working" (RUN-12): it adds `database`, `bucket` and `failing`, and answers 503 when something fails. The harness checks it on staging after every merge and rolls staging back if it fails.
 - Draft 7 (2026-10-22) adds `environment`, `database_name` and `bucket_name` to the health check (names only, never secrets), so the harness can confirm a pull-request copy isn't using production's data.
+- Draft 8 (2026-10-23) adds `GET /api/v1/live`, which only says the process is running, for Northflank's liveness check; `/api/v1/health` becomes the readiness check (D-70, RUN-12). The health check's `environment` is now `production`, `staging` or `preview`, and a pull-request copy's `bucket_name` includes its prefix.
 
 Defined by this project and adopted by the library (D-37). The machine contract is [portraits-api.openapi.json](portraits-api.openapi.json) (OpenAPI 3.1). [portraits-api.sample.json](portraits-api.sample.json) holds example payloads, and [check_api.py](check_api.py) checks the two against each other offline.
 
@@ -32,6 +33,7 @@ Defined by this project and adopted by the library (D-37). The machine contract 
 | Route | What |
 |---|---|
 | `GET /api/v1/health` | Is it up (no key) |
+| `GET /api/v1/live` | Is the process running (no key; Northflank's liveness check) |
 | `GET /api/v1/teachers` | All teachers, with portrait counts, the main portrait and where the search stands |
 | `GET /api/v1/teachers/{teacher_id}` | One teacher and their portraits |
 | `GET /api/v1/portraits` | Portraits, by teacher or status |

@@ -3,7 +3,7 @@
 **Status:** accepted as proposed (D-43, 2026-10-19), with the additions below (2026-10-20).
 **Tracker:** [T-07](../tracker.md) · **Builds on:** D-14 (complete credits), D-22 (teacher ids), D-38 (the library's decisions come back), D-39 (the files of a portrait), D-40 (photographs and copies), D-41 (approximate date), D-42 (storage, history)
 
-The database (Railway Postgres) is the source of truth. The API (T-08) exposes these records, and `record.json` in the bucket is a copy of each portrait's (OUT-12). Every id is stable across runs and never reused.
+The database (Postgres, a Northflank add-on since D-70) is the source of truth. The API (T-08) exposes these records, and `record.json` in the bucket is a copy of each portrait's (OUT-12). Every id is stable across runs and never reused.
 
 ## Additions since D-43 (2026-10-20)
 

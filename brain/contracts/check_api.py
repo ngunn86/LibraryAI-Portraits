@@ -13,7 +13,7 @@ reg = Registry().with_resource("urn:api", Resource.from_contents(doc, default_sp
 def v(name): return Draft202012Validator({"$ref": f"urn:api#/components/schemas/{name}"}, registry=reg)
 for n, s in doc["components"]["schemas"].items():
     Draft202012Validator.check_schema(s)
-pairs = {"health":"Health","teacher_page":"TeacherPage","teacher":"Teacher","portrait":"Portrait","portrait_page":"PortraitPage","history":"History",
+pairs = {"health":"Health","live":"Live","teacher_page":"TeacherPage","teacher":"Teacher","portrait":"Portrait","portrait_page":"PortraitPage","history":"History",
  "change_feed":"ChangeFeed","decision_approve":"Decision","decision_turn_down":"Decision","decision_set_main":"Decision","decision_correct":"Decision",
  "decision_result":"DecisionResult","new_request_try_again":"NewRequest","new_request_try_link":"NewRequest","request":"Request","request_page":"RequestPage","error":"Error"}
 fails = 0

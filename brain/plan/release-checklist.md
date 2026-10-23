@@ -2,23 +2,31 @@
 
 Steps around the release that a card can't do: they need the owner, or they take longer than a card may run. The harness alerts on the control issue when each one is due (D-63). Tick them here or in chat.
 
+## Before the hosting card (Phase 1, F-36)
+
+All of these are in Northflank's and Cloudflare's dashboards, in a browser (Northflank has no phone app). Secrets go into Northflank's **secret groups**: `production` in the production project, `staging` and `preview` in the staging project (D-70).
+
+- [ ] **Rotate any key you ever put in Railway** (Railway's disclosure of 2026-10-21): make a new one at its provider, switch the old one off, and use only the new one below.
+- [ ] **O-8:** a Northflank account, the two empty projects (`nexus-portraits-staging`, `nexus-portraits-production`), this repo linked, a billing alert (about $60 a month), notifications for crashes and failed releases, and the two tokens for the harness (one per project) in the harness's store.
+- [ ] **O-14:** Cloudflare R2: the three buckets (`portraits-production`, `portraits-staging`, `portraits-previews`, the last deleting objects after 7 days), one token per bucket, and their values in the matching secret group.
+
 ## Before the build's first smoke checks (Phase 1, F-49)
 
-- [ ] **O-13:** the ops keys, and staging's test admin password and library key, set in Railway and in the harness's store.
+- [ ] **O-13:** the ops keys (one per secret group), and the test admin password and library key (staging and preview groups only), set in Northflank and in the harness's store.
 
 ## Before Phase 2's smoke checks (F-31, F-38)
 
-- [ ] **O-9:** the GitHub token, and **O-10:** the User-Agent contact, set in Railway (staging and production); O-10 in the harness's store too, for recordings.
+- [ ] **O-9:** the GitHub token, and **O-10:** the User-Agent contact, set in all three secret groups; O-10 in the harness's store too, for recordings.
 
 ## Before the first live card (F-27)
 
-- [ ] **O-4:** the OpenRouter key set as a Railway variable in **production and staging only** (never in pull-request copies). Its limit at OpenRouter: **$50, no reset** (D-67).
+- [ ] **O-4:** the OpenRouter key set in the **production and staging secret groups only** (never in the preview group). Its limit at OpenRouter: **$50, no reset** (D-67).
 
 ## The release (F-47): production's first deploy
 
 - [ ] The harness posts the promotion notice on the control issue. `/veto` within **24 hours** if anything looks wrong (D-66). The nightly schedule is on from this first deploy.
 - [ ] **Raise the key's limit at OpenRouter by $100**, for the first pass ($150 in all since the key was made). Do this before the window ends; if you don't, the first night simply stops at the limit.
-- [ ] **O-11:** make the library's key, from your PC: `railway run portraits keys new` (production). Copy it into the library's settings. It's shown once.
+- [ ] **O-11:** make the library's key: in Northflank's dashboard, open a shell on production's web service and run `portraits keys new`. Copy it into the library's settings. It's shown once.
 
 ## During the first pass (the nights it takes)
 

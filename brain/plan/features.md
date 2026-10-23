@@ -48,7 +48,7 @@ Each phase ends with a **gate card** (F-53, F-54, F-16, F-55, F-26, F-47), where
 | 3 | F-03 | The API contract in code | 1 | F-01 | none | none | no | draft 3 |
 | 4 | F-04 | Database, queue and step cache | 1 | F-01, F-51 | none | migration | no | 1 |
 | 5 | F-37 | Storage bucket client | 1 | F-01, F-51 | none | none | no | draft 3 |
-| 6 | F-36 | Railway setup, deploys and the health check | 1 | F-01, F-04, F-37 | O-8 | deploy, migration | no | 1 |
+| 6 | F-36 | Northflank setup, deploys and the health check | 1 | F-01, F-04, F-37 | O-8, O-14 | deploy, migration | no | 1 |
 | 7 | F-49 | Jobs started over the web | 1 | F-04, F-36 | none | deploy | no | 1 |
 | 8 | F-53 | Phase 1 gate | 1 | F-03, F-49 | none | deploy | no | 1 |
 | 9 | F-02 | Authors list reader and row checks | 2 | F-01 | none | none | no | draft 3 |
@@ -132,7 +132,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-51: Settings and secrets
 - Phase: 1
-- Goal: Typed, committed settings and secrets from the environment. Main example: recipe 0.5.0's settings load and start-up goes ahead. Failure example: a setting of the wrong type, or a recipe change without a new `recipeVersion`, stops start-up and names it. It creates: `settings` and `loadSettings(overrides?)` in `src/config/settings.ts`; `readEnv(env = process.env): Env` (throwing `ConfigError`, which names the variable) and `databaseUrl(kind: "cli" | "service")` in `src/config/env.ts`; `recipeHash(recipe)` and `RECIPE_HASHES` (version → hash) in `src/config/recipeHash.ts`.
+- Goal: Typed, committed settings and secrets from the environment. Main example: recipe 0.5.0's settings load and start-up goes ahead. Failure example: a setting of the wrong type, or a recipe change without a new `recipeVersion`, stops start-up and names it. It creates: `settings` and `loadSettings(overrides?)` in `src/config/settings.ts`; `readEnv(env = process.env): Env` (throwing `ConfigError`, which names the variable), with `env.environment` from `PORTRAITS_ENV`, in `src/config/env.ts`; `recipeHash(recipe)` and `RECIPE_HASHES` (version → hash) in `src/config/recipeHash.ts`.
 - Covers: IN-10, IN-11, STY-05
 - Defers: PIP-09 (the family rule is enforced here at start-up, and again at call time in F-17)
 - Depends on: F-01
@@ -146,7 +146,8 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-51 changing a recipe value without a new `recipeVersion` fails, by the recipe block's hash
   - blocking: F-51 a checking model of the same family as an enhance model is refused at start-up
   - blocking: F-51 a missing secret is reported by name only, and no fake secret's value appears in any output
-  - blocking: F-51 the command-line tool uses `DATABASE_PUBLIC_URL` when it's set; the services use `DATABASE_URL`
+  - blocking: F-51 `PORTRAITS_ENV` must be `production`, `staging` or `preview`; missing or any other value stops start-up, naming it
+  - blocking: F-51 the bucket settings come from `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`; in `preview`, a missing `S3_PREFIX` stops start-up, and outside `preview` one that is set does
   - blocking: F-51 `USER_AGENT_CONTACT` fills the User-Agent. Without it, tests use a placeholder; staging and production still start and answer health, but refuse calls to the sources, naming the missing variable
 - Test data: valid and invalid settings objects
 - Side effects: none
@@ -200,52 +201,54 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-37 · Storage bucket client
 - **Phase:** 1
-- **Goal:** Store and fetch a portrait's files in the private bucket under OUT-12's layout, and hand out 15-minute signed links.
+- **Goal:** Store and fetch a portrait's files in the environment's private bucket on Cloudflare R2 (D-70), under OUT-12's layout and the copy's prefix, and hand out 15-minute signed links.
 - **Covers:** OUT-12 (layout), RUN-10 (private bucket, signed links)
 - **Depends on:** F-01, F-51
 - **Owner input:** none
-- **Build:** `src/storage/bucket.ts` (`@aws-sdk/client-s3`, `s3-request-presigner`); an in-memory fake with the same interface for tests; layout helpers.
+- **Build:** `src/storage/bucket.ts` (`@aws-sdk/client-s3`, `s3-request-presigner`; endpoint `S3_ENDPOINT`, region `auto`, every key under `S3_PREFIX` when it's set); an in-memory fake with the same interface for tests; layout helpers.
 - **Checks:**
   - Putting and getting a file round-trips, with its SHA-256 and content type.
   - Keys follow `portraits/<teacher_id>/<portrait_id>/<file>`, or `trial/<trial_run_id>/<file>` for the trial (TRI-09). Any other key, or a bad id (path characters, `..`), is refused.
   - A signed link expires after 15 minutes (the fake checks the expiry it was given).
   - Nothing is ever deleted by the client's normal calls; there's no delete method outside tests.
+  - With a prefix (a pull-request copy, `pr-12/`), every key written or read starts with it, and the layout check applies after it.
 - **Test data:** small files.
-- **Live calls:** none (the real bucket is first used in F-36's smoke checks)
+- **Live calls:** none (the real bucket, on R2, is first used in F-36's smoke checks)
 - **Parkable:** no
 - **Size:** S
 
-### F-36: Railway setup, deploys and the health check
+### F-36: Northflank setup, deploys and the health check
 - Phase: 1
-- Goal: The app deploys itself to Railway as web, worker and cron services with Postgres and a bucket, set up as code, and its health check proves it really works. Main example: the pull request's copy answers `/api/v1/health` with this commit, and the database and bucket working. Failure example: with the database unreachable, health answers 503 and names it. It creates: `createApp(deps)` (Express) in `src/web.ts`, serving `GET /api/v1/health`; `checkHealth(deps): Promise<Health>` in `src/health.ts`; `hashSecret(plain)` and `verifySecret(plain, hash)` in `src/auth/hash.ts`; `seedTestCredentials(db, env)` in `src/config/seed.ts`; the worker and cron entries (`src/worker.ts`, `src/cron.ts`); and `npm run smoke -- --url <url>` (`scripts/smoke.ts`).
+- Goal: The app deploys itself to Northflank (D-70), set up as code, and its health check proves it really works. The templates in `northflank/` make: in the staging project, a pipeline whose release flow builds, migrates and deploys `main` on each merge, and a preview template for pull-request copies (own empty Postgres, the preview secret group, a 3-day lifetime); in the production project, a release flow that builds a given commit, backs up the database, migrates and deploys; in each, web and worker services, a `migrate` job and a Postgres add-on; and production's nightly cron job, never two at once. Main example: the pull request's copy answers `/api/v1/health` with this commit, and the database and bucket working. Failure example: with the database unreachable, health answers 503 and names it. It creates: the templates in `northflank/`; `createApp(deps)` (Express) in `src/web.ts`, serving `GET /api/v1/health` (readiness) and `GET /api/v1/live` (liveness); `checkHealth(deps): Promise<Health>` in `src/health.ts`; `hashSecret(plain)` and `verifySecret(plain, hash)` in `src/auth/hash.ts`; `seedTestCredentials(db, env)` in `src/config/seed.ts`; the worker and cron entries (`src/worker.ts`, `src/cron.ts`); `runMigrations(db)` and the migrate job's entry in `src/migrate.ts`; and `npm run smoke -- --url <url>` (`scripts/smoke.ts`).
 - Covers: RUN-01, RUN-12
 - Defers: RUN-08 (the nightly jobs: F-25), RUN-10 (keys, login and caps: F-44, F-46, F-17)
 - Depends on: F-01, F-04, F-37
-- Owner input: O-8
-- Owns: `.railway/railway.ts`, `src/web.ts`, `src/worker.ts`, `src/cron.ts`, `src/health.ts`, `src/auth/hash.ts`, `src/config/seed.ts`, `scripts/smoke.ts`, `package.json` (the `smoke` script), `docs/railway-dashboard-steps.md`
-- Reads: `brain/spec/architecture.md` (Stack, Railway layout, Modules, Secrets, Environments); `brain/spec/requirements.md` RUN-01, RUN-10, RUN-12; the contract's `Health` and `/api/v1/health`; `harness.yaml` (deploy); `brain/handoffs/harness-throwaway-test.md` (what HT-02..HT-04, HT-07 and HT-11 proved)
+- Owner input: O-8, O-14
+- Owns: `northflank/`, `src/web.ts`, `src/worker.ts`, `src/cron.ts`, `src/migrate.ts`, `src/health.ts`, `src/auth/hash.ts`, `src/config/seed.ts`, `scripts/smoke.ts`, `package.json` (the `smoke` and `migrate` scripts), `docs/northflank-dashboard-steps.md`
+- Reads: `brain/spec/architecture.md` (Stack, Northflank layout, Modules, Secrets, Environments); `brain/spec/requirements.md` RUN-01, RUN-10, RUN-12, OUT-12; the contract's `Health`, `/api/v1/health` and `/api/v1/live`; `harness.yaml` (deploy); `brain/handoffs/harness-throwaway-test.md` (what HT-02..HT-04, HT-07, HT-11..HT-13, HT-32 and HT-33 proved)
 - Checks:
   - blocking: F-36 health answers 200 with the version, the commit, the environment's name, the database's and bucket's names, and `database`, `bucket`, `opencv` and `sharp` true, against working fakes
   - blocking: F-36 no health answer contains a secret or a connection string
-  - blocking: F-36 with the database or the bucket failing (faked), health answers 503 and names it in `failing`
+  - blocking: F-36 with the database or the bucket failing (faked), health answers 503 and names it in `failing`, while `/api/v1/live` still answers 200
+  - blocking: F-36 `runMigrations` brings an empty database up to date, and run again changes nothing
   - blocking: F-36 health's answers validate against the contract's `Health`
   - blocking: F-36 in staging and pull-request environments, start-up seeds the test admin password and library key as hashes; in production it never does
   - blocking: F-36 the cron entry exits 0 with "nothing to do"
   - blocking: F-36 `npm run smoke -- --url <url>` runs every `test/**/*.smoke.ts` (and nothing else) against that address, with the environment's test credentials passed in
-  - blocking: `npm run check` type-checks `.railway/railway.ts`
+  - blocking: F-36 every file in `northflank/` parses as JSON, and none holds a secret value: the scan finds none of the fake secrets
   - blocking, smoke: F-36 the deployed copy's `/api/v1/health` answers 200 with this commit, and the database and bucket working
   - blocking, smoke: F-36 the pull request's copy names its own environment, database and bucket, none of them production's
-  - report: F-36 anything `.railway/railway.ts` can't express is listed in `docs/railway-dashboard-steps.md`
+  - report: F-36 the preview template links only the preview secret group (no AI key), production's release flow backs up the database before it migrates, and anything the templates can't express is listed in `docs/northflank-dashboard-steps.md`
 - Test data: none
 - Side effects: deploy (pull-request copies), migration (pull-request copies, staging)
 - Parkable: no
 - Size: M
-- Stop if: Railway can't give pull-request copies the variables they need without also giving them the AI key; list it as a dashboard step and ask on the control issue
+- Stop if: Northflank can't keep the AI key out of the pull-request copies, or the staging token can reach production; list it as a dashboard step and ask on the control issue
 
 
 ### F-49: Jobs started over the web
 - Phase: 1
-- Goal: The harness starts work on a deployed copy over HTTPS, never with `railway run`. Main example: `POST /api/ops/jobs` with the ops key and kind `noop` answers 202, and the job's state reads `done`. Failure example: without the ops key, 401; a trial job on a pull-request copy is refused. It creates: `opsRouter(deps)` in `src/api/ops.ts`, serving `POST /api/ops/jobs`, `GET /api/ops/jobs/{id}` and `GET /api/ops/spend`; `loadJobKinds()` and the type `JobKind = { kind; environments; run(ctx, params): Promise<report> }` in `src/jobs/index.ts`; the `noop` kind; and `npm run record-ops -- F-NN --kind <kind>`.
+- Goal: The harness starts work on a deployed copy over HTTPS, never through the host's command line. Main example: `POST /api/ops/jobs` with the ops key and kind `noop` answers 202, and the job's state reads `done`. Failure example: without the ops key, 401; a trial job on a pull-request copy is refused. It creates: `opsRouter(deps)` in `src/api/ops.ts`, serving `POST /api/ops/jobs`, `GET /api/ops/jobs/{id}` and `GET /api/ops/spend`; `loadJobKinds()` and the type `JobKind = { kind; environments; run(ctx, params): Promise<report> }` in `src/jobs/index.ts`; the `noop` kind; and `npm run record-ops -- F-NN --kind <kind>`.
 - Covers: RUN-11
 - Defers: none (each job kind arrives with its own card)
 - Depends on: F-04, F-36
@@ -741,7 +744,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
     - the trial's sub-budgets ($27 and $3);
     - staging's $2 a night and $10 a month.
   - In a pull-request environment, every paid call is refused (stub mode only).
-  - The environment's rules are chosen from `RAILWAY_ENVIRONMENT_NAME` through settings.
+  - The environment's rules are chosen from `PORTRAITS_ENV` through settings.
   - Every request asks for usage (`"usage": {"include": true}`). Each call's cost is logged with run, teacher, step, model, environment, budget, and whether it is actual or estimated.
   - The month cap sums only `regular` spend; the trial's spend never counts toward it.
   - A model whose family equals the enhance model's is refused for checking.
@@ -1183,7 +1186,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-50: The trial's winner in the settings
 - Phase: 6
-- Goal: Write the trial's result into the settings with a new `recipeVersion`. A job on Railway can't change the repo, so this card does (TRI-06). Main example: the recorded result's winning model and thresholds land in `settings.ts` under a new version. Failure example: changing the recipe without a new version fails STY-05's check. It merges at once, with its notice on the control issue; the owner's `/veto` reverts it. It changes only `src/config/settings.ts`: the enhance model, the blend and any thresholds the trial set, under a new `recipeVersion`.
+- Goal: Write the trial's result into the settings with a new `recipeVersion`. A job on a deployed copy can't change the repo, so this card does (TRI-06). Main example: the recorded result's winning model and thresholds land in `settings.ts` under a new version. Failure example: changing the recipe without a new version fails STY-05's check. It merges at once, with its notice on the control issue; the owner's `/veto` reverts it. It changes only `src/config/settings.ts`: the enhance model, the blend and any thresholds the trial set, under a new `recipeVersion`.
 - Covers: TRI-06
 - Defers: none
 - Depends on: F-52
