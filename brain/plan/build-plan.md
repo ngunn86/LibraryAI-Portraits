@@ -1,6 +1,6 @@
 # Build plan
 
-**Status (2026-10-21):** proposed by Claude, for the hosted TypeScript app (D-31..D-68). Adapted to the Coding Harness's format 1 (`../../Coding Harness Instructions.md`, D-62..D-66): the harness's settings are in `../../harness.yaml`.
+**Status (2026-10-23):** proposed by Claude, for the hosted TypeScript app (D-31..D-71). Adapted to the Coding Harness's format 1 (`../../Coding Harness Instructions.md`, D-62..D-66): the harness's settings are in `../../harness.yaml`.
 
 ## 1. The shape of the work
 
@@ -28,7 +28,7 @@ The project is done when AC-01..AC-06 in [../spec/requirements.md](../spec/requi
 | P0-5 | Contract files | — | **Done:** `contracts/portraits-api.openapi.json` with samples and a check (D-44) |
 | P0-6 | Review rounds by other AI tools, merged | P0-2 | **In progress:** Argon's round merged 2026-10-20; more if the owner runs them (`brain/reviews/`) |
 | P0-7 | Freeze plan v1: the git tag `plan-v1`, and a status line telling the harness to start | P0-6, P0-8, the throwaway test passed | Later |
-| P0-8 | Adapt to the harness (format 1, D-65): `harness.yaml`, the instruction files, this plan, and the cards (a sample first; the rest once the harness chat's `harness cards check` passes on it) | The harness's instructions (2026-10-20) | **In progress:** everything but the remaining cards done 2026-10-21. The sample in format 1 is F-01, F-51, F-04, F-36, F-49, F-53, F-31, F-07, F-38, F-54, F-55, F-23, F-27, F-28, F-52, F-50, F-29 and F-47 |
+| P0-8 | Adapt to the harness (format 1, D-65): `harness.yaml`, the instruction files, this plan, and the cards (a sample first; the rest once the harness chat's `harness cards check` passes on it) | The harness's instructions (2026-10-20) | **Done** 2026-10-23 (D-71): the sample passed `harness cards check` (HD-65), the other 34 cards were converted, and the checker reads all 52 |
 
 ## 3. Inputs only the owner can supply
 
@@ -107,7 +107,8 @@ Everything else in `brain/` is protected. **Recipe numbers** change only through
 **Keys and spend** (D-67)
 - The app's OpenRouter key is a secret in production's and staging's secret groups, set by the owner (O-4). Its limit at OpenRouter is the boundary; the caps in code are the second line.
 - **Live checks start the app's own jobs over the web** (RUN-11), so the app spends with its own key, under its own caps. The harness reads the spend at `GET /api/ops/spend` for its own count.
-- Test credentials per environment are in the harness's store (O-13). A check that needs one gets it in a fresh box with no agent running.
+- Test credentials per environment are in the harness's store (O-13), each under its own name for its environment: `PORTRAITS_OPS_KEY`, `PORTRAITS_TEST_LIBRARY_KEY` and `PORTRAITS_TEST_ADMIN_PASSWORD` (HD-65, D-71). A check that needs them gets them as environment variables in a fresh box with no agent running, with the copy's address as `{url}` and `HARNESS_URL`, and `HARNESS_ENV`.
+- After each check, the harness reads `GET /api/ops/spend` (`limits.paid_calls.openrouter.spend`) to keep its own count.
 - The digest reports spend as three lines: the agents' usage, the app's paid calls, and hosting.
 
 **Things the harness must not do here:** run project code through Northflank's command line or a shell in a container; touch production from a check; deploy production outside the window.

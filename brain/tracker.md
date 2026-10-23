@@ -46,7 +46,7 @@
 | T-22 | The trial | 5 Running | T-14 – T-18, T-20 | **decided** (D-56): three enhance models; the checker picks, the owner can veto; no-blend shown beside |
 | T-23 | Stack and architecture | 6 Build | T-01, T-06, T-08 | **decided** (D-57): TypeScript like the library; [architecture v2](spec/architecture.md) proposed |
 | T-24 | Testing approach | 6 Build | T-23 | **proposed in full** (D-09; [build plan §5](plan/build-plan.md)): node:test, PGlite, contract tests, smoke tests on PR copies |
-| T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | **converting** ([features.md](plan/features.md) draft 4: 52 cards in 6 phases, with gate cards; a sample of 18 in the harness's format 1, waiting for `harness cards check`) |
+| T-25 | Feature cards for the harness | 6 Build | all above; the harness format (D-15) | **done** (D-71): [features.md](plan/features.md) draft 5, 52 cards in 6 phases with gate cards, all in the harness's format 1; `harness cards check` reads every card |
 | T-26 | Outside reviews and plan freeze | 6 Build | T-25 | **in progress**: Argon's round merged 2026-10-20 (D-60, D-61); more rounds to come ([reviews/README.md](reviews/README.md)) |
 | T-27 | What the harness must do for a hosted app (hand-off to the harness chat) | 6 Build | T-01 | in discussion: [throwaway test requirements](handoffs/harness-throwaway-test.md) v1 |
 
@@ -643,3 +643,6 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **2026-10-23 17:05.** **Host moved to Northflank** (D-70, from the harness chat's HD-60; supersedes D-36) after Railway's disclosure of 2026-10-21 about customers' environment variables. The plan is updated throughout: two Northflank projects (staging with preview environments for pull requests; production, reached only by the conductor's production token), release flows with a migrate step and production's backup, readiness `/api/v1/health` and a new liveness `/api/v1/live` (contract draft 8), files on Cloudflare R2 (new owner input O-14), `PORTRAITS_ENV`, the owner's commands in a dashboard shell. Hosting is now estimated at about $25 a month for production, plus staging while it runs. Throwaway test: HT-32 tightened, HT-33 added. Harness questions 8 to 12 added.
 
   Next: the owner relays `handoffs/harness-questions.md`, and the harness chat runs `harness cards check` on the sample.
+- **2026-10-23 18:40.** **T-25 done** (D-71). The harness chat's answers (HD-65): the sample passed `harness cards check`; shared fixtures are fine; the app keeps the AI key, and the harness reads `/api/ops/spend`; credentials arrive as `PORTRAITS_*` and `HARNESS_URL`; production is promoted only after a card that says `production`. Claude converted the other 34 cards, reworded F-47, and made F-01 the only `package.json` owner so the real checker passes ("All good").
+
+  Next: the owner tells the harness chat the cards are ready; T-09 once Rev1 is pushed; then plan v1 is frozen (P0-7).

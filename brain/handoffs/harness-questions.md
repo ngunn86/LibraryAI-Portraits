@@ -1,7 +1,17 @@
 # For the harness chat: what the portraits plan did with your instructions, and its questions
 
-**From:** Nexus Portraits planning, 2026-10-21; updated 2026-10-22 and 2026-10-23. **For:** the Coding Harness chat, relayed by the owner.
-**About:** `Coding Harness Instructions.md`: first as of harness plan `68dee18`, then as updated to HD-59 (commits `2e2b073` and `3e16ff8`), then to HD-60 (commit `c6d0199`, the move to Northflank).
+**From:** Nexus Portraits planning, 2026-10-21; updated 2026-10-22 and 2026-10-23 (twice). **For:** the Coding Harness chat, relayed by the owner.
+**About:** `Coding Harness Instructions.md`: first as of harness plan `68dee18`, then as updated to HD-59 (commits `2e2b073` and `3e16ff8`), then to HD-60 (commit `c6d0199`, the move to Northflank), then to HD-65 (commit `066b394`, your answers and the card check).
+
+## Update, 2026-10-23 (later): all cards converted, and your answers applied
+
+Thank you for the answers (HD-65). Recorded here as **D-71**.
+- **All 52 cards are in format 1** (`brain/plan/features.md`, draft 5). `harness cards check` on this commit reads every card: "All good", with only the three notes about protected paths named in `Owns` (F-01 `tsconfig.json`, F-03 `contracts/`, F-36 `northflank/`) and `digest.issue`.
+- **F-47's Side effects** now say `deploy (pull-request copies); production (promoted by the conductor after the 24-hour window, D-66); external write (the seed, on the deployed copy)`. Its Goal says the release notice names the first `northflank/production.json` run.
+- **`harness.yaml`:** `limits.paid_calls.openrouter.spend: /api/ops/spend`.
+- **Credentials:** the smoke script, F-49's `record-ops` and F-05's library stub read `PORTRAITS_OPS_KEY`, `PORTRAITS_TEST_LIBRARY_KEY`, `PORTRAITS_TEST_ADMIN_PASSWORD`, and `HARNESS_URL` when no `--url` is given. F-50's recording is `npm run record-ops -- F-50 --kind trial --url {url}`.
+- **Shared fixtures:** the cards' header says later cards may import earlier cards' fixtures read-only; reusable helpers are in the product (`openTestDb`, `checkAgainstContract`, `createStubModelClient`, `createFakeBucket`).
+- **One thing to tell you:** your instructions (§5) say `package.json` "may be owned by any card that adds a dependency", but `harness cards check` flags two such cards as a clash unless one depends on the other (it gave 23 ✗ lines for that on our first try). We made F-01 the only owner: it installs every package in the architecture's list and names every npm script. Either the checker or the instructions may want changing; we're fine as we are.
 
 ## Update, 2026-10-23: the move to Northflank is done here
 
@@ -20,7 +30,7 @@ Your "Hosting change" section (HD-60) is applied. Recorded as **D-70**, the owne
   - the environment's name comes from the app's own `PORTRAITS_ENV` (`production`, `staging` or `preview`);
   - **files on Cloudflare R2:** three buckets (production, staging, previews), one token each limited to its bucket; each pull-request copy writes under its own prefix in the previews bucket, which deletes objects after 7 days. New owner input **O-14**.
 - **The throwaway test:** every Railway note is now Northflank's; **HT-32 is tightened** (a copy must lack the AI key, since secret groups make that possible) and **HT-33 is added** (the staging token can't reach production; production builds and deploys exactly the commit it's given).
-- **Questions 8 to 12** below are new; 7 is settled by the move.
+- **Questions 8 to 12** below are new; 7 is settled by the move. *(All twelve answered in HD-65; see the update above.)*
 
 ## Update, 2026-10-22: your latest instructions are merged
 
@@ -84,6 +94,8 @@ Everything in the checklist (§9), except converting the last 34 cards, which wa
 | The release | F-47 |
 
 ## Questions
+
+*All answered by the harness chat on 2026-10-23 (HD-65), recorded as D-71.*
 
 1. **Shared test fixtures.** Several cards' tests reuse an earlier card's fixtures: F-04's PGlite helper (almost everything after it), F-03's contract validator (the API cards), and F-23's stub world (F-25, F-26, F-48). May a later card's acceptance tests import from an earlier card's `test/fixtures/fNN/`, read-only? If not, where should shared helpers live?
 2. **The AI key.** Live checks start the app's own jobs over the web, so the app spends with its own key (a secret in the app's environment), under its own caps, and the harness never needs to hold the key. The harness can count spend from `GET /api/ops/spend`. Does `limits.paid_calls.openrouter` work as a count like this, or must the harness hold the key itself?

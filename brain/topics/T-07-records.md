@@ -9,7 +9,7 @@ The database (Postgres, a Northflank add-on since D-70) is the source of truth. 
 
 The requirements and the API contract win where this page says less. Since D-43, the records also carry:
 
-- **Teacher:** `lcnaf_id` (IN-13), `ids_from` and `dates_from` (where the ids and years came from: the list, found by the tool, or none), and `key_works` (IN-12, used only to tell apart people who share a name, SRC-06b). The ids can come from the authors list's optional columns (D-60).
+- **Teacher:** `lcnaf_id` (IN-13), `ids_from` and `dates_from` (where the ids and years came from: the list, found by the tool, or none), and `key_works` (IN-12, used only to tell apart people who share a name, SRC-06b). The ids can come from the authors list's optional columns (D-60). Also `suggestion` (IN-13): for a teacher whose id or dates the tool couldn't settle, what it suggests adding to `authors.csv` (`name`, `aliases`, `dates`, `wikidata_qid`, `lcnaf_id`) and its evidence; empty otherwise. The admin site lists them and makes the CSV (F-35, F-46).
 - **Candidate:** the preview link, its SHA-256, and the original's full width and height from the source (PIP-21); the verdict `held` for CC BY-SA 1.0 (SRC-02, SRC-12).
 - **Photograph:** each copy's stored fingerprint (a 64-bit difference hash) and feature points, computed once (PIP-20).
 - **Portrait:** `replaces` as in the table below (D-61, PIP-14); `failed` portraits set their candidate aside (OUT-04).

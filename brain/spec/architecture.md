@@ -32,6 +32,11 @@ The aim is the simplest structure that meets the requirements, and that rehearse
 | Tests | `node:test` through `tsx --test`, offline by default (RUN-06); `tsc` for types; esbuild for the build | As the library uses |
 | Deploys | **Northflank**, configured as code: its templates (projects, pipelines, release flows, the preview template, the cron job) live in `northflank/` as JSON (`staging.json`, `preview.json`, `production.json`), applied from the repo one way, so a change made in the dashboard never lands on `main` by itself; they hold no secret values (D-70). Readiness check `GET /api/v1/health`, which proves the database and bucket work; liveness check `GET /api/v1/live` (RUN-12) | The harness's conductor deploys and checks by itself through Northflank's API (HT-03, HT-07, HT-08); `harness.yaml` names the commands and the deploy rules |
 
+**Packages** (installed by F-01, the only card that changes `package.json`; Claude's choice, 2026-10-23):
+- **Runtime:** `express`, `helmet`, `express-rate-limit`, `zod`, `ajv`, `ajv-formats`, `drizzle-orm`, `pg`, `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `sharp`, `@techstark/opencv-js`, `onnxruntime-node` (YuNet's fallback, F-39), `csv-parse` (the authors list) and `@node-rs/argon2` (the slow hash for the admin password and keys, RUN-10; prebuilt, so no compiler is needed).
+- **Development:** `typescript`, `tsx`, `esbuild`, `drizzle-kit`, `@electric-sql/pglite`, `@types/node`, `@types/express` and `@types/pg`.
+- A card that needs anything else stops and explains in `BLOCKED.md`; planning adds it.
+
 ## Northflank layout
 
 ```
@@ -67,7 +72,7 @@ Cloudflare R2, outside Northflank (O-14)
 
 In an environment, every service and job runs the same image, built once per release from the repo, each with its own start command.
 
-**Production is promoted, never pushed to.** It deploys only through its own release flow, given a commit already merged to `main` and checked on staging: the conductor starts it through Northflank's API after the window, with the production token, which is kept outside the worker box; or the owner starts it from the dashboard. A Northflank pipeline can't reach across projects, so production builds the commit itself rather than reusing staging's image, from the same commit and lockfile (`npm ci`). (Claude's choice, D-70; if a release flow can't take a commit as its argument, the conductor moves a `production` branch that production's build follows instead; HT-33.) **Production is first deployed at the release (F-47)**, and only then. **Until the release, the production project stays empty:** F-36 writes `northflank/production.json` but never runs it. At the release, the conductor (with the production token) or the owner runs it once, which creates production's services, Postgres, cron job and release flow, and then starts the release flow. Before that, everything live (the smoke test, the survey, the trial and the examples) runs on staging, because no check may touch production (the harness's rule, D-65).
+**Production is promoted, never pushed to.** It deploys only through its own release flow, given a commit already merged to `main` and checked on staging: the conductor starts it through Northflank's API after the window, with the production token, which is kept outside the worker box; or the owner starts it from the dashboard. A Northflank pipeline can't reach across projects, so production builds the commit itself rather than reusing staging's image, from the same commit and lockfile (`npm ci`). (Claude's choice, D-70; if a release flow can't take a commit as its argument, the conductor moves a `production` branch that production's build follows instead; HT-33.) **Production is first deployed at the release (F-47)**, and only then. **Until the release, the production project stays empty:** F-36 writes `northflank/production.json` but never runs it. At the release, the conductor runs it once with the production token, which creates production's services, Postgres, cron job and release flow, and then starts the release flow. The release notice names that first run, so the 24-hour veto covers it (HD-65, D-71). Before that, everything live (the smoke test, the survey, the trial and the examples) runs on staging, because no check may touch production (the harness's rule, D-65).
 
 ## Modules
 
@@ -75,40 +80,54 @@ In an environment, every service and job runs the same image, built once per rel
 src/
   web.ts · worker.ts · cron.ts · migrate.ts   entry points
   cli.ts                              the command frame (RUN-05): loads every file in cli/commands/
+  doctor.ts                           what `doctor` checks (F-22)
   cli/commands/<name>.ts              one file per command (doctor, sync, survey, run, trial, keys, password, status), each owned by the card that adds it. For the owner, in a shell on the web service opened from Northflank's dashboard; the harness never runs them (D-65)
-  jobs/<kind>.ts                      one file per job kind (sync, survey, run, trial, trial_examples, seed_fixtures, and noop for tests), loaded by the worker; started over the web (RUN-11) or by cron
+  jobs/<kind>.ts                      one file per job kind (sync, survey, run, request, trial, trial_examples, seed_fixtures, and noop for tests), loaded by the worker; started over the web (RUN-11) or by cron
   api/ops.ts                          POST /api/ops/jobs, GET /api/ops/jobs/{id}, GET /api/ops/spend, behind the ops key (RUN-11)
+  api/schemas.ts · api/contract.ts    zod types for the contract; checkAgainstContract (ajv), used by tests (F-03)
   health.ts                           what /api/v1/health checks (RUN-12)
   config/settings.ts                  the typed, committed settings (no keys); recipe hash vs recipe_version (STY-05)
   config/env.ts                       secrets from the environment (zod); never logged (IN-11, RUN-10)
   db/schema.ts · db/migrations/       Drizzle schema (the records of T-07) and SQL migrations
   queue.ts                            jobs table: enqueue, claim, heartbeat, finish
+  cache.ts                            the step cache (RUN-03)
+  storage/bucket.ts · layout.ts       the R2 bucket client, its in-memory fake, and OUT-12's keys (F-37)
+  auth/hash.ts · config/seed.ts       slow hashes; test credentials seeded outside production (F-36)
   net/client.ts                       the one outbound client: allowlist, User-Agent, pacing, retries, cache (SRC-01, SRC-09)
-  teachers/sync.ts · enrich.ts        authors.csv via GitHub (IN-12); Wikidata + LoC name authority (IN-13, D-45)
+  teachers/authors.ts                 reads authors.csv and checks its rows (IN-01..IN-05)
+  teachers/sync.ts · github.ts · enrich.ts   authors.csv via GitHub (IN-12); Wikidata + LoC name authority (IN-13, D-45)
   sources/
-    licences.ts                       SRC-02
+    licences.ts · credits.ts          SRC-02, SRC-11
+    registry.ts · registered/<name>.ts   every source registers itself; the gatherer and the survey use them all
     wikidata.ts · commons.ts          R1, R2 (SRC-03, SRC-06)
     loc.ts · wellcome.ts              R3 by name and dates or LoC name id (SRC-05, D-47)
+    locNames.ts                       the LoC name authority (id.loc.gov), for IN-13
     rightsLog.ts · candidates.ts      SRC-07, SRC-08, SRC-12
     survey.ts                         the coverage survey (SRC-14)
   imaging/
     cv.ts                             loads OpenCV.js once; Mat lifetime helpers
+    io.ts · ops.ts · yunet.ts         sharp in and out; one function per OpenCV operation; YuNet's raw faces (F-39)
     face.ts                           YuNet box and landmarks (PIP-04)
     modelImage.ts                     the PNGs sent to models (PIP-22)
-    descreen.ts · crop.ts · align.ts · blend.ts · tone.ts · halftone.ts · mask.ts · outline.ts · versions.ts · checks.ts
+    descreen.ts · crop.ts · align.ts · blend.ts · tone.ts · halftone.ts · mask.ts · outline.ts · compose.ts · versions.ts · checks.ts
+    recipe.ts                         renderPortrait: the whole code recipe in one call (F-41)
     samePhoto.ts                      PIP-20
   models/
-    openrouter.ts                     client, spend ledger, caps, stub mode (RUN-04, RUN-06)
+    openrouter.ts · caps.ts · stub.ts   client, spend ledger, caps, stub mode (RUN-04, RUN-06)
     precheck.ts · enhance.ts · cutout.ts · draftCheck.ts · samePhotoCheck.ts · noteKind.ts
     prompts/                          the prompt files, versioned (from prototype/prompts/)
   pipeline/
-    teacher.ts                        one teacher end to end: step order, slots, candidates, drafts, failure policy (PIP-01..PIP-23)
+    teacher.ts · choose.ts · failures.ts   one teacher end to end: step order, slots, candidates, drafts, failure policy (PIP-01..PIP-23)
+    offers.ts                         better copies and higher-ranked photographs on later runs (PIP-17)
+    run.ts                            who's due, the queue, the run report (RUN-02, OUT-06)
     portrait.ts                       one portrait: its files (OUT-11) and the record (SRC-11)
     requests.ts                       the worker's side of the library's requests (IN-06)
-    trial.ts                          TRI-01..TRI-09
+    trial.ts · trialSet.ts            TRI-01..TRI-09
   api/                                routes, auth, change feed, decisions, requests (OUT-14)
   admin/                              the frame, login and stylesheet (OUT-13)
-  admin/pages/<page>.ts               one file per page (front page, teachers, a teacher, runs, a run, rights log, trial board, held originals, keys), loaded by the frame
+  admin/pages/<page>.ts               one file per page (front page, teachers, a teacher, runs, a run, rights log, held originals, suggestions, keys, trial board), loaded by the frame
+scripts/                              smoke.ts, record.ts, record-ops.ts, check-api.ts (named in package.json by F-01)
+tools/library-stub.ts                 plays the library against the API (F-05)
 test/
   fixtures/                           recorded source and model responses, images, the prototype's reference outputs
   *.test.ts

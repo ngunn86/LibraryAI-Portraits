@@ -37,7 +37,8 @@ commands:
   test: npm test
   test_card: ./node_modules/.bin/tsx --test --test-reporter=tap "test/{slug}-*.test.ts"   # the card's own files, by path, printing TAP; never npx
   build: npm run build
-  smoke: npm run smoke -- --url {url}           # F-36 adds the script; runs test/**/*.smoke.ts only
+  smoke: npm run smoke -- --url {url}           # F-36 fills the script; runs test/**/*.smoke.ts only. Credentials arrive as
+                                                # PORTRAITS_OPS_KEY, PORTRAITS_TEST_LIBRARY_KEY, PORTRAITS_TEST_ADMIN_PASSWORD (HD-65)
   # test_count: withdrawn (2026-10-21); the harness reads each named case from the TAP output
 
 # models: left out, so the harness's defaults apply
@@ -47,10 +48,10 @@ limits:
   hours_per_card: 6
   paid_calls:
     # The app spends with its own key, in jobs the live checks start over the web (RUN-11); the harness
-    # counts from GET /api/ops/spend after each check (caps are soft, D-69). A card's own "paid (≤ $N)" sets its cap.
-    # Live checks: F-27 $2, F-52 $27, F-29 $3, each card's own cap overriding per_card_usd.
-    # The first pass's $100 is the app's own nightly spend, not a check. (Question 2 in brain/handoffs/harness-questions.md.)
-    openrouter: { per_card_usd: 2, per_month_usd: 35, total_usd: 35 }
+    # reads `spend` with the environment's test credentials after each check (caps are soft, D-69; HD-65, D-71).
+    # A card's own "paid (≤ $N)" sets its cap: F-27 $2, F-52 $27, F-29 $3, overriding per_card_usd.
+    # The first pass's $100 is the app's own nightly spend, not a check.
+    openrouter: { per_card_usd: 2, per_month_usd: 35, total_usd: 35, spend: /api/ops/spend }
 
 deploy:
   host: northflank               # D-70 (harness HD-60): two projects, staging-and-previews and production
@@ -60,7 +61,7 @@ deploy:
   starts_at: F-36               # the card that makes the app deployable, with its health endpoint
   health: /api/v1/health        # the readiness check: 200 only when the database, bucket and image libraries work; names its
                                 # environment, database and bucket (RUN-12). Liveness is /api/v1/live
-  production: { mode: veto-window, hours: 24 }  # D-66; the conductor starts production's release flow with the production
-                                                # token, kept outside the box. First deployed at the release (F-47): see question 5
+  production: { mode: veto-window, hours: 24 }  # D-66; only after a card whose Side effects say production (F-47, later fixes; HD-65).
+                                                # The conductor runs northflank/production.json once at the release, then the release flow
 
 digest: { issue: TODO, time: "07:30" }   # the control issue's number, set when the harness creates it (D-63)

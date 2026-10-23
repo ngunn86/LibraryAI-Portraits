@@ -644,7 +644,7 @@ The owner made these in the Coding Harness chat; the IDs in brackets are that ch
 
 Claude's choices carried with this decision (proposed; `spec/architecture.md`):
 - **Files in Cloudflare R2,** not MinIO. It's cheaper (10 GB free, then $0.015 per GB-month, with no egress fees), durable without a volume to look after, and the owner already uses R2 for the library's backups. There are three buckets, production, staging and previews, each with its own token that can reach only that bucket. Each pull-request copy works under its own prefix in the previews bucket, which empties itself after 7 days.
-- **Northflank templates in the repo** (`northflank/staging.json`, `preview.json`, `production.json`), applied one way, from the repo, so a dashboard change never lands on `main` by itself. They describe the two projects, the pipelines, the release flows and the preview template, and hold no secret values. **The production project stays empty until the release:** its template is run then, by the conductor or the owner, so nothing in production exists, let alone runs on a schedule, before F-47.
+- **Northflank templates in the repo** (`northflank/staging.json`, `preview.json`, `production.json`), applied one way, from the repo, so a dashboard change never lands on `main` by itself. They describe the two projects, the pipelines, the release flows and the preview template, and hold no secret values. **The production project stays empty until the release:** its template is run then, by the conductor (D-71: the release notice names it, so the veto covers it), so nothing in production exists, let alone runs on a schedule, before F-47.
 - **Pull-request copies start with an empty database,** migrated by their `migrate` job, with the test credentials seeded at start-up (fixture portraits only through a `seed_fixtures` job), rather than a copy of staging's. Nothing real ever reaches a test copy.
 - **The preview secret group has its own test credentials,** not staging's, so a pull request's code can't use staging's ops key to start paid jobs there.
 - **Production builds the promoted commit itself.** A Northflank pipeline can't span two projects, so production's release flow, started after the window, backs up the database, runs the migrations and deploys that exact commit.
@@ -656,3 +656,23 @@ Claude's choices carried with this decision (proposed; `spec/architecture.md`):
 - **Cost:** about $25 a month for production (web, worker, Postgres, the nightly job), and about as much again for staging while it runs. The owner can pause staging between builds. Railway was estimated at $8–15 a month, since it bills only what's used; Northflank bills each running instance by the hour. R2 stays within its free tier.
 
 → RUN-01, RUN-05, RUN-07, RUN-09, RUN-10, RUN-11, RUN-12, IN-11, OUT-12, SRC-01, TRI-06, architecture, the contract (draft 8), `harness.yaml`, F-36, F-37, F-49, F-51, F-17, F-50, O-1, O-4, O-8..O-11, O-13, O-14, the build plan's §4 and §6, the release checklist, HT-02..HT-33, T-01
+
+## From the harness chat: its answers and the card check (2026-10-23, later)
+
+**D-71 · 2026-10-23 · The harness chat's answers to our twelve questions (HD-65)** · harness chat (Claude's choices there; the owner can veto) · *answers `handoffs/harness-questions.md`*
+- **The sample passed** `harness cards check`, so the other 34 cards are converted (features draft 5). F-47's Side effects now name `production` as its own item.
+- **Shared fixtures:** a later card's acceptance tests may import an earlier, merged card's `test/fixtures/fNN/`, read-only.
+- **The AI key stays with the app.** `limits.paid_calls.openrouter.spend` is `/api/ops/spend`, which the harness reads after each check with the environment's test credentials; the key's own limit at OpenRouter (O-4) stays the hard ceiling.
+- **Credentials reach smoke and recording commands** as `PORTRAITS_OPS_KEY`, `PORTRAITS_TEST_LIBRARY_KEY` and `PORTRAITS_TEST_ADMIN_PASSWORD`, with the copy's address as `{url}` and `HARNESS_URL`, and `HARNESS_ENV` (`staging` or `preview`). A recording that needs a deployed copy has `{url}` in its command (F-50).
+- **Production is promoted only after a card whose Side effects say `production`** (F-47, and later fixes), never after every merge. The first run of `northflank/production.json` is part of the release: the release notice names it, so the 24-hour veto covers it, and the conductor runs it. No separate owner step.
+- **Release flows take the commit** through Northflank's API; the harness's H3 permissions test proves it, with a `production` branch as the fallback.
+- **R2 with prefixes, empty seeded preview databases, three sets of test credentials and a 3-day preview lifetime** are all fine. The liveness route belongs to Northflank's settings only.
+
+Claude's choices made while converting the cards (proposed):
+- **Only F-01 changes `package.json`.** It installs every package in architecture.md's new package list and names every npm script later cards fill in. The real `harness cards check` flags two cards owning `package.json` unless one depends on the other, although the harness's instructions say that overlap is allowed; this sidesteps it.
+- **F-36 depends on F-03** (its health answers are checked against the contract), and **F-41 depends on F-30**: F-41 now also makes `renderPortrait`, the whole code recipe in one call, which F-16's parity check and the pipeline use.
+- **F-35's suggestions** are kept on the teacher's record (`suggestion`), and **F-46's suggestions page** makes the CSV from them, so the admin site needn't depend on F-35, which is parkable.
+- **Product-side test helpers:** F-03's `checkAgainstContract`, F-17's `createStubModelClient` and F-37's `createFakeBucket`, beside F-04's `openTestDb`.
+
+→ features draft 5, `harness.yaml` (`spend`), architecture (packages; modules), T-07 (`suggestion`), the build plan (credentials), `handoffs/harness-questions.md`
+

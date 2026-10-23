@@ -3,25 +3,26 @@
 **Phase 0: planning.** There is no code yet. Last updated 2026-10-23 by Claude.
 
 **Where planning is:**
-- **The owner's decisions are made** for tracker topics T-01..T-23 (D-31..D-57), plus D-58..D-70. The tool is a hosted app on **Northflank** (D-70, since 2026-10-23; it was Railway) in TypeScript, like the library, with an API the library adopts.
+- **The owner's decisions are made** for tracker topics T-01..T-23 (D-31..D-57), plus D-58..D-71. The tool is a hosted app on **Northflank** (D-70, since 2026-10-23; it was Railway) in TypeScript, like the library, with an API the library adopts.
 - **Requirements consolidated** on 2026-10-20 and **feature cards drafted** for the new design.
 - **The first outside review is merged:** Gemini 4 Argon's 19 points, all accepted ([reviews/2026-10-20-argon-round-2.md](reviews/2026-10-20-argon-round-2.md)). Recipe 0.5.0 and the porting references (`prototype/parity/`) came out of it.
 - **Adapted to the Coding Harness** (2026-10-21, D-62..D-68): `harness.yaml`, the build-agent carve-out, the build loop and veto window, jobs over the web instead of the host's command line, a health check that proves the database and bucket, and 18 of the 52 cards in format 1 as a sample.
 - **Moved to Northflank** (2026-10-23, D-70, the harness's HD-60): two projects (staging with the pull-request copies; production), files on Cloudflare R2, a liveness route (contract draft 8), new owner input O-14, and HT-33 in the throwaway test.
-- **Next:** the owner relays [handoffs/harness-questions.md](handoffs/harness-questions.md) to the harness chat, which checks the sample; then the other 34 cards are converted. T-09 once Rev1 is pushed.
+- **All 52 cards in format 1** (2026-10-23, D-71): the harness chat's sample passed `harness cards check` and its twelve answers came back (HD-65); the other 34 are converted, and the checker reads every card ("All good").
+- **Next:** the owner tells the harness chat the cards are ready (the questions file's latest update). T-09 once Rev1 is pushed. Then freeze plan v1.
 
 ## Where things stand
 
 | Piece | State |
 |---|---|
-| Tracker | [tracker.md](tracker.md). T-01..T-08, T-10..T-14 and T-16..T-23 decided. T-24 proposed in full; T-25 converting to the harness's format. T-09 waits for Rev1's push; T-15 for real AI copies in the trial; T-26 is the review rounds; T-27 is the harness's own planning |
+| Tracker | [tracker.md](tracker.md). T-01..T-08, T-10..T-14 and T-16..T-23 decided. T-24 proposed in full; T-25 done (all cards in format 1). T-09 waits for Rev1's push; T-15 for real AI copies in the trial; T-26 is the review rounds; T-27 is the harness's own planning |
 | Briefs | v1 (2026-10-17) and v2 (2026-10-19), in `brief/`. v2 is the brief; decisions D-24 onwards extend it |
 | Requirements | [spec/requirements.md](spec/requirements.md), consolidated 2026-10-20: every ID kept, every item current. Open: only the PORT reconciliation (needs O-1) |
 | Architecture | [spec/architecture.md](spec/architecture.md) v2 (proposed): TypeScript on Node 24 (D-57); on Northflank (D-70): web and worker, with production's nightly cron job, in two projects; Postgres add-ons with a queue table; Cloudflare R2 buckets; `sharp` and OpenCV.js, with a porting spike. The Python prototype is the reference |
 | API contract | [contracts/portraits-api.openapi.json](contracts/portraits-api.openapi.json), draft 8, with samples and an offline check (`check_api.py`, passing). The library adopts it (D-37); hand-off note in [handoffs/library-api.md](handoffs/library-api.md) |
 | Sources | [spec/sources.md](spec/sources.md): Wikidata/Commons, the LoC and Wellcome (D-46); Smithsonian only if the survey shows gaps |
-| Build plan and features | [plan/build-plan.md](plan/build-plan.md) (adapted to the harness 2026-10-21) and [plan/features.md](plan/features.md) (draft 4: 52 cards with gate cards; 18 in the harness's format 1 as a sample). The harness's settings: [../harness.yaml](../harness.yaml). The owner's release steps: [plan/release-checklist.md](plan/release-checklist.md) |
-| Decisions | D-01..D-70 |
+| Build plan and features | [plan/build-plan.md](plan/build-plan.md) (adapted to the harness 2026-10-21) and [plan/features.md](plan/features.md) (draft 5: 52 cards with gate cards, all in the harness's format 1, passing `harness cards check`; first draft 4: 18 as a sample). The harness's settings: [../harness.yaml](../harness.yaml). The owner's release steps: [plan/release-checklist.md](plan/release-checklist.md) |
+| Decisions | D-01..D-71 |
 | Open questions | None. Q-27 and Q-28 were resolved on 2026-10-20 (D-58, D-59); Argon's two calls were answered the same day (D-60, D-61) |
 | Style prototype | Recipe 0.5.0 (`prototype/`): 0.4.0's look, accepted as the starting point (D-49), with the crop measured with YuNet and the drift check inside the inner face. Descreen, AI-enhanced blend with safeguards, code outline, black-and-white and 500 px versions, and the same-photo check prototype. Prompts in `prototype/prompts/`; per-operation references for the port in `prototype/parity/`; the face model in `models/` |
 | Harness | Planned in its own chat (D-15); its requirements of this project are in `../Coding Harness Instructions.md`, and this project's answers and questions in [handoffs/harness-questions.md](handoffs/harness-questions.md). The throwaway test: [handoffs/harness-throwaway-test.md](handoffs/harness-throwaway-test.md) (HT-01..HT-33, kept updated) |
@@ -30,7 +31,7 @@
 ## Waiting on the owner
 
 1. **Pass [handoffs/library-api.md](handoffs/library-api.md) to the library chat** and have Rev1's latest planning pushed to GitHub (O-1). That unblocks T-09 and the PORT reconciliation.
-2. **Relay [handoffs/harness-questions.md](handoffs/harness-questions.md) to the harness chat,** and ask it to run `harness cards check` on the sample cards.
+2. **Tell the harness chat the cards are converted** (relay the latest update in [handoffs/harness-questions.md](handoffs/harness-questions.md)). It may want to look at one point there: its checker treats two cards owning `package.json` as a clash, which its instructions allow.
 3. **Any further outside reviews** (P0-6): point the reviewing tools at `brain/reviews/README.md`. Argon's round is merged.
 4. **Rotate any key ever stored in Railway** (its disclosure of 2026-10-21).
 5. Later: the throwaway test, on Northflank; then the owner inputs (O-4, O-8..O-11, O-13, O-14) as the build reaches them, and the [release checklist](plan/release-checklist.md).
@@ -39,7 +40,7 @@
 
 1. Further outside review rounds, if any; Claude merges accepted points and records decisions (P0-6, T-26).
 2. T-09 and the PORT reconciliation, once Rev1 is pushed (P0-1).
-3. Convert the other 34 cards to format 1 once the sample passes `harness cards check` (T-25).
+3. ~~Convert the other 34 cards to format 1~~ (done 2026-10-23, T-25).
 4. Freeze plan v1 (P0-7).
 
 ## Session log
@@ -207,3 +208,4 @@
 - **2026-10-21:** **Adapted to the Coding Harness** (its instructions of 2026-10-20). The owner chose a 24-hour veto window (D-66), one OpenRouter key (D-67) and the admin front page (D-68); the harness chat's decisions are D-62..D-65. RUN-11 (jobs over the web) and RUN-12 (a real health check) added; the trial moved to staging, so production's first deploy is the release; 18 cards in format 1, with F-49..F-55 new. Questions for the harness chat in `handoffs/harness-questions.md`.
 - **2026-10-22:** **The harness's updated instructions** (to HD-59) merged from the owner's PC, where the harness chat had committed them before that copy had our adaptation commits. Applied: card tests run by path with TAP (`test_card`), unique test names, what each card creates (in the 18 converted cards' goals), contracts before tests on size L cards, fast-forward merges, `deploy.starts_at: F-36`, pull-request copies based on staging and a health check naming its environment, database and bucket (contract draft 7), soft per-card caps (D-69). The questions for the harness chat are still open.
 - **2026-10-23:** **Hosting moved to Northflank** (the harness chat's HD-60, recorded as D-70, superseding D-36), after Railway disclosed on 2026-10-21 that attackers may have read customers' environment variables. Claude's choices with it (proposed): Cloudflare R2 for files (three buckets, a token each, pull-request copies under a prefix); templates in `northflank/`; empty, seeded preview databases living at most 3 days; production building the promoted commit through its own release flow (backup, migrate, deploy); `PORTRAITS_ENV`; a liveness route `/api/v1/live` (contract draft 8). Updated: requirements (IN-11, SRC-01, OUT-12, RUN-01, RUN-05, RUN-07, RUN-09..RUN-12, TRI-06), architecture, `harness.yaml`, cards F-36, F-37, F-49, F-51, F-17, F-50, the build plan (owner inputs, new O-14; environments; hosting cost about $25 a month for production plus staging while it runs), the release checklist, the throwaway test (HT-32 tightened, HT-33 added), T-01, and the harness questions (8 to 12 new; 7 settled).
+- **2026-10-23 (later):** **All cards in format 1** (D-71). The harness chat's sample check passed and its twelve answers came back (HD-65). Claude converted the other 34 cards (features draft 5), each with what it creates, main and failure examples, Owns, Reads and marked checks; reworded F-47's Side effects; added `spend: /api/ops/spend` to `harness.yaml`; and wrote the credential names into the cards and the build plan. To pass the harness's real `harness cards check` (run here on a read-only clone of the harness repo), F-01 became the only card that changes `package.json`, with the packages listed in the architecture. F-36 now depends on F-03 and F-41 on F-30, with `renderPortrait` in F-41; F-35's suggestions live on the teacher's record (T-07). The checker says "All good".
