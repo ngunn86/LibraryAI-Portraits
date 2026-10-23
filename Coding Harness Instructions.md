@@ -1,9 +1,22 @@
 # Coding Harness Instructions: the portraits tool
 
 **From:** the Coding Harness chat · **Date:** 2026-10-20 · **For:** this repo's planning chat
-**Harness plan:** `ngunn86/Coding-Harness`, as of 2026-10-21 (its decisions up to HD-59). That repo is private, so this file is complete on its own.
-**Updated** 2026-10-22: the veto window is 24 hours, as your D-66 already says (the owner, harness HD-59). 2026-10-21: pull-request copies are based on staging, never production, and the health check names its environment, database and bucket (Codex's third review); earlier the same day, per-card spending caps became soft, with the provider's limit as the hard ceiling (the owner's choice); and before that, `test_card` never uses `npx` and each test case gets a unique name starting with its card's ID (Argon's third review), TAP output with each named case checked, `deploy.starts_at`, contracts before tests on size L cards, fast-forward merges (Codex's second), and tests run by file path with each card saying what it creates (Argon's second). Earlier, 2026-10-20: the veto window was set at 72 hours (now 24), the one paid key stays, library-pipeline may run on a second PC.
+**Harness plan:** `ngunn86/Coding-Harness`, as of 2026-10-23 (its decisions up to HD-60). That repo is private, so this file is complete on its own.
+**Updated** 2026-10-23: **the host is now Northflank, not Railway** (the owner, harness HD-60); see "Hosting change" below. 2026-10-22: the veto window is 24 hours, as your D-66 already says (the owner, harness HD-59). 2026-10-21: pull-request copies are based on staging, never production, and the health check names its environment, database and bucket (Codex's third review); earlier the same day, per-card spending caps became soft, with the provider's limit as the hard ceiling (the owner's choice); and before that, `test_card` never uses `npx` and each test case gets a unique name starting with its card's ID (Argon's third review), TAP output with each named case checked, `deploy.starts_at`, contracts before tests on size L cards, fast-forward merges (Codex's second), and tests run by file path with each card saying what it creates (Argon's second). Earlier, 2026-10-20: the veto window was set at 72 hours (now 24), the one paid key stays, library-pipeline may run on a second PC.
 **Placed here** at the owner's request (harness decision HD-47). It's the only file the harness chat writes in this repo; commit it with your next planning round. When the harness's requirements change, the harness chat updates this file and says so at the top.
+
+
+## Hosting change: Northflank instead of Railway (2026-10-23)
+
+The owner moved hosting from Railway to Northflank (harness HD-60), because Railway disclosed on 2026-10-21 that attackers may have read customers' environment variables. Record it in your Decisions as the owner's, replacing your Railway decision (your D-36), and change your Railway references to this:
+
+- **Two Northflank projects:** one for staging and the pull-request copies, one for production. The harness's everyday token can reach only the first; a production token exists only where production is promoted after a veto window, and only the harness's conductor holds it.
+- **Pull-request copies** are Northflank preview environments: made for each pull request from a preview template, each with its own database (forked from staging's latest backup, or empty and seeded) and its own test secrets, deleted when the pull request closes or merges, and after a lifetime set in the template.
+- **Staging** deploys on each merge to `main`, or, with `staging: harness`, when the harness starts a build of a chosen commit. **Production** is promoted by the owner in Northflank's dashboard, or by the harness after a veto window.
+- **Health checks** are the service's readiness and liveness checks; **migrations** run as a job step in the release workflow, and stay additive.
+- **No hard spending cap:** Northflank only has a billing threshold, so each copy gets a short lifetime and the harness's daily clean-up removes leftovers.
+- **Files:** Cloudflare R2, or Northflank's MinIO add-on. Postgres add-ons have pgvector built in. There's no phone app; the owner uses the dashboard in the phone's browser.
+- **No host CLI for project code:** checks reach deployed copies over HTTP only, as before.
 
 ## 1. What this file is, and how to use it
 
@@ -46,7 +59,7 @@ The harness is a general-purpose script on the owner's PC (Windows, WSL Ubuntu) 
 
 **When a card is stuck:** rounds 1 and 2, the builder fixes the findings; round 3, Codex diagnoses and writes a fix plan, which Claude applies; round 4, Gemini does the same; then the Tech Lead, up to twice. Then a `Parkable: yes` card is parked, and retried only when something it depends on changes (at most twice); a `Parkable: no` card stops the build and alerts the owner at once. A missing or malformed review is no sign-off, and another model never stands in for it. A builder that finds a spec or test wrong stops and explains in `BLOCKED.md`; the Tech Lead rules or asks the owner. A test shown to be wrong is rewritten by the test author, the change is logged, and the card's earlier evidence is void. A change pushed to a card, or to the specs it reads, while the card is running also voids its evidence.
 
-**The worker box.** The agents, and all of the project's own commands (install, tests, build, the dev server), run inside a Docker container that holds only the card's working copy, the harness's own logins for the agents and the test services; the checks run in a fresh box with no logins at all. It has no GitHub or Railway credentials, no Windows drives and no Docker socket. Test services such as a database run as separate containers that the harness starts. So nothing in the project may depend on Windows paths, on the owner's own logins, or on tools that aren't installed by the project's `install` command or named in its setup.
+**The worker box.** The agents, and all of the project's own commands (install, tests, build, the dev server), run inside a Docker container that holds only the card's working copy, the harness's own logins for the agents and the test services; the checks run in a fresh box with no logins at all. It has no GitHub or Northflank credentials, no Windows drives and no Docker socket. Test services such as a database run as separate containers that the harness starts. So nothing in the project may depend on Windows paths, on the owner's own logins, or on tools that aren't installed by the project's `install` command or named in its setup.
 
 **Build agents and your instruction files.** Claude Code, Codex and Gemini each load the project's own instruction file by themselves (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`). The harness's prompt tells each one it's a build agent: it reads what its packet names, changes only its card's `Owns`, never edits the notes, and skips the planning chats' "read first" and "update before you finish" lists. Add a short section saying the same to each of those files (wording in the checklist below), so the two never pull against each other.
 
@@ -92,9 +105,9 @@ Put `harness.yaml` at the repo root. Format 1 is settled, so it can be written n
 | `models` | optional: the model per role (`test_advisor`, `test_author`, `builder`, `tech_lead`, `reviewers`), each with `use`, `effort`, `turns`, `minutes`. Leave it out to use the harness's defaults |
 | `limits` | `rounds_per_card`, `hours_per_card`, and `paid_calls`: one entry per paid key the harness holds, each with `per_card_usd`, `per_month_usd` and `total_usd` |
 | `deploy` | leave out, or `deploy: none`, for a project that isn't hosted (a tool or a library); otherwise the fields below |
-| `deploy.host` | `railway` (the only host the harness drives for now) |
+| `deploy.host` | `northflank` (the only host the harness drives for now; it replaced Railway, harness HD-60) |
 | `deploy.pr_copies` | `true` (each copy is based on staging, never production), or `false` (then smoke checks run on staging before the merge) |
-| `deploy.staging` | `on-merge`, or `harness` (the harness deploys it with `railway up` and a staging-only token) |
+| `deploy.staging` | `on-merge`, or `harness` (the harness starts a staging build of a chosen commit through Northflank's API, with a staging-only token) |
 | `deploy.health` | the health check path, run on staging after every merge that deploys it |
 | `deploy.starts_at` | the card from which deploys and health checks begin (the one that makes the app deployable, with its health endpoint), so early scaffolding never triggers a rollback |
 | `deploy.production` | `{ mode: veto-window, hours: N }`, or `{ mode: owner-promotes }` |
@@ -131,7 +144,7 @@ Rules:
 - `Owner input` lists only what the card can't be built without. If only one check needs an input (a live recording, say), put `needs O-n` on that check's line instead: that check waits for it, and the card waits only if the check is blocking.
 - Each check line starts with its marks, then the check, for example: `- blocking: F-07 resolves a teacher with one portrait`, `- report, live: F-28 trial spend stays under $27`, `- blocking, smoke: GET /api/v1/health answers 200 with this commit`, `- blocking, live, needs O-10: …`. "live" means it makes **paid** calls; a check that only uses the network (free services) is marked by the card's `Side effects: network`, not "live".
 - Checks must finish within the card's time limit. Something that has to be watched over several nights belongs on the owner's release checklist, or in a later card that reads the results.
-- Checks reach a deployed copy over HTTP only, with that environment's test credentials from the harness's store. The harness never runs project code with `railway run`, and no check touches production.
+- Checks reach a deployed copy over HTTP only, with that environment's test credentials from the harness's store. The harness never runs project code through the host's CLI or a shell in a deployed container, and no check touches production.
 - A check may name a test that doesn't exist yet: the test author writes the card's acceptance tests before the code. Give each test case a unique name starting with the card's ID (`F-07: resolves a teacher with one portrait`). Name test files after their card (for example `test/f12-*.test.ts`), so `test_card` can run a single card's tests by path.
 - A size L card may take up to three builder sessions per review round, each ending with a commit and a handoff note.
 - `Owns` may overlap between cards on one dependency chain (a later card adding a command to `src/cli.ts`, say, when it depends on the card that made it). `harness cards check` flags overlaps only between cards that could run at the same time. `package.json` may be owned by any card that adds a dependency; the scripts the `harness.yaml` commands use are protected.
@@ -156,7 +169,7 @@ Rules:
 - After every merge that deploys staging, the harness runs the project's health check there (`deploy.health`). A failure rolls staging back and stops new cards until it's fixed. So the app needs a health endpoint that answers only when it's really working.
 - A rollback restores the app, not its data, so **database changes must be additive** (add tables and columns; never drop, rename or rewrite in place within a release), and an earlier release must keep working against the newer database.
 - A veto reverts the card and sends any card built on it back to have its checks run again.
-- **Pull-request copies are based on staging, never production.** Railway bases them on production unless told otherwise, and a copy based on production would carry production's keys and could reach its data. So each copy gets staging's test credentials and its own test database and storage, and the health endpoint reports its environment's name and which database and bucket it uses (names only, never a secret), so the harness can check before smoke checks run that a copy isn't using production's.
+- **Pull-request copies are based on staging, never production.** On Northflank they live in the staging project, apart from production's, and a copy that reached production's keys or data would be a serious fault. So each copy gets staging's test credentials and its own test database and storage, and the health endpoint reports its environment's name and which database and bucket it uses (names only, never a secret), so the harness can check before smoke checks run that a copy isn't using production's.
 - Leftover pull-request copies and temporary environments are removed daily and at the end of a run.
 
 ## 8. Keys and spending
@@ -207,7 +220,7 @@ References are to commit `a2a5ce5`.
   - the conductor promotes, with a production token kept outside the worker box.
   Name the staging environment and branch.
 - [ ] **Production before the release.** F-28 and F-29 run in production before F-47. Each production deploy or switch-on goes through the veto window, or the owner's `/approve`, so say when production is first deployed and what each of those cards needs from it. F-47's "switches the production schedule on and makes the library's key (O-11)" (:1048) splits in two: the owner makes the key (O-11, `build-plan.md`:46), and switching on the schedule is a production change that goes through the window.
-- [ ] **No `railway run`.** Steps that run against a deployed environment have to change: :414, :986-987, :1050, the F-28 trial, :103, `architecture.md`:54 and :166, and `requirements.md`:883. Either the deployed copy exposes an authenticated endpoint the check calls over HTTP, or the deployed service runs the job itself, on cron or at startup. The harness never runs project code with Railway credentials.
+- [ ] **No running project code through the host's CLI** (it was `railway run`; the rule is the same on Northflank). Steps that run against a deployed environment have to change: :414, :986-987, :1050, the F-28 trial, :103, `architecture.md`:54 and :166, and `requirements.md`:883. Either the deployed copy exposes an authenticated endpoint the check calls over HTTP, or the deployed service runs the job itself, on cron or at startup. The harness never runs project code with the host's credentials.
 - [ ] **Smoke checks:**
   - add `npm run smoke -- --url {url}`;
   - :200, a deliberately failing health check, is a deploy experiment already covered by HT-08, so take it out of the card;
@@ -219,7 +232,7 @@ References are to commit `a2a5ce5`.
 
 ### Keys and spending
 
-- [ ] **O-4** ("set as a Railway variable", `build-plan.md`:39): give the key's provider-side limit a number, no higher than the cap. Say who sets the Railway variables (the owner, in Railway), and that the harness keeps its own copies, for checks, in its secret store.
+- [ ] **O-4** ("set as a Railway variable", `build-plan.md`:39): give the key's provider-side limit a number, no higher than the cap. Say who sets the host's secrets (the owner, in Northflank's secret groups), and that the harness keeps its own copies, for checks, in its secret store.
 - [ ] **One key stays** (owner, harness HD-50: "Lets use the one paid key for portraits"): the single OpenRouter key serves every environment, as `decisions.md`:128-130 says. Its provider-side limit is the backstop across all of them, so set it no higher than the overall cap; the per-environment caps in code stay as the first line.
 - [ ] **Fix the contradiction:** `decisions.md`:475 gives pull-request copies "$2 a night", while `requirements.md`:994 has them in stub mode only.
 
@@ -231,7 +244,7 @@ These lines were written for the earlier harness design.
 - [ ] HT-05 (:50) "announced in the digest… (reply or tap)" → a notice on the control issue, `/veto <id>`, and the veto window's rules above.
 - [ ] HT-08 (:58) and HT-22 (:92) "in the digest" → an alert and the control issue (the digest still summarizes).
 - [ ] HT-09 (:59) "the owner taps once in the dashboard" → keep it as the owner's own path, and add: `/veto` reverts the card, and the conductor redeploys.
-- [ ] HT-23 (:93), Railway's MCP server → the conductor reads logs and deploy status with the Railway CLI; the MCP server isn't used.
+- [ ] HT-23 (:93), Railway's MCP server → the conductor reads logs and deploy status through Northflank's API; no host MCP server is used.
 - [ ] HT-26 (:101) "live check" → "smoke check" ("live" now means paid).
 - [ ] HT-27 (:102) "the digest… offers the veto" → the control issue.
 - [ ] HT-28 (:103) "one-tap deploys" → veto windows and `/approve`.
@@ -293,11 +306,11 @@ limits:
   paid_calls:
     openrouter: { per_card_usd: 2, per_month_usd: 30, total_usd: 100 }   # D-54; a card's own "paid (≤ $N)" sets its cap (F-28: $27)
 deploy:
-  host: railway
+  host: northflank
   pr_copies: true
   staging: on-merge                           # TODO: confirm
   health: /api/v1/health
-  starts_at: TODO                             # the card that makes the app deployable (F-02's Railway setup?)
+  starts_at: TODO                             # the card that makes the app deployable (F-02's hosting setup?)
   production: { mode: veto-window, hours: 24 }   # owner, HD-59 (your D-66)
 digest: { issue: TODO, time: "07:30" }        # the control issue, created when the build starts
 ```
