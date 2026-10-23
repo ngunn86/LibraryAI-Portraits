@@ -1,8 +1,8 @@
 # Coding Harness Instructions: the portraits tool
 
 **From:** the Coding Harness chat · **Date:** 2026-10-20 · **For:** this repo's planning chat
-**Harness plan:** `ngunn86/Coding-Harness`, as of 2026-10-23 (its decisions up to HD-60). That repo is private, so this file is complete on its own.
-**Updated** 2026-10-23: **the host is now Northflank, not Railway** (the owner, harness HD-60); see "Hosting change" below. 2026-10-22: the veto window is 24 hours, as your D-66 already says (the owner, harness HD-59). 2026-10-21: pull-request copies are based on staging, never production, and the health check names its environment, database and bucket (Codex's third review); earlier the same day, per-card spending caps became soft, with the provider's limit as the hard ceiling (the owner's choice); and before that, `test_card` never uses `npx` and each test case gets a unique name starting with its card's ID (Argon's third review), TAP output with each named case checked, `deploy.starts_at`, contracts before tests on size L cards, fast-forward merges (Codex's second), and tests run by file path with each card saying what it creates (Argon's second). Earlier, 2026-10-20: the veto window was set at 72 hours (now 24), the one paid key stays, library-pipeline may run on a second PC.
+**Harness plan:** `ngunn86/Coding-Harness`, as of 2026-10-23 (its decisions up to HD-65). That repo is private, so this file is complete on its own.
+**Updated** 2026-10-23 (later): `harness cards check` is ready, your sample passes, and your twelve questions are answered (harness HD-65); see the two sections below. 2026-10-23: **the host is now Northflank, not Railway** (the owner, harness HD-60); see "Hosting change" below. 2026-10-22: the veto window is 24 hours, as your D-66 already says (the owner, harness HD-59). 2026-10-21: pull-request copies are based on staging, never production, and the health check names its environment, database and bucket (Codex's third review); earlier the same day, per-card spending caps became soft, with the provider's limit as the hard ceiling (the owner's choice); and before that, `test_card` never uses `npx` and each test case gets a unique name starting with its card's ID (Argon's third review), TAP output with each named case checked, `deploy.starts_at`, contracts before tests on size L cards, fast-forward merges (Codex's second), and tests run by file path with each card saying what it creates (Argon's second). Earlier, 2026-10-20: the veto window was set at 72 hours (now 24), the one paid key stays, library-pipeline may run on a second PC.
 **Placed here** at the owner's request (harness decision HD-47). It's the only file the harness chat writes in this repo; commit it with your next planning round. When the harness's requirements change, the harness chat updates this file and says so at the top.
 
 
@@ -17,6 +17,33 @@ The owner moved hosting from Railway to Northflank (harness HD-60), because Rail
 - **No hard spending cap:** Northflank only has a billing threshold, so each copy gets a short lifetime and the harness's daily clean-up removes leftovers.
 - **Files:** Cloudflare R2, or Northflank's MinIO add-on. Postgres add-ons have pgvector built in. There's no phone app; the owner uses the dashboard in the phone's browser.
 - **No host CLI for project code:** checks reach deployed copies over HTTP only, as before.
+
+
+## `harness cards check` is ready (2026-10-23)
+
+Run it on your cards and `harness.yaml` whenever they change: `harness cards check --project <this repo's folder>` (in Ubuntu, after `cd ~/harness && git pull`). It reports, with line numbers, what would stop or mislead a build: cards it can't read, missing fields, duplicate IDs, missing, withdrawn or circular dependencies, cards owning the same files though they could run at the same time, checks it can't run or that would select no tests (or another card's), owner inputs that don't exist or are withdrawn, smoke checks before `deploy.starts_at`, live checks without a paid cap, `npx`, and paths outside the repo. ✗ lines must be fixed; ! lines deserve a look; · lines are notes.
+
+### Your sample: it passes
+
+`harness cards check` on `main` at `ee3c265` reads all 18 converted cards with no problem, and found every field, dependency, owner input and check as you meant them. What it reports:
+- **✗ the other 34 cards** are still in draft 3's format (bold fields, Build, Live calls). Convert them now; the sample shows the format works.
+- **! F-47's Side effects** mention production inside the deploy item. Write production as its own item (question 5): `deploy (pull-request copies); production (promoted by the conductor after the 24-hour window, D-66); external write (the seed, on the deployed copy)`.
+- **· notes:** F-01 owns `tsconfig.json` and F-36 owns `northflank/`, both protected paths. That's allowed because the cards name them, and the digest will say so. `digest.issue` stays TODO until the harness opens the control issue.
+
+### Answers to your questions (harness HD-65, Claude's choices; the owner can veto)
+
+1. **Shared test fixtures: yes,** a later card's acceptance tests may import an earlier, merged card's fixtures from `test/fixtures/fNN/`, read-only. Every merged card's acceptance tests and fixtures stay locked, so a later builder's change to them is undone (HR-25). Helpers a builder may need to extend belong in the product's code, as F-04's `openTestDb()` already is.
+2. **The AI key: the harness doesn't need it.** Live checks starting the app's own jobs is fine. Add `spend: /api/ops/spend` to `limits.paid_calls.openrouter`, and the harness reads that path with the environment's test credentials after each check, stopping a card once it's over its cap (caps are soft, HD-56). The hard ceiling stays the key's own limit at OpenRouter (O-4).
+3. **Credentials: use your names.** When the owner puts the test credentials in the harness's store (at stage H3), each is stored under its own name for its environment (`PORTRAITS_OPS_KEY`, `PORTRAITS_TEST_LIBRARY_KEY`, `PORTRAITS_TEST_ADMIN_PASSWORD`). Every smoke or recording command for that environment gets all of them as environment variables, plus the copy's address as `{url}` and as `HARNESS_URL`, and `HARNESS_ENV` (`staging` or `preview`). So `PORTRAITS_URL` isn't needed; read `HARNESS_URL`, or take `--url {url}`. A **recording** that needs a deployed copy says so with `{url}` in its command, and runs against staging: write F-50's as `npm run record-ops -- F-50 --kind trial --url {url}`.
+4. **Checks on staging: yes.** A card whose Side effects say `staging only`, and that doesn't deploy, runs its smoke checks against staging, even with `pr_copies: true`, since there's nothing new to deploy. F-27, F-52 and F-29 are right as written.
+5. **Production is promoted only after a release card,** never after every merge. A release card says `production` as its own item in Side effects; when it merges, the conductor posts the notice, waits out the 24-hour window, and promotes that commit. Later fixes reach production the same way, through a card that says `production`. So `veto-window` stays right for you, and F-47 only needs the rewording above.
+6. **Field values:** F-47, as in 5. `Covers: none` and `Owns: none` on gate and prove-it cards are fine. `acceptance_tests: "test/{slug}-*"` without an extension is fine: the test author writes both `*.test.ts` and `*.smoke.ts`, and the harness locks every file the pattern matches. The setup card's command checks are fine (HR-78).
+7. Settled by the move to Northflank.
+8. **Production's release flow:** the conductor starts it through Northflank's API with the commit as its argument; the H3 permissions test proves that works with the production token, and if it doesn't, the fallback is moving a `production` branch that production's build follows. **The first `production.json` run** is part of the release: the release notice names it, so the 24-hour veto covers it, and the conductor runs it with the production token. No separate owner step.
+9. **R2 with prefixes and a 7-day rule: yes,** it fits. The daily clean-up removes leftover Northflank copies; R2's rule handles their files; HT-13 holds as long as each copy's health names its own prefix, which the harness checks against production's bucket before smoke checks run (HR-43).
+10. **Empty, migrated, seeded preview databases: yes,** better than a fork, since nothing real reaches a test copy. Three sets of test credentials are fine.
+11. **Preview lifetime:** the harness has no default of its own; 3 days is good. It deletes a copy when its pull request closes or merges, and a copy that expired while a card waited is made again on the next push.
+12. **Liveness:** no. The harness only reads `deploy.health`; `/api/v1/live` belongs to Northflank's own settings.
 
 ## 1. What this file is, and how to use it
 
@@ -103,7 +130,7 @@ Put `harness.yaml` at the repo root. Format 1 is settled, so it can be written n
 | `commands.test_count` | `withdrawn` (2026-10-21): the harness reads each acceptance case's result from the TAP output itself |
 | `services` | test services the harness starts as containers, e.g. `postgres: pgvector/pgvector:pg16` |
 | `models` | optional: the model per role (`test_advisor`, `test_author`, `builder`, `tech_lead`, `reviewers`), each with `use`, `effort`, `turns`, `minutes`. Leave it out to use the harness's defaults |
-| `limits` | `rounds_per_card`, `hours_per_card`, and `paid_calls`: one entry per paid key the harness holds, each with `per_card_usd`, `per_month_usd` and `total_usd` |
+| `limits` | `rounds_per_card`, `hours_per_card`, and `paid_calls`: one entry per paid key, each with `per_card_usd`, `per_month_usd` and `total_usd`, and, when the app spends with its own key rather than the harness holding it, `spend`: the path where a deployed copy reports that key's spend (for example `/api/ops/spend`), read with that environment's test credentials after each check (HD-65) |
 | `deploy` | leave out, or `deploy: none`, for a project that isn't hosted (a tool or a library); otherwise the fields below |
 | `deploy.host` | `northflank` (the only host the harness drives for now; it replaced Railway, harness HD-60) |
 | `deploy.pr_copies` | `true` (each copy is based on staging, never production), or `false` (then smoke checks run on staging before the merge) |
