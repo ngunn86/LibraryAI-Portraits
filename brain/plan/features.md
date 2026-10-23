@@ -8,6 +8,8 @@
 - **Each card says what it creates** (module paths and exported names, routes or commands) in its `Goal`, so the test author's tests and the builder's code meet. Exact types are the builder's, within those names.
 - **Shared test fixtures** (HD-65): a later card's acceptance tests may import an earlier, merged card's fixtures from `test/fixtures/fNN/`, read-only; they stay locked. Helpers a builder may need to extend live in the product's code (F-04's `openTestDb()`, F-03's `checkAgainstContract`, F-17's `createStubModelClient`, F-37's `createFakeBucket`).
 - Offline by default: outbound calls refused, no keys, PGlite for the database.
+- **`ctx`** in any card is F-04's `Ctx` (`src/context.ts`): `db`, `env`, `settings`, `clock`, `log`, and the ports `http`, `models` and `bucket`, which F-06, F-17 and F-37 implement. Tests build one with `makeTestCtx(parts?)`.
+- **Recordings:** the test author lists the exact request URLs in `test/fixtures/fNN/record.json`, from each source's public API (the test author picks the forms; `brain/spec/sources.md` names the APIs). The builder reads that file and forms its requests the same way; replay matches on the normalised URL (F-06), so only parameter order may differ.
 - *Smoke* checks run on a deployed copy (`npm run smoke -- --url {url}`), over HTTP, with that environment's test credentials (O-13): the pull request's copy, or staging for Phase 6's prove-it cards. The harness passes them as `PORTRAITS_OPS_KEY`, `PORTRAITS_TEST_LIBRARY_KEY` and `PORTRAITS_TEST_ADMIN_PASSWORD`, with the copy's address as `{url}` and `HARNESS_URL`, and `HARNESS_ENV` (`staging` or `preview`) (HD-65). Their tests are `test/fNN-*.smoke.ts`, which `npm test` never runs. *Live* checks make paid calls, on staging only. No check touches production.
 - **Packages:** only F-01 changes `package.json` and `package-lock.json`. It installs every package in `brain/spec/architecture.md`'s package list and names every npm script the later cards fill in, because `harness cards check` flags two cards owning a file unless one depends on the other. A card that finds it needs another package stops and explains in `BLOCKED.md`; the Tech Lead rules, and planning adds it.
 - **Shared files without overlap:** commands (`src/cli/commands/<name>.ts`), job kinds (`src/jobs/<kind>.ts`), admin pages (`src/admin/pages/<page>.ts`) and sources (`src/sources/registered/<name>.ts`) are one file each, loaded from their folder, so each card owns its own file.
@@ -59,8 +61,8 @@ Each phase ends with a **gate card** (F-53, F-54, F-16, F-55, F-26, F-47), where
 | 13 | F-07 | Licence classifier and credit lines | 2 | F-06 | none | network | no | 1 |
 | 14 | F-32 | Rights log | 2 | F-04, F-07 | none | none | no | 1 |
 | 15 | F-09 | Commons: P18 and depicts | 2 | F-07, F-08 | none | network | no | 1 |
-| 16 | F-10 | Library of Congress pictures | 2 | F-07, F-32 | none | network | yes | 1 |
-| 17 | F-34 | Wellcome Collection | 2 | F-07, F-32 | none | network | yes | 1 |
+| 16 | F-10 | Library of Congress pictures | 2 | F-07, F-09, F-32 | none | network | yes | 1 |
+| 17 | F-34 | Wellcome Collection | 2 | F-07, F-09, F-32 | none | network | yes | 1 |
 | 18 | F-35 | Finding missing dates and ids | 2 | F-08, F-31 | none | network | yes | 1 |
 | 19 | F-38 | Coverage survey | 2 | F-09, F-31, F-49 | none | network, deploy | no | 1 |
 | 20 | F-54 | Phase 2 gate | 2 | F-32, F-38 | none | none | no | 1 |
@@ -180,16 +182,18 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-04: Database, queue and step cache
 - Phase: 1
-- Goal: The records in Postgres through Drizzle, a job queue that survives crashes, and a cache of paid step results. Main example: the migrations run from empty and every table records and reads back. Failure example: a job whose worker stops is claimed again and resumes at its last finished step. It creates: the Drizzle tables in `src/db/schema.ts`, named as in T-07; `openDb(url)` and `openTestDb()` (PGlite, migrated, for every later card's tests) in `src/db/client.ts`; `enqueue`, `claim`, `heartbeat`, `finish`, `fail` and `reclaimStale` in `src/queue.ts`; `cacheKey({ images, step, model, promptVersion, note, attempt })`, `getCached` and `putCached` in `src/cache.ts`.
+- Goal: The records in Postgres through Drizzle, a job queue that survives crashes, and a cache of paid step results. Main example: the migrations run from empty and every table records and reads back. Failure example: a job whose worker stops is claimed again and resumes at its last finished step. It creates: the Drizzle tables in `src/db/schema.ts`, named as in T-07; `openDb(url)` and `openTestDb()` (PGlite, migrated, for every later card's tests) in `src/db/client.ts`; `enqueue` (with an optional priority), `claim` (highest priority first, then oldest), `heartbeat`, `finish`, `fail` and `reclaimStale` in `src/queue.ts`; `cacheKey({ images, step, model, promptVersion, note, attempt })`, `getCached` and `putCached` in `src/cache.ts`; and the context every pipeline and job function takes, `Ctx` (`db`, `env`, `settings`, `clock`, `log`, and the ports `http`, `models` and `bucket`, declared here as small interfaces: `HttpPort` with `get` and `getJson`, `ModelPort` with `call`, `BucketPort` with `put`, `get`, `signedUrl` and `check`), and `makeTestCtx(parts?): Promise<Ctx>` (a migrated PGlite database, a fake clock, a silent log, and ports that refuse every call unless the test passes its own), in `src/context.ts`.
 - Covers: RUN-03
 - Defers: RUN-04 (the spend ledger is stored here; caps in F-17, the first pass in F-25), PIP-12 (set-asides used in F-23), IN-08 (applied once in F-45), TRI-09 (the trial tables are used in F-28)
 - Depends on: F-01, F-51
 - Owner input: none
-- Owns: `src/db/schema.ts`, `src/db/migrations/`, `src/db/client.ts`, `drizzle.config.ts`, `src/queue.ts`, `src/cache.ts`
+- Owns: `src/db/schema.ts`, `src/db/migrations/`, `src/db/client.ts`, `drizzle.config.ts`, `src/queue.ts`, `src/cache.ts`, `src/context.ts`
 - Reads: `brain/topics/T-07-records.md` (with its additions of 2026-10-20); `brain/spec/architecture.md` (Database); `brain/spec/requirements.md` RUN-03, RUN-04, RUN-12, TRI-09
 - Checks:
-  - blocking: F-04 the migrations run from empty, and every table records and reads back (`teachers`, `candidates`, `photographs`, `portraits`, `files`, `portrait_events`, `library_decisions`, `requests`, `runs`, `spend` with its `budget`, `jobs`, `step_cache`, `api_keys`, `changes`, `sessions`, `trial_runs`, `trial_items`, `app_settings`)
+  - blocking: F-04 the migrations run from empty, and every table records and reads back (`teachers`, `candidates`, `photographs`, `portraits`, `files`, `portrait_events`, `library_decisions`, `requests`, `runs`, `spend` with its `budget`, `jobs`, `step_cache`, `api_keys`, `changes`, `sessions`, `trial_runs`, `trial_items`, `app_settings`), each with the fields in `brain/topics/T-07-records.md`, its additions of 2026-10-20 included (the teacher's `lcnaf_id`, `ids_from`, `dates_from`, `key_works` and `suggestion`)
   - blocking: F-04 two workers claiming at once never get the same job (two connections)
+  - blocking: F-04 a job queued with a higher priority is claimed before older ones
+  - blocking: F-04 `makeTestCtx()` gives a context on a migrated PGlite database with a fake clock, whose `http`, `models` and `bucket` refuse every call unless the test passes its own
   - blocking: F-04 a job whose worker stops heartbeating is claimed again after the timeout, and resumes at its last finished step
   - blocking: F-04 the step cache hits for the same key, and misses when any image's SHA-256, the step, the model, the prompt version, the note or the attempt changes
   - blocking: F-04 a remake (attempt 1) and a `try_again` without a note both miss; changing `recipeVersion` alone still hits
@@ -239,7 +243,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-36 with the database or the bucket failing (faked), health answers 503 and names it in `failing`, while `/api/v1/live` still answers 200
   - blocking: F-36 `runMigrations` brings an empty database up to date, and run again changes nothing
   - blocking: F-36 health's answers validate against the contract's `Health`
-  - blocking: F-36 in staging and pull-request environments, start-up seeds the test admin password and library key as hashes; in production it never does
+  - blocking: F-36 in staging and pull-request environments, start-up seeds the test admin password's hash as `app_settings.admin_password_hash` and the test library key's hash as an `api_keys` row labelled `test`; in production it never does
   - blocking: F-36 the cron entry exits 0 with "nothing to do"
   - blocking: F-36 `npm run smoke -- --url <url>` runs every `test/**/*.smoke.ts` (and nothing else) against that address (or `HARNESS_URL` without `--url`), and the tests read the test credentials from `PORTRAITS_OPS_KEY`, `PORTRAITS_TEST_LIBRARY_KEY` and `PORTRAITS_TEST_ADMIN_PASSWORD`
   - blocking: F-36 `northflank/staging.json`, `preview.json` and `production.json` exist and parse as JSON, and none holds a secret value: the scan finds none of the fake secrets
@@ -338,7 +342,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-06 on a fake clock, LoC calls are spaced evenly, one every 3 seconds (30 take at least 87 seconds), and Wikimedia and Wellcome calls never overlap
   - blocking: F-06 a 429, a 503 and an HTML CAPTCHA page each back off and retry up to the limit; a 404 isn't retried
   - blocking: F-06 a second identical GET within the cache's lifetime is served from the cache
-  - blocking: F-06 in replay mode, recorded responses are served with no network, and a request with no recording throws `NoRecordingError` naming the URL
+  - blocking: F-06 in replay mode, recorded responses are served with no network, matched on the normalised URL (scheme and host in lower case, query parameters sorted); a request with no recording throws `NoRecordingError` naming the URL
   - blocking: F-06 in record mode, each response is saved with its URL, status, headers and body, and replay serves it back unchanged
 - Test data: a fake transport and clock; a CAPTCHA page sample
 - Side effects: none
@@ -440,7 +444,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-09: Commons: P18 and depicts
 - Phase: 2
-- Goal: Turn a teacher's P18 image and their depicts-tagged Commons files into candidates, with licence, author and credit, and start the registry every source joins. Main example: Charles Fillmore's P18 file becomes a `wikidata_p18` candidate with its licence, author, credit, size and file link. Failure example: a file that is only in the teacher's Commons category, not tagged as depicting them, is not a candidate. It creates: `commonsCandidates(client, teacher): Promise<FoundCandidate[]>` in `src/sources/commons.ts` (`imageinfo` with `extmetadata`; search with `haswbstatement:P180=<Q-id>` in the file namespace); `loadSources(): RegisteredSource[]` in `src/sources/registry.ts`, which loads every file in `src/sources/registered/`, each exporting `source: { name: string; find(client, teacher): Promise<FoundCandidate[]> }`; and `src/sources/registered/commons.ts`.
+- Goal: Turn a teacher's P18 image and their depicts-tagged Commons files into candidates, with licence, author and credit, and start the registry every source joins. Main example: Charles Fillmore's P18 file becomes a `wikidata_p18` candidate with its licence, author, credit, size and file link. Failure example: a file that is only in the teacher's Commons category, not tagged as depicting them, is not a candidate. It creates: `commonsCandidates(client, teacher): Promise<FoundCandidate[]>` in `src/sources/commons.ts` (`imageinfo` with `extmetadata`; search with `haswbstatement:P180=<Q-id>` in the file namespace); `loadSources(): RegisteredSource[]` in `src/sources/registry.ts`, which loads every file in `src/sources/registered/`, each exporting `source: { name: string; hosts: string[]; find(client, teacher): Promise<FoundCandidate[]>; fetchById(client, id): Promise<FoundCandidate | null> }` (`fetchById` reads one item a pasted link names, for `try_link`); and `src/sources/registered/commons.ts`.
 - Covers: SRC-03, SRC-08, AC-06
 - Defers: SRC-05 (the LoC and Wellcome: F-10, F-34), SRC-12 (rights-log rows, written by the gatherer: F-11)
 - Depends on: F-07, F-08
@@ -454,6 +458,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-09 each candidate records a preview link at the largest of Wikimedia's standard thumbnail widths not over 1,600 px, beside the full file link and the full width and height from `imageinfo`
   - blocking: F-09 a file with a refused licence comes back marked refused, with F-07's reason, never as a candidate
   - blocking: F-09 `loadSources()` returns every source in `src/sources/registered/`, and a new file there is picked up without editing any other
+  - blocking: F-09 Commons' `fetchById` reads one file by its title, with its licence classified
 - Test data: record: `npm run record -- F-09` (needs O-10): two teachers, one with several depicts-tagged files
 - Side effects: network (the recording only)
 - Parkable: no
@@ -465,7 +470,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Goal: Find Prints & Photographs records that name the teacher with matching dates or their LoC name id, and turn them into candidates. Main example: a record headed `Fillmore, Charles, 1854-1948` becomes a candidate, with its rights advisory classified. Failure example: a record with the same name and other dates is not a candidate. It creates: `locCandidates(client, teacher): Promise<FoundCandidate[]>` in `src/sources/loc.ts` (loc.gov JSON, `fo=json`), and `src/sources/registered/loc.ts`, which registers it.
 - Covers: SRC-03, SRC-05, SRC-08, AC-06
 - Defers: none
-- Depends on: F-07, F-32
+- Depends on: F-07, F-09, F-32
 - Owner input: none
 - Owns: `src/sources/loc.ts`, `src/sources/registered/loc.ts`
 - Reads: `brain/spec/requirements.md` SRC-02, SRC-03, SRC-05, SRC-08, SRC-09, PIP-21; `brain/spec/sources.md` (Library of Congress)
@@ -475,6 +480,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-10 the rights advisory is classified by F-07, and "rights status not evaluated" is refused
   - blocking: F-10 the largest image link is chosen, with its pixel size (from the IIIF `info.json` when the record lacks it), and a preview link at most 1,600 px (`full/!1600,1600/0/default.jpg`) is recorded
   - blocking: F-10 its requests go through F-06's client, paced to 20 a minute
+  - blocking: F-10 `fetchById` reads one item by its LoC id, with its rights advisory classified
 - Test data: record: `npm run record -- F-10` (needs O-10): three teachers, plus near-miss and undated records
 - Side effects: network (the recording only)
 - Parkable: yes (no card lists F-10; the gatherer then runs without the LoC)
@@ -486,7 +492,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Goal: Find Wellcome picture records whose contributor or subject is the teacher, by LoC name id or by name and dates, with clean licences. Main example: a record whose subject carries the teacher's LoC name id becomes a candidate, its PDM licence tier 1. Failure example: a CC BY-NC record comes back refused. It creates: `wellcomeCandidates(client, teacher): Promise<FoundCandidate[]>` in `src/sources/wellcome.ts` (the catalogue API, no key; images through IIIF), and `src/sources/registered/wellcome.ts`, which registers it.
 - Covers: SRC-03, SRC-05, SRC-08, AC-06
 - Defers: none
-- Depends on: F-07, F-32
+- Depends on: F-07, F-09, F-32
 - Owner input: none
 - Owns: `src/sources/wellcome.ts`, `src/sources/registered/wellcome.ts`
 - Reads: `brain/spec/requirements.md` SRC-02, SRC-03, SRC-05, SRC-08, PIP-21; `brain/spec/sources.md` (Wellcome Collection)
@@ -494,6 +500,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-34 a record whose contributor or subject carries the teacher's LoC name id matches, and so does one with the name and matching dates
   - blocking: F-34 licences map through F-07: PDM and CC0 to tier 1, CC BY to tier 2, and CC BY-NC is refused
   - blocking: F-34 the IIIF links for the full size and for a preview at most 1,600 px (`/full/!1600,1600/0/default.jpg`) are recorded, with the full width and height from `info.json`
+  - blocking: F-34 `fetchById` reads one work by its Wellcome id, with its licence classified
 - Test data: record: `npm run record -- F-34` (needs O-10): two teachers, one of them a mind-cure figure
 - Side effects: network (the recording only)
 - Parkable: yes
@@ -570,7 +577,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-39: Porting spike: OpenCV.js and sharp
 - Phase: 3
-- Goal: Prove that every image operation the recipe needs works in TypeScript against the Python reference, choose the fallback for any gap, and give the imaging cards one safe way to use OpenCV.js. Main example: each operation's output matches its reference in `prototype/parity/` within the tolerance `index.json` gives. Failure example: a Mat left unfreed shows as memory growing over 50 runs, and fails the card. It creates: `loadCv(): Promise<Cv>` (OpenCV.js, loaded once) and `withMats(fn)` (frees every Mat made inside) in `src/imaging/cv.ts`; `decodeImage(bytes): Promise<RgbImage>` (sharp: decode, colour to sRGB) and `encodePng(image): Promise<Buffer>` (8-bit RGBA) in `src/imaging/io.ts`; one function per operation, on plain typed arrays, in `src/imaging/ops.ts`: `gaussianBlur`, `bilateralFilter`, `dft`, `idft`, `warpAffine`, `findTransformEcc`, `opticalFlowFarneback`, `distanceTransform`, `connectedComponents`, `matchFeatures` (SIFT with RANSAC, `estimateAffinePartial2D`), `medianFilter` and `maximumFilter`; `runYunet(image): YunetFace[]` (YuNet's raw boxes `[x, y, w, h]`, five landmarks and scores, through `FaceDetectorYN` or `onnxruntime-node`) in `src/imaging/yunet.ts`; and `docs/porting.md`, saying what each operation uses and any fallback.
+- Goal: Prove that every image operation the recipe needs works in TypeScript against the Python reference, choose the fallback for any gap, and give the imaging cards one safe way to use OpenCV.js. Main example: each operation's output matches its reference in `prototype/parity/` within the tolerance in the reference's own `.json` beside it. Failure example: a Mat left unfreed shows as memory growing over 50 runs, and fails the card. It creates: `loadCv(): Promise<Cv>` (OpenCV.js, loaded once) and `withMats(fn)` (frees every Mat made inside) in `src/imaging/cv.ts`; `decodeImage(bytes): Promise<RgbImage>` (sharp: decode, colour to sRGB) and `encodePng(image): Promise<Buffer>` (8-bit RGBA) in `src/imaging/io.ts`; one function per operation, on plain typed arrays, in `src/imaging/ops.ts`: `gaussianBlur`, `bilateralFilter`, `dft`, `idft`, `warpAffine`, `findTransformEcc`, `opticalFlowFarneback`, `distanceTransform`, `connectedComponents`, `matchFeatures` (SIFT with RANSAC, `estimateAffinePartial2D`), `medianFilter` and `maximumFilter`; `runYunet(image): Promise<YunetFace[]>` (YuNet's raw boxes `[x, y, w, h]`, five landmarks and scores, through `FaceDetectorYN` or `onnxruntime-node`) in `src/imaging/yunet.ts`; and `docs/porting.md`, saying what each operation uses and any fallback.
 - Covers: none
 - Defers: PIP-04 (F-12), PIP-05 (F-13), PIP-06 (F-14), PIP-13 (F-30), PIP-20 (F-42)
 - Depends on: F-01, F-51
@@ -578,7 +585,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Owns: `src/imaging/cv.ts`, `src/imaging/io.ts`, `src/imaging/ops.ts`, `src/imaging/yunet.ts`, `docs/porting.md`
 - Reads: `brain/spec/architecture.md` (Stack, Porting risks, Porting traps); `prototype/parity/index.json` and `prototype/parity/results.json`; `models/README.md`
 - Checks:
-  - blocking: F-39 each operation matches its reference in `prototype/parity/` within the tolerance `index.json` gives: Gaussian blur, both bilateral filters, the DFT and its inverse, both `warpAffine`s, `findTransformEcc` (with all seven arguments), Farneback flow, the distance transform, connected components, and SIFT with RANSAC
+  - blocking: F-39 each operation matches its reference in `prototype/parity/` within the tolerance in the reference's own `.json` (`index.json` lists the files and their calls): Gaussian blur, both bilateral filters, the DFT and its inverse, both `warpAffine`s, `findTransformEcc` (with all seven arguments), Farneback flow, the distance transform, connected components, and SIFT with RANSAC
   - blocking: F-39 the 15 × 15 median on the log spectrum matches scipy's `median_filter` within one 12-bit step, with the border reflected as scipy does (computed in TypeScript, exactly or with a 12-bit sliding histogram, never with OpenCV's 8-bit `medianBlur`)
   - blocking: F-39 the 5 × 5 maximum matches `maximum_filter`
   - blocking: F-39 `idft` with `DFT_SCALE | DFT_REAL_OUTPUT` round-trips an image
@@ -594,7 +601,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-12: Face landmarks and crop
 - Phase: 3
-- Goal: Find the face box and five landmarks with YuNet, crop to STY-03's square by a similarity transform, and cut a working region out of a large original. Main example: on the owner's three originals, the box and landmarks match the Python reference within 1 px. Failure example: a face narrower than `minFacePx` is reported as too small. It creates: `findFace(image, preBox?): FaceResult` (the box as `[x0, y0, x1, y1]`, five landmarks, the score, whether the landmarks came from the pre-check's box, and `tooSmall`) and `landmarksFromBox(box)` in `src/imaging/face.ts`; `cropTransform(face, settings): Similarity`, `cropSquare(image, transform, size)` and `workingRegion(image, transform, maxWorkingPx): Region` (the crop's square plus 25% a side, reduced by area averaging, with its offset and scale) in `src/imaging/crop.ts`.
+- Goal: Find the face box and five landmarks with YuNet, crop to STY-03's square by a similarity transform, and cut a working region out of a large original. Main example: on the owner's three originals, the box and landmarks match the Python reference within 1 px. Failure example: a face narrower than `minFacePx` is reported as too small. It creates: `findFace(image, preBox?): Promise<FaceResult>` (the box as `[x0, y0, x1, y1]`, five landmarks, the score, whether the landmarks came from the pre-check's box, and `tooSmall`) and `landmarksFromBox(box)` in `src/imaging/face.ts`; `cropTransform(face, settings): Similarity`, `cropSquare(image, transform, size)` and `workingRegion(image, transform, maxWorkingPx): Region` (the crop's square plus 25% a side, reduced by area averaging, with its offset and scale) in `src/imaging/crop.ts`.
 - Covers: PIP-04, PIP-23, STY-03
 - Defers: none
 - Depends on: F-39
@@ -638,7 +645,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-14: Tone and halftone
 - Phase: 3
-- Goal: Turn the cropped tones into coverage (levels from the face, gamma, unsharp mask) and screen them as round white dots on a 45° grid, supersampled. Main example: on a synthetic gradient, frequency analysis finds a pitch of 1000/110 px along a 45° grid, and dot area grows with brightness. Failure example: a threshold map differing from the prototype's fails the card. It creates: `toneToCoverage(grey, mask, faceBox, pitch, settings): Float32Array` in `src/imaging/tone.ts`; `thresholdMap(size, supersample, pitch, angleDeg): Float32Array` (built once per recipe and kept) and `halftone(coverage, settings): Uint8Array` (the dots' alpha) in `src/imaging/halftone.ts` (ports of `tone_to_coverage` and `_threshold_map`).
+- Goal: Turn the cropped tones into coverage (levels from the face, gamma, unsharp mask) and screen them as round white dots on a 45° grid, supersampled. Main example: on a synthetic gradient, frequency analysis finds a pitch of 1000/110 px along a 45° grid, and dot area grows with brightness. Failure example: a threshold map outside the prototype's tolerance fails the card. It creates: `toneToCoverage(grey, mask, faceBox, pitch, settings): Float32Array` in `src/imaging/tone.ts`; `thresholdMap(size, supersample, pitch, angleDeg): Float32Array` (built once per recipe and kept) `halftone(coverage, settings): Uint8Array` (the dots' alpha) and `halftoneStats` (`{ thresholdMapBuilds }`, a count for tests) in `src/imaging/halftone.ts` (ports of `tone_to_coverage` and `_threshold_map`).
 - Covers: STY-01, PIP-06
 - Defers: none
 - Depends on: F-39
@@ -648,8 +655,8 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Checks:
   - blocking: F-14 on a synthetic gradient, frequency analysis finds a pitch of 1000/110 px along a 45° grid, and dot area grows with brightness
   - blocking: F-14 dark tones are fully transparent, and the brightest face tone is near full coverage
-  - blocking: F-14 `thresholdMap(64, 2, 64/11, 45)` equals `prototype/parity/synthetic/threshold_map.f32` exactly
-  - blocking: F-14 the map is built once per recipe, in one pass without full-size intermediate arrays, and a second portrait reuses it (a counter in the test)
+  - blocking: F-14 `thresholdMap(64, 2, 64/11, 45)` matches `prototype/parity/synthetic/threshold_map.f32` within the tolerance in `threshold_map.json` beside it
+  - blocking: F-14 the map is built once per recipe, in one pass without full-size intermediate arrays, and a second portrait reuses it (`halftoneStats.thresholdMapBuilds` stays 1)
 - Test data: synthetic gradients, made in the test; `prototype/parity/synthetic/threshold_map.f32`
 - Side effects: none
 - Parkable: no
@@ -692,7 +699,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-30 the drift check, inside the face box shrunk by `driftBoxInset` (0.15) on each side, measures copies with the eyes and mouth moved by about 1.2 dot cells above 0.7 and good copies below, each within 0.1 of `prototype/out/enhance-mechanics.json` (good 0.14–0.31, moved 0.95–1.08)
   - blocking: F-30 a copy that can't be aligned (a different face) is refused
   - blocking: F-30 the key mask, mapped back through the inverse of the alignment (and the working region's offset and scale for a large original), overlaps the true figure in the original by at least 0.97, for a small and a 4,000 × 5,000 synthetic original
-- Test data: synthetic keyed copies from a TypeScript port of the generator in `prototype/test_enhance_mechanics.py`, written by the test author; `prototype/out/enhance-mechanics.json`
+- Test data: synthetic keyed copies from a TypeScript port of the generator in `prototype/test_enhance_mechanics.py`, written by the test author in `test/fixtures/f30/` (F-19's tests import it); `prototype/out/enhance-mechanics.json`
 - Side effects: none
 - Parkable: no (the cut-out depends on it)
 - Size: M
@@ -700,7 +707,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-41: Black-and-white, 500 px, viewing copies and the whole recipe
 - Phase: 3
-- Goal: Make the black-and-white version (option C) and the 500 px copies from the master's layers, the original's PNG viewing copy and the images sent to models, and run the whole code recipe in one call. Main example: `renderPortrait` on an example's fixture gives `white-1000`, `white-500`, `bw-1000` and `bw-500`, each passing its checker. Failure example: a 300 px original's viewing copy enlarged past 300 px fails the card. It creates: `bwVersion(layers, settings)`, `small(rgba, settings)` and `checkBw(rgba, master?): string[]` in `src/imaging/versions.ts` (ports of `bw_version`, `small` and `check_bw`); `viewingCopy(original): Promise<Buffer>` and `modelImage(image, maxPx): Promise<Buffer>` (an 8-bit sRGB PNG, PIP-22) in `src/imaging/modelImage.ts`; and `renderPortrait(input, settings): PortraitImages` in `src/imaging/recipe.ts`, which runs the code steps in the prototype's order: descreen (F-13), crop (F-12), the blend when an aligned AI copy is given (F-30), `makeMaster` (F-15), then the black-and-white and 500 px versions.
+- Goal: Make the black-and-white version (option C) and the 500 px copies from the master's layers, the original's PNG viewing copy and the images sent to models, and run the whole code recipe in one call. Main example: `renderPortrait` on an example's fixture gives `white-1000`, `white-500`, `bw-1000` and `bw-500`, each passing its checker. Failure example: a 300 px original's viewing copy enlarged past 300 px fails the card. It creates: `bwVersion(layers, settings)`, `small(rgba, settings)` and `checkBw(rgba, master?): string[]` in `src/imaging/versions.ts` (ports of `bw_version`, `small` and `check_bw`); `viewingCopy(original): Promise<Buffer>` and `modelImage(image, maxPx): Promise<Buffer>` (an 8-bit sRGB PNG, PIP-22) in `src/imaging/modelImage.ts`; and `renderPortrait(input, settings): Promise<PortraitImages>` in `src/imaging/recipe.ts`, where `input` is the original, its face (box and landmarks), its cut-out mask, an optional aligned AI copy and an optional `framing` (a crop transform that overrides the automatic crop, as the fixtures' `target_warp_500` gives the owner's framing). It runs the code steps in the prototype's order: descreen (F-13), crop (F-12), the blend when an aligned AI copy is given (F-30), `makeMaster` (F-15), then the black-and-white and 500 px versions.
 - Covers: STY-08, STY-09, OUT-05, PIP-22
 - Defers: STY-07 (parity with the prototype, proved in F-16)
 - Depends on: F-15, F-30
@@ -712,7 +719,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-41 both 500 px copies pass their checkers
   - blocking: F-41 the viewing copy is a PNG at most 1,600 px on its long side, never enlarged (a 300 px original stays 300 px), and keeps a PNG original's transparency
   - blocking: F-41 a 16-bit TIFF and a CMYK JPEG each become an 8-bit sRGB PNG, at most `maxModelImagePx` on the long side and under 5 MB
-  - blocking: F-41 `renderPortrait` on each example's fixture (with its given landmarks and cut-out) returns the four versions, each passing its checker; given an aligned AI copy, it blends it at `enhanceBlend`
+  - blocking: F-41 `renderPortrait` on each example's fixture (with its given landmarks and cut-out) returns the four versions, each passing its checker; given an aligned AI copy, it blends it at `enhanceBlend`; given `framing`, it crops by that instead of the automatic crop
 - Test data: the three examples' fixtures (`prototype/fixtures/`); a transparent PNG, a 16-bit TIFF and a CMYK JPEG
 - Side effects: none
 - Parkable: no
@@ -721,7 +728,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-42: Same photograph or different (code layers)
 - Phase: 3
-- Goal: Tell copies of one photograph from different photographs with a whole-picture fingerprint and feature matching, leaving the unclear middle for the model (F-43). Main example: the prototype's 30 doctored copies (crop, rescale, rotation, JPEG, blur, reprint screen, mirror, noise) are judged the same. Failure example: two different frontal sittings judged the same by fingerprint fail the card. It creates: `fingerprint(image): bigint` (a 64-bit difference hash of the whole picture), `featurePoints(image): Features`, `comparePhotos(a, b, settings): { verdict: "same" | "different" | "unclear"; inliers: number; bits: number }` and `groupByPhotograph(items, resolveUnclear): PhotographGroup[]` (each new item compared with one representative per group; `resolveUnclear` decides the pairs in the middle) in `src/imaging/samePhoto.ts` (a port of `prototype/same_photo.py`).
+- Goal: Tell copies of one photograph from different photographs with a whole-picture fingerprint and feature matching, leaving the unclear middle for the model (F-43). Main example: the prototype's 30 doctored copies (crop, rescale, rotation, JPEG, blur, reprint screen, mirror, noise) are judged the same. Failure example: two different frontal sittings judged the same by fingerprint fail the card. It creates: `fingerprint(image): bigint` (a 64-bit difference hash of the whole picture), `featurePoints(image): Features`, `comparePhotos(a, b, settings): { verdict: "same" | "different" | "unclear"; inliers: number; bits: number }` and `groupByPhotograph(items, resolveUnclear): Promise<PhotographGroup[]>` (each new item compared with one representative per group; `resolveUnclear(a, b): Promise<boolean>` decides the pairs in the middle, true meaning the same photograph), and `samePhotoStats` (`{ featurePointRuns }`, a count for tests) in `src/imaging/samePhoto.ts` (a port of `prototype/same_photo.py`).
 - Covers: PIP-15, PIP-20
 - Defers: none (the model's layers of the same-photograph check are F-43's)
 - Depends on: F-12
@@ -732,7 +739,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-42 the 30 doctored copies, generated as in `same_photo.py`, are judged the same, with inlier counts within 25% of `prototype/out/same-photo.json`
   - blocking: F-42 the different-photograph pairs score at or below `diffMaxInliers`
   - blocking: F-42 exact duplicates and resized or re-encoded copies are caught by the fingerprint alone (at most 2 bits apart), and two different frontal sittings never are
-  - blocking: F-42 `groupByPhotograph` compares a new item with one representative per group, and each picture's feature points are computed once (a counter in the test)
+  - blocking: F-42 `groupByPhotograph` compares a new item with one representative per group, and each picture's feature points are computed once (`samePhotoStats.featurePointRuns`)
   - blocking: F-42 a pair between the thresholds comes back `unclear` and goes to `resolveUnclear`
   - report: F-42 if F-39 chose a fallback detector (AKAZE or ORB), `sameMinInliers` and `diffMaxInliers` measured again on the same fixtures, for a recipe change the Tech Lead rules on
 - Test data: the three originals; a TypeScript port of `same_photo.py`'s generator, written by the test author
@@ -768,8 +775,8 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-17: OpenRouter client, spend ledger and caps
 - Phase: 4
-- Goal: One client for every model call through OpenRouter, with a stub mode, a spend ledger and every cap checked before each call. Main example: in stub mode, canned answers come back with no key and no network, and each call's cost lands in the ledger with its budget. Failure example: a call that would pass the night's cap is never made, and the stop is reported. It creates: `createModelClient(deps): ModelClient`, with `call(request: ModelRequest): Promise<ModelAnswer>` (the request names the step, model, prompt and its version, images, teacher and budget), in `src/models/openrouter.ts`; `createStubModelClient(answers): ModelClient` in `src/models/stub.ts`, for later cards' tests; and `checkCaps(db, env, estimateUsd, budget): CapVerdict` and `CapReachedError` in `src/models/caps.ts`.
-- Covers: RUN-04, RUN-06, PIP-09
+- Goal: One client for every model call through OpenRouter, with a stub mode, a spend ledger and every cap checked before each call. Main example: in stub mode, canned answers come back with no key and no network, and each call's cost lands in the ledger with its budget. Failure example: a call that would pass the night's cap is never made, and the stop is reported. It creates: `createModelClient(deps): ModelClient`, with `call(request: ModelRequest): Promise<ModelAnswer>` (the request names the step, model, prompt and its version, images, teacher and budget), in `src/models/openrouter.ts`; `createStubModelClient(answers): ModelClient` in `src/models/stub.ts`, for later cards' tests; and `checkCaps(db, env, { estimateUsd, budget, teacherId, runId }): Promise<CapVerdict>` and `CapReachedError` in `src/models/caps.ts`.
+- Covers: RUN-04, RUN-06, RUN-10, PIP-09
 - Defers: none (the first pass's state changes are F-25's)
 - Depends on: F-04, F-06
 - Owner input: none
@@ -858,7 +865,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-43: Same-photograph tie-break
 - Phase: 4
-- Goal: For pairs F-42 finds unclear, ask Claude Sonnet whether they're the same photograph, treating "unsure" as the same. Main example: a canned "same" groups the pair, with its evidence recorded. Failure example: asking about the same pair twice, in either order, makes a second call and fails the card. It creates: `samePhotoCheck(ctx, a, b): Promise<{ verdict: "same" | "different" | "unsure"; evidence: string }>` and `unclearResolver(ctx)`, the resolver F-42's `groupByPhotograph` takes, in `src/models/samePhotoCheck.ts`; and the prompt `src/models/prompts/same_photo.md`, copied from `prototype/prompts/`.
+- Goal: For pairs F-42 finds unclear, ask Claude Sonnet whether they're the same photograph, treating "unsure" as the same. Main example: a canned "same" groups the pair, with its evidence recorded. Failure example: asking about the same pair twice, in either order, makes a second call and fails the card. It creates: `samePhotoCheck(ctx, a, b): Promise<{ verdict: "same" | "different" | "unsure"; evidence: string }>` and `unclearResolver(ctx)`, which returns the async resolver F-42's `groupByPhotograph` takes, in `src/models/samePhotoCheck.ts`; and the prompt `src/models/prompts/same_photo.md`, copied from `prototype/prompts/`.
 - Covers: PIP-20, PIP-22
 - Defers: none
 - Depends on: F-17, F-41, F-42
@@ -925,7 +932,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-24: Publishing a portrait
 - Phase: 5
-- Goal: Write a portrait's files (OUT-11) and its record atomically, with each file's licence and credit, and add it to the change feed. Main example: a fixture portrait produces all eight files under its key, each passing its checker, plus `record.json`, and the record validates against the contract's `Portrait`. Failure example: a record missing a licence isn't published: the failure names the field, the portrait is `failed`, and its candidate is set aside. It creates: `nextPortraitId(db, teacherId): Promise<string>`, `publishPortrait(ctx, draft: PortraitDraft): Promise<Portrait>` and `portraitRecord(db, portraitId): Promise<Portrait>` (the contract's shape, also written as `record.json`) in `src/pipeline/portrait.ts`.
+- Goal: Write a portrait's files (OUT-11) and its record atomically, with each file's licence and credit, and add it to the change feed. Main example: a fixture portrait produces all eight files under its key, each passing its checker, plus `record.json`, and the record validates against the contract's `Portrait`. Failure example: a record missing a licence isn't published: the failure names the field, the portrait is `failed`, and its candidate is set aside. It creates: `nextPortraitId(db, teacherId): Promise<string>`, `publishPortrait(ctx, draft: PortraitDraft): Promise<Portrait>`, `portraitRecord(db, portraitId): Promise<Portrait>` (the contract's shape) and `writeRecordJson(ctx, portraitId)` (rewrites `record.json` from the database, for every later change) in `src/pipeline/portrait.ts`.
 - Covers: OUT-02, OUT-03, OUT-04, OUT-11, OUT-12, SRC-11, AC-02
 - Defers: none
 - Depends on: F-03, F-04, F-07, F-37, F-41
@@ -937,9 +944,9 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-24 a fixture whose enhance call failed produces the other seven, with `enhanced_used` false
   - blocking: F-24 each file's licence and credit follow SRC-11's table, for a public-domain, a CC BY and a CC BY-SA fixture
   - blocking: F-24 stopping after the files are written but before the database commit leaves no visible portrait and no change-feed entry
-  - blocking: F-24 a record missing a licence isn't published: the failure names the field, the portrait is `failed`, and its candidate is set aside, so a second run doesn't try it again
+  - blocking: F-24 a record missing a licence isn't published: the failure names the field, the portrait is `failed`, and its candidate is marked set aside
   - blocking: F-24 portrait ids count up per teacher and are never reused after a turn-down
-  - blocking: F-24 `record.json` is rewritten from the database when the portrait changes, and a turned-down portrait's files remain
+  - blocking: F-24 `writeRecordJson` rewrites `record.json` from the database, and a turned-down portrait's files remain
 - Test data: images from `renderPortrait` (F-41) on the examples' fixtures, never published; F-07's fixtures, read-only
 - Side effects: none
 - Parkable: no
@@ -948,7 +955,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-23: Per-teacher pipeline and failure policy
 - Phase: 5
-- Goal: Take one teacher from candidates to published portraits: open slots, the choice of photographs, pre-check, AI copy, draft, check, remake and set-asides, all with stubs. Main example: a teacher with five different photographs gets three portraits, the best-known one first, then spread across their life. Failure example: a draft failing twice sets its original aside, and the next photograph is tried. It creates: `processTeacher(ctx, teacherId): Promise<TeacherRunResult>` in `src/pipeline/teacher.ts`; `choosePhotographs(photographs, openSlots, teacher): Photograph[]` in `src/pipeline/choose.ts`; `recordFailure(...)` and `isSetAside(...)` in `src/pipeline/failures.ts`. The contract step settles their exact types.
+- Goal: Take one teacher from candidates to published portraits: open slots, the choice of photographs, pre-check, AI copy, draft, check, remake and set-asides, all with stubs. Main example: a teacher with five different photographs gets three portraits, the best-known one first, then spread across their life. Failure example: a draft failing twice sets its original aside, and the next photograph is tried. It creates: `processTeacher(ctx, teacherId): Promise<TeacherRunResult>` in `src/pipeline/teacher.ts`; `choosePhotographs(photographs, openSlots, teacher): Photograph[]` in `src/pipeline/choose.ts`; `draftOriginal(ctx, teacherId, copy, opts: { note?, attempt, replaces? }): Promise<DraftOutcome>` (one draft from one given copy, for the library's requests, F-45) in `src/pipeline/teacher.ts`; `recordFailure(...)` and `isSetAside(...)` in `src/pipeline/failures.ts`. The contract step settles their exact types.
 - Covers: PIP-01, PIP-10, PIP-11, PIP-12, PIP-14, PIP-16, PIP-19, PIP-21
 - Defers: PIP-17 and PIP-18 (later runs and the library's corrections: F-48)
 - Depends on: F-11, F-16, F-18, F-19, F-21, F-24
@@ -967,6 +974,9 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-23 a source date beats an estimated one; an estimate uses the birth year
   - blocking: F-23 a cut-out limit failure, or a failed enhance call, triggers one fallback call; a failing fallback fails the draft, and the remake tries once more
   - blocking: F-23 a second run never tries a set-aside photograph again
+  - blocking: F-23 an original failing its pre-check is set aside, and no further call is made for it
+  - blocking: F-23 with no size from the source, the `minFacePx` check is repeated on the downloaded original before the enhance call, and a face too small sets it aside with no enhance call
+  - blocking: F-23 `draftOriginal` drafts one given copy with a note and a fresh AI copy (the attempt counted up), and offers it with `replaces` when given
 - Test data: a stub world for three teachers in `test/fixtures/f23/` (recorded source responses, canned model answers and images), served through the product's own replay client (F-06) and stub model client (F-17); F-25, F-26 and F-48 reuse it
 - Side effects: none
 - Parkable: no
@@ -976,7 +986,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-25: Queue, schedule and run reports
 - Phase: 5
-- Goal: Run the nightly schedule and the queue: sync, queue the teachers due a search, take requests first, resume after a crash, stop at a cap, track the first pass and write each run's report. Main example: on a fake clock, a teacher searched 35 days ago is queued and one searched 10 days ago isn't. Failure example: a worker killed mid-teacher that repeats a paid call on restart fails the card. It creates: `nightly(ctx): Promise<NightlyResult>` (sync, queue, exit) in `src/cron.ts`; `runWorker(ctx, opts)` in `src/worker.ts`; `teachersDue(db, now, settings): string[]`, `planRun(ctx, opts): RunPlan` (with the estimated spend) and `runQueue(ctx, opts): Promise<RunReport>` in `src/pipeline/run.ts`; the job kind `run` (with `teacher` or `limit`); and the command `portraits run [--limit N] [--teacher ID] [--dry-run]`.
+- Goal: Run the nightly schedule and the queue: sync, queue the teachers due a search, take requests first, resume after a crash, stop at a cap, track the first pass and write each run's report. Main example: on a fake clock, a teacher searched 35 days ago is queued and one searched 10 days ago isn't. Failure example: a worker killed mid-teacher that repeats a paid call on restart fails the card. It creates: `nightly(ctx): Promise<NightlyResult>` (sync, queue, exit) in `src/cron.ts`; `runWorker(ctx, opts)` in `src/worker.ts`; `teachersDue(db, now, settings): Promise<string[]>`, `planRun(ctx, opts): Promise<RunPlan>` (with the estimated spend) and `runQueue(ctx, opts): Promise<RunReport>` in `src/pipeline/run.ts`; the job kind `run` (with `teacher` or `limit`); and the command `portraits run [--limit N] [--teacher ID] [--dry-run]`.
 - Covers: RUN-02, RUN-03, RUN-04, RUN-08, OUT-06
 - Defers: IN-06 (the library's requests handled: F-45)
 - Depends on: F-23, F-31, F-36
@@ -1010,7 +1020,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Reads: `brain/spec/requirements.md` OUT-14, RUN-10, SCOPE-02; the contract and `brain/contracts/portraits-api.md` (the change feed's rules)
 - Checks:
   - blocking: F-44 every read route's answers validate against the contract (`checkAgainstContract`), on a fixture database
-  - blocking: F-44 no key gives 401 `key_off`, a switched-off key gives 401, and a good key gives 200; keys are stored only as hashes, and a new key is shown once
+  - blocking: F-44 no key gives 401 `key_off`, a switched-off key gives 401, and a good key gives 200, checked with F-36's `verifySecret` against the `api_keys` hashes (the seeded `test` key included); a new key is shown once
   - blocking: F-44 `since` then `after` pages through every change in order, with `more` and `next_cursor` as the contract says
   - blocking: F-44 with `after`, the answer's `since` is the time of the cursor's entry (the service's start for `c_0`)
   - blocking: F-44 an empty page echoes its cursor as `next_cursor`, with `more: false`; with `since` and nothing after it, `next_cursor` is the cursor of the last change at or before `since` (`c_0` when there's none)
@@ -1027,7 +1037,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-45: API: decisions and requests
 - Phase: 5
-- Goal: Accept the library's decisions and requests, apply each once, and handle requests in the worker at once. Main example: an approve decision makes the portrait `approved`, in its history and the change feed. Failure example: a turn-down without a reason is refused with `invalid` naming `/reason`. It creates: `POST /api/v1/decisions` in `src/api/decisions.ts`; `POST /api/v1/requests`, `GET /api/v1/requests` and `GET /api/v1/requests/{request_id}` in `src/api/requests.ts`, both mounted by `src/api/router.ts`; `handleRequest(ctx, requestId): Promise<RequestOutcome>` in `src/pipeline/requests.ts`, run by the job kind `request` (`src/jobs/request.ts`, queued by `POST /api/v1/requests`); and `classifyNote(ctx, note): Promise<"restoration" | "crop" | "outline">` in `src/models/noteKind.ts`, with the prompt `src/models/prompts/note_kind.md` (v2, copied from `prototype/prompts/`).
+- Goal: Accept the library's decisions and requests, apply each once, and handle requests in the worker at once. Main example: an approve decision makes the portrait `approved`, in its history and the change feed. Failure example: a turn-down without a reason is refused with `invalid` naming `/reason`. The worker drafts with F-23's `draftOriginal`, reads a pasted link with its source's `fetchById` (F-09's registry), and rewrites `record.json` with F-24's `writeRecordJson`. It creates: `POST /api/v1/decisions` in `src/api/decisions.ts`; `POST /api/v1/requests`, `GET /api/v1/requests` and `GET /api/v1/requests/{request_id}` in `src/api/requests.ts`, both mounted by `src/api/router.ts`; `handleRequest(ctx, requestId): Promise<RequestOutcome>` in `src/pipeline/requests.ts`, run by the job kind `request` (`src/jobs/request.ts`, queued by `POST /api/v1/requests`); and `classifyNote(ctx, note): Promise<"restoration" | "crop" | "outline">` in `src/models/noteKind.ts`, with the prompt `src/models/prompts/note_kind.md` (v2, copied from `prototype/prompts/`).
 - Covers: IN-06, IN-07, IN-08, SRC-04
 - Defers: PIP-17 (better copies and higher-ranked photographs offered on later runs: F-48)
 - Depends on: F-44, F-25
@@ -1040,12 +1050,13 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-45 turning down the main portrait clears `main`, and the teacher has none
   - blocking: F-45 a turn-down without a reason is refused with `invalid` naming `/reason`; set_main on a waiting portrait gives `conflict`
   - blocking: F-45 resending the same `decision_id` or `request_id` changes nothing and says it's a duplicate; reusing an id with different content gives `conflict`
-  - blocking: F-45 a `try_link` in each of SRC-04's forms is read without fetching the page, and queued; a link anywhere else gets 422 with the reason
+  - blocking: F-45 a `try_link` in each of SRC-04's forms is read without fetching the page, and queued; a link anywhere else gets 422 with the reason; a link to a source that isn't registered (a parked card) is answered `refused` with `no_candidates`
   - blocking: F-45 a `try_again` whose note the stubbed model (`note_kind.md`) judges to be about the crop or the outline is answered `refused`, suggesting `another_original`; a restoration note is passed on, and "the line cuts off the left ear" counts as restoration
   - blocking: F-45 `another_original` makes the portrait `turned_down` (reason `other`) and queues the teacher
   - blocking: F-45 an unknown teacher or portrait gets 404; a `try_again` or `another_original` on a turned-down or replaced portrait gets 409
   - blocking: F-45 a `try_again` on a waiting portrait replaces it when done; on an approved one, the new draft is offered with `replaces`, and the approved one (and `main`) stays until the library approves the new one
   - blocking: F-45 a request answers 202 `queued`; the worker sets `working`, then `done` with a new `result_portrait_id`, or `refused` with one of IN-06's codes and no result; each code has a fixture, and each change is in the change feed
+  - blocking: F-45 every decision rewrites the portrait's `record.json`
   - blocking: F-45 every answer validates against the contract
 - Test data: F-44's fixture database (read-only), canned note answers and F-23's stub world (read-only)
 - Side effects: none
@@ -1055,7 +1066,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 
 ### F-48: Later runs: better copies, turn-downs, corrections
 - Phase: 5
-- Goal: On later runs, offer clearly better copies and higher-ranked photographs, bring back a turned-down photograph only when allowed, and never overwrite the library's corrections. Main example: a copy twice the size of an approved portrait's original becomes a new waiting portrait with `replaces` set, and the approved one is untouched. Failure example: a photograph turned down as `do_not_use` coming back on a later run fails the card. It creates: `betterCopyOffers(ctx, teacher, photographs): Offer[]` and `fullSlotsOffer(ctx, teacher, photographs): Offer | null` in `src/pipeline/offers.ts`, which `processTeacher` (F-23) calls on later runs.
+- Goal: On later runs, offer clearly better copies and higher-ranked photographs, bring back a turned-down photograph only when allowed, and never overwrite the library's corrections. Main example: a copy twice the size of an approved portrait's original becomes a new waiting portrait with `replaces` set, and the approved one is untouched. Failure example: a photograph turned down as `do_not_use` coming back on a later run fails the card. It creates: `betterCopyOffers(ctx, teacher, photographs): Promise<Offer[]>` and `fullSlotsOffer(ctx, teacher, photographs): Promise<Offer | null>` in `src/pipeline/offers.ts`, which `processTeacher` (F-23) calls on later runs.
 - Covers: PIP-17, PIP-18, OUT-07
 - Defers: none
 - Depends on: F-23, F-45
@@ -1088,7 +1099,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
 - Owns: `src/admin/frame.ts`, `src/admin/login.ts`, `src/admin/style.css`, `src/admin/pages/`, `src/web.ts` (to mount the site), `src/cli/commands/password.ts`
 - Reads: `brain/spec/requirements.md` OUT-06, OUT-13, RUN-09, RUN-10, SRC-02, SRC-12, IN-02, IN-13; `brain/decisions.md` D-33, D-68; `brain/spec/architecture.md` (Settings: `checkPageRgb`)
 - Checks:
-  - blocking: F-46 every page needs a login, and the password is stored only as a slow hash, set by `portraits password set`
+  - blocking: F-46 every page needs a login, checked with F-36's `verifySecret` against `app_settings.admin_password_hash`, which `portraits password set` writes as a slow hash
   - blocking: F-46 a wrong password locks out after the set number of tries
   - blocking: F-46 the session cookie is secure, HTTP-only and SameSite, and lasts 30 days
   - blocking: F-46 the front page shows last night's run, the month's spend against its cap (and the first pass's against $100 while it's active), errors since the last run, and what needs the owner: teachers to identify, held originals, bad rows in the authors list and anything stuck
@@ -1098,7 +1109,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-46 held originals are listed with their source and licence
   - blocking: F-46 the rights-log CSV, and the suggestions CSV (the teachers' stored suggestions, in `authors.csv`'s columns plus the evidence), download with the right columns; with no suggestions, the page shows an empty state
   - blocking: F-46 no page has a form that changes data, except logging in and out
-  - blocking: F-46 every page renders at 390 px wide without horizontal scrolling
+  - blocking: F-46 every page is laid out for 390 px: it has the viewport meta tag, no style sets a fixed width over 390 px, and tables sit in horizontally scrolling wrappers
   - blocking: F-46 no key or secret appears on any page
   - blocking: F-46 a dependency check finds no mail-sending package and no SMTP code
   - blocking: F-46 a new file in `src/admin/pages/` is picked up without editing any other file
@@ -1211,7 +1222,7 @@ F-52 and F-29 share the trial's $30 budget (TRI-07). O-10 (the User-Agent contac
   - blocking: F-28 a stubbed trial leaves the portraits, candidates and changes tables unchanged, and its files are under `trial/<trial_run_id>/`
   - blocking: F-28 the trial stops cleanly at its $27 sub-budget, and the examples at $3 (stubbed costs)
   - blocking: F-28 `trial_examples` reads the owner's originals and targets bundled from `design/portraits/`, and never publishes them (D-13)
-  - blocking: F-28 the board shows a row per original with every contender side by side, each beside its no-blend version, on the dark page colour, readable at 390 px
+  - blocking: F-28 the board shows a row per original with every contender side by side, each beside its no-blend version, on the dark page colour, laid out for 390 px as F-46's pages are (viewport meta tag, no fixed width over 390 px)
 - Test data: a fixture survey report and canned model answers
 - Side effects: none
 - Parkable: no

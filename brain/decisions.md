@@ -673,6 +673,7 @@ Claude's choices made while converting the cards (proposed):
 - **F-36 depends on F-03** (its health answers are checked against the contract), and **F-41 depends on F-30**: F-41 now also makes `renderPortrait`, the whole code recipe in one call, which F-16's parity check and the pipeline use.
 - **F-35's suggestions** are kept on the teacher's record (`suggestion`), and **F-46's suggestions page** makes the CSV from them, so the admin site needn't depend on F-35, which is parkable.
 - **Product-side test helpers:** F-03's `checkAgainstContract`, F-17's `createStubModelClient` and F-37's `createFakeBucket`, beside F-04's `openTestDb`.
+- **After an independent review of the converted cards** (16 points, all taken): one context, F-04's `Ctx` with `makeTestCtx`; queue priority (requests first); F-23's `draftOriginal` and the sources' `fetchById` for the library's requests (F-10 and F-34 now depend on F-09); F-24's `writeRecordJson`; async signatures where a call may wait; the parity tolerances from each reference's own `.json`; counters for tests; static layout checks for 390 px instead of a browser; replay matched on normalised URLs; the seeded test credentials' storage named; `renderPortrait` takes the owner's framing; RUN-10 back in F-17's Covers, with the teacher and run in `checkCaps`.
 
 → features draft 5, `harness.yaml` (`spend`), architecture (packages; modules), T-07 (`suggestion`), the build plan (credentials), `handoffs/harness-questions.md`
 
