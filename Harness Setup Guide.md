@@ -125,6 +125,7 @@ What worked: Claude fills each form, the owner clicks the last button and copies
    - Pasted values don't show; that's normal.
    - Ask for a screenshot of `connect`'s output: it names the services it found and each token's expiry.
    - `Ctrl+B` then `D` leaves the run going; `tmux attach -t <name>` comes back.
+   - From here the owner steers from the phone (HD-77): the run stays up until every card is merged, waits for answers on the control page (`/direct <card>: yes` takes the recommendation), retries problems by itself, and `/update` restarts it with the harness's latest version. Only a new sign-in or key, and Windows restarting, need the PC.
 
 ## 6. Dashboard tips (for Claude)
 
