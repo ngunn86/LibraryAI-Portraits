@@ -839,7 +839,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - **History is kept.** Replaced and turned-down portraits keep their files. Nothing is deleted automatically.
 - **Candidates that never become portraits** are logged in the rights log, not stored.
 - **The library keeps its own copies** of what it pulls (D-42).
-- **Backups:** the database only, at first: production's Postgres add-on is backed up daily by Northflank, and again by production's release flow before each release migrates it (D-70). The bucket can be rebuilt from the rights log and the recipe, except the AI copies.
+- **Backups:** the database only, at first: production's Postgres add-on is backed up daily by Northflank (D-70). There's no separate backup before a release (D-72): migrations are additive, so a release never needs one to undo. The bucket can be rebuilt from the rights log and the recipe, except the AI copies.
 
 *Verify:* the layout and `record.json` match the database; a turned-down portrait's files remain; a failed candidate has a log row and no files (F-24, F-37).
 
@@ -882,14 +882,13 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 
 **RUN-01 · Where it runs** *fixed* · D-31, D-57, D-70; layout *proposed* · C
 - It runs on **Northflank** (D-70; it was Railway until 2026-10-23), in two projects:
-  - **staging**, which also holds the pull-request copies (Northflank preview environments);
-  - **production**, which the harness's everyday token can't reach.
+  - **staging**, which builds the app once per merge (one build service) and also holds the pull-request copies (the `pr-copy` preview blueprint);
+  - **production**, which deploys the staging build service's shared builds, never building its own, and which the harness's everyday token can't reach (harness HD-70, D-72).
 - Each environment has:
-  - a web service (API and admin site);
-  - a worker (the queue);
+  - a web deployment service (API and admin site);
+  - a worker deployment service (the queue, and in production the nightly schedule, RUN-08);
   - a Postgres add-on;
-  - a bucket on Cloudflare R2 (OUT-12);
-  - in production only, a nightly cron job (RUN-08).
+  - a bucket on Cloudflare R2 (OUT-12).
 - There are three kinds of environment: production, staging, and one per pull request.
 - It is built in **TypeScript on Node 24**, like the library (D-57). See [architecture.md](architecture.md).
 - A command-line tool runs steps by hand for the owner (RUN-05). **The harness never runs project code through the host's command line or a shell in a container** (D-65): it starts jobs on a deployed copy over the web (RUN-11).
@@ -970,11 +969,10 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 
 *Verify:* F-26's key scan covers the logs.
 
-**RUN-08 · Schedule** *fixed* · D-53, D-59, D-61
-- **Nightly, in production,** the cron job:
+**RUN-08 · Schedule** *fixed* · D-53, D-59, D-61; mechanism *proposed* · C, D-72
+- **Nightly, in production,** the worker's nightly tick (a timer at the set hour, never two at once):
   - syncs the teacher list;
-  - queues the teachers due a search (RUN-02);
-  - exits.
+  - queues the teachers due a search (RUN-02).
 - The worker works through the queue. **The library's requests** are queued as they arrive.
 - **Each teacher is searched again monthly:** those with an open slot (D-53), and those whose slots are full, for better copies (D-59) and higher-ranked photographs (D-61).
 - **Production's schedule is on from its first deploy,** which is the release (F-47), after the 24-hour veto window (D-66). Nothing is scheduled in any other environment: staging and pull-request copies run jobs only when they're started (RUN-11).
@@ -983,7 +981,7 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - searched 10 days ago, not queued; searched 35 days ago, queued;
 - a full teacher queued only when `researchFullTeachers` is on;
 - a request queued at once;
-- the cron job exits;
+- the nightly tick runs once a night, and only in production;
 - with the schedule off, nothing is queued.
 
 **RUN-09 · How the owner hears about it** *fixed* · D-53
@@ -1005,11 +1003,11 @@ Each portrait's id is `<teacher_id>-<n>` (for example `charles-fillmore-1`). `n`
 - **Rate limits:** about 600 API calls a minute per key, plus the login limit.
 - **Outbound calls** go only to the adopted sources, OpenRouter and (for the teacher list) GitHub (SRC-01).
 - **Environments, since the key is shared** (D-55, D-67):
-  - **pull-request copies** are Northflank preview environments in the staging project, made from its preview template for each pull request and deleted when it closes or merges, or after 3 days. They run in stub mode only: no paid calls, no cron, and no AI key, since the preview secret group doesn't hold it (HT-32);
-  - **staging** (the staging project's pipeline, deployed from `main` on every merge) has no cron, runs jobs only when started (RUN-11), and spends at most $2 a night and $10 a month;
-  - **production** (the production project, deployed only by its release flow, which the harness's conductor starts after the veto window, D-66, or the owner starts from the dashboard, D-35) has the caps of RUN-04.
+  - **pull-request copies** are made in the staging project by the `pr-copy` preview blueprint for each pull request, and deleted when it closes or merges, or after 6 hours. They run in stub mode only: no paid calls, no nightly schedule, and no AI key, since the preview secret group doesn't hold it (HT-32);
+  - **staging** (built and deployed from `main` on every merge) has no nightly schedule, runs jobs only when started (RUN-11), and spends at most $2 a night and $10 a month;
+  - **production** (the production project, which gets the exact build staging tested, put there by the harness's conductor after the veto window, D-66, or by the owner in the dashboard, D-35) has the caps of RUN-04.
 - The environment is read from the variable `PORTRAITS_ENV` (`production`, `staging` or `preview`), set in each environment's secret group, and its rules come from settings. A missing or unknown value stops the service at start-up. The caps in code are the first line; the key's limit at OpenRouter (O-4) is the hard ceiling across all of them.
-- **Pull-request copies are based on staging, never production** (D-65): they live in the staging project, which holds no production secret. Each gets its own empty database (migrated by its `migrate` job; the test credentials seeded at start-up; fixture portraits only through a `seed_fixtures` job), its own prefix in the previews bucket, and the preview secret group's test credentials, which are separate values from staging's, so a pull request's code can't use staging's ops key. So a copy can never carry production's keys or reach its data. Copies also make no paid calls by code (stub mode), so a key that somehow reached one would still go unused.
+- **Pull-request copies are based on staging, never production** (D-65): they live in the staging project, which holds no production secret. Each gets its own empty database (migrated and given its test credentials at start-up; fixture portraits only through a `seed_fixtures` job), its own prefix in the previews bucket, and the preview secret group's test credentials, which are separate values from staging's, so a pull request's code can't use staging's ops key. So a copy can never carry production's keys or reach its data. Copies also make no paid calls by code (stub mode), so a key that somehow reached one would still go unused.
 - **Test credentials for checks** (O-13): staging and pull-request copies seed, at start-up, a test admin password and a test library key from the secrets `SEED_ADMIN_PASSWORD` and `SEED_LIBRARY_KEY`, stored as hashes like any other. **Production never seeds.** The harness keeps the plain values in its own secret store, to log in and call the API in smoke checks.
 
 *Verify:*
@@ -1035,7 +1033,7 @@ The harness never runs the app's commands through the host (D-65), so a deployed
 
 **RUN-12 · The health check means working** *proposed* · C, D-65, D-70
 - `GET /api/v1/health` answers 200 only when the service can really work:
-  - the database answers a query and its migrations are up to date;
+  - the database answers a query and its migrations are up to date (each service applies new ones at start-up, under a Postgres advisory lock, D-72);
   - the bucket accepts a small write and read;
   - OpenCV.js and `sharp` are loaded.
 - Otherwise it answers 503, naming what failed. It shows the version and the commit either way.

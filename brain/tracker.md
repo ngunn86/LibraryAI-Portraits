@@ -646,3 +646,4 @@ Topics within a stage can move in parallel when they don't depend on each other.
 - **2026-10-23 18:40.** **T-25 done** (D-71). The harness chat's answers (HD-65): the sample passed `harness cards check`; shared fixtures are fine; the app keeps the AI key, and the harness reads `/api/ops/spend`; credentials arrive as `PORTRAITS_*` and `HARNESS_URL`; production is promoted only after a card that says `production`. Claude converted the other 34 cards, reworded F-47, and made F-01 the only `package.json` owner so the real checker passes ("All good").
 
   Next: the owner tells the harness chat the cards are ready; T-09 once Rev1 is pushed; then plan v1 is frozen (P0-7).
+- **2026-10-23 21:30.** The harness chat's Northflank layout (HD-70) applied as D-72: shared build service, deployment services, `pr-copy` blueprint; migrations at start-up; the nightly schedule in production's worker; no Northflank jobs or templates. `harness cards check`: All good.

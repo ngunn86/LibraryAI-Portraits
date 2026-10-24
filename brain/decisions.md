@@ -644,15 +644,15 @@ The owner made these in the Coding Harness chat; the IDs in brackets are that ch
 
 Claude's choices carried with this decision (proposed; `spec/architecture.md`):
 - **Files in Cloudflare R2,** not MinIO. It's cheaper (10 GB free, then $0.015 per GB-month, with no egress fees), durable without a volume to look after, and the owner already uses R2 for the library's backups. There are three buckets, production, staging and previews, each with its own token that can reach only that bucket. Each pull-request copy works under its own prefix in the previews bucket, which empties itself after 7 days.
-- **Northflank templates in the repo** (`northflank/staging.json`, `preview.json`, `production.json`), applied one way, from the repo, so a dashboard change never lands on `main` by itself. They describe the two projects, the pipelines, the release flows and the preview template, and hold no secret values. **The production project stays empty until the release:** its template is run then, by the conductor (D-71: the release notice names it, so the veto covers it), so nothing in production exists, let alone runs on a schedule, before F-47.
-- **Pull-request copies start with an empty database,** migrated by their `migrate` job, with the test credentials seeded at start-up (fixture portraits only through a `seed_fixtures` job), rather than a copy of staging's. Nothing real ever reaches a test copy.
+- *(Superseded by D-72: no templates; the owner sets the layout up with the harness chat.)* **Northflank templates in the repo** (`northflank/staging.json`, `preview.json`, `production.json`), applied one way, from the repo, so a dashboard change never lands on `main` by itself. They describe the two projects, the pipelines, the release flows and the preview template, and hold no secret values. **The production project stays empty until the release:** its template is run then, by the conductor (D-71: the release notice names it, so the veto covers it), so nothing in production exists, let alone runs on a schedule, before F-47.
+- **Pull-request copies start with an empty database,** migrated (since D-72: at start-up), with the test credentials seeded at start-up (fixture portraits only through a `seed_fixtures` job), rather than a copy of staging's. Nothing real ever reaches a test copy.
 - **The preview secret group has its own test credentials,** not staging's, so a pull request's code can't use staging's ops key to start paid jobs there.
-- **Production builds the promoted commit itself.** A Northflank pipeline can't span two projects, so production's release flow, started after the window, backs up the database, runs the migrations and deploys that exact commit.
+- *(Superseded by D-72: production deploys staging's shared build.)* **Production builds the promoted commit itself.** A Northflank pipeline can't span two projects, so production's release flow, started after the window, backs up the database, runs the migrations and deploys that exact commit.
 - **The owner's own commands** (making the library's key, setting the admin password) run in a shell on the web service, from Northflank's dashboard. The harness never does this.
 - **If any key was ever stored in Railway, it's rotated.** The portraits app had no Railway project yet, but the throwaway test or another project may have.
 - **The environment is named by the app's own variable,** `PORTRAITS_ENV` (`production`, `staging` or `preview`), set in each secret group. A missing or unknown value stops start-up.
 - **Liveness is its own route,** `GET /api/v1/live`, which checks only that the process is up. `/api/v1/health` is the readiness check, so a database outage takes a copy out of service without making Northflank restart it in a loop (contract draft 8).
-- **Pull-request copies live at most 3 days** (the preview template's lifetime), and none has the AI key: the preview secret group doesn't hold it.
+- **Pull-request copies live at most 3 days** *(6 hours since D-72)* (the preview template's lifetime), and none has the AI key: the preview secret group doesn't hold it.
 - **Cost:** about $25 a month for production (web, worker, Postgres, the nightly job), and about as much again for staging while it runs. The owner can pause staging between builds. Railway was estimated at $8–15 a month, since it bills only what's used; Northflank bills each running instance by the hour. R2 stays within its free tier.
 
 → RUN-01, RUN-05, RUN-07, RUN-09, RUN-10, RUN-11, RUN-12, IN-11, OUT-12, SRC-01, TRI-06, architecture, the contract (draft 8), `harness.yaml`, F-36, F-37, F-49, F-51, F-17, F-50, O-1, O-4, O-8..O-11, O-13, O-14, the build plan's §4 and §6, the release checklist, HT-02..HT-33, T-01
@@ -665,7 +665,7 @@ Claude's choices carried with this decision (proposed; `spec/architecture.md`):
 - **The AI key stays with the app.** `limits.paid_calls.openrouter.spend` is `/api/ops/spend`, which the harness reads after each check with the environment's test credentials; the key's own limit at OpenRouter (O-4) stays the hard ceiling.
 - **Credentials reach smoke and recording commands** as `PORTRAITS_OPS_KEY`, `PORTRAITS_TEST_LIBRARY_KEY` and `PORTRAITS_TEST_ADMIN_PASSWORD`, with the copy's address as `{url}` and `HARNESS_URL`, and `HARNESS_ENV` (`staging` or `preview`). A recording that needs a deployed copy has `{url}` in its command (F-50).
 - **Production is promoted only after a card whose Side effects say `production`** (F-47, and later fixes), never after every merge. The first run of `northflank/production.json` is part of the release: the release notice names it, so the 24-hour veto covers it, and the conductor runs it. No separate owner step.
-- **Release flows take the commit** through Northflank's API; the harness's H3 permissions test proves it, with a `production` branch as the fallback.
+- *(Superseded by D-72: there's no release flow.)* **Release flows take the commit** through Northflank's API; the harness's H3 permissions test proves it, with a `production` branch as the fallback.
 - **R2 with prefixes, empty seeded preview databases, three sets of test credentials and a 3-day preview lifetime** are all fine. The liveness route belongs to Northflank's settings only.
 
 Claude's choices made while converting the cards (proposed):
@@ -677,3 +677,18 @@ Claude's choices made while converting the cards (proposed):
 
 → features draft 5, `harness.yaml` (`spend`), architecture (packages; modules), T-07 (`suggestion`), the build plan (credentials), `handoffs/harness-questions.md`
 
+## From the harness chat: the Northflank layout (2026-10-23, evening)
+
+**D-72 · 2026-10-23 · The two Northflank projects in the harness's layout (harness HD-70)** · harness chat (Claude's choices there; the owner can veto) · *supersedes parts of D-70 and D-71*
+- **Staging:** one build service, building the app's `Dockerfile` from GitHub, with "share build access with other projects" on; web and worker deployment services on its builds; Postgres; test secrets; and the preview blueprint `pr-copy` for pull-request copies, lasting a few hours (we set 6), with its own database and a web service with a public port. No combined service, since Northflank can't roll one back.
+- **Production:** web and worker deployment services on the staging build service's shared builds, with production's own Postgres and secrets. Promotion puts the exact build staging tested there; nothing is rebuilt.
+- **Nothing about the layout is in the repo or `harness.yaml`.** The owner sets it up with the harness chat when F-36 comes near (O-8), and `harness hosting connect` finds the services and checks each token reaches only its own project.
+- **At release the harness only deploys the build.** It runs no release workflow, so anything else a release needs runs from the app itself.
+
+Claude's choices that follow (proposed):
+- **Migrations run at start-up,** in both services, under a Postgres advisory lock; still additive only. No migrate job.
+- **No Northflank jobs at all:** the nightly schedule is a timer in production's worker, at the set hour, never two at once (RUN-08). So production is just two deployment services and Postgres.
+- **No backup step before a release.** Northflank's daily backup of production's database is the safety net; additive migrations mean a rollback never needs one.
+- **F-36 makes a `Dockerfile`** and `docs/northflank-setup.md` (each service's start command, port, health checks and secret group) instead of templates; `northflank/` is no longer a protected path.
+
+→ RUN-01, RUN-08, RUN-10, RUN-12, OUT-12, architecture (Northflank layout), `harness.yaml`, F-01, F-25, F-31, F-36, F-47, O-8, the build plan's §4, the release checklist, HT-03..HT-16, HT-33

@@ -9,7 +9,7 @@ It replaces v1, the PC-run Python CLI with SQLite, which is in git history.
 The aim is the simplest structure that meets the requirements, and that rehearses the library's own toolchain for the harness (D-57):
 
 - one TypeScript repo;
-- a web service, a worker and (in production) a nightly cron job, sharing one codebase, in two Northflank projects (D-70);
+- a web service and a worker, deployed from one build of one codebase, in two Northflank projects (D-70, D-72);
 - Postgres for the records and the queue;
 - one private Cloudflare R2 bucket per environment for files.
 
@@ -20,7 +20,7 @@ The aim is the simplest structure that meets the requirements, and that rehearse
 | Language and runtime | **TypeScript on Node 24 LTS** (D-57), pinned in `.nvmrc` and `package.json` engines | The library's stack (Rev1 build plan), so the harness rehearses that exact toolchain |
 | Web | Express, with `helmet` and `express-rate-limit` | As the library uses |
 | Validation | `zod` for settings, request bodies and records; `ajv` (2020-12) to check answers against `contracts/portraits-api.openapi.json` in tests | One schema per shape; the contract test uses the published file itself |
-| Database | Postgres (a Northflank add-on per environment), **Drizzle ORM with drizzle-kit SQL migrations**, applied by a `migrate` job that each release flow runs before the services deploy (D-70) | As the library uses; migrations apply in PR copies, staging and production with no hand step (HT-11) |
+| Database | Postgres (a Northflank add-on per environment), **Drizzle ORM with drizzle-kit SQL migrations**, applied by the app itself at start-up, under a Postgres advisory lock so web and worker never migrate at once (D-72) | As the library uses; migrations apply in PR copies, staging and production with no hand step (HT-11) |
 | Queue | A `jobs` table in Postgres, claimed with `FOR UPDATE SKIP LOCKED` | No extra service. A job resumes after a redeploy (HT-15, RUN-03) |
 | Files | **Cloudflare R2** (S3-compatible, D-70) through `@aws-sdk/client-s3` and `@aws-sdk/s3-request-presigner`, with the endpoint `https://<account id>.r2.cloudflarestorage.com` and region `auto` | Private buckets, 15-minute signed links (OUT-12, OUT-14). No egress fees, and the expected size (a few GB) stays in R2's free 10 GB |
 | Image input and output | `sharp` (libvips): decode, colour to sRGB, resize, PNG and JPEG out | Fast and robust; the library already uses it |
@@ -30,7 +30,7 @@ The aim is the simplest structure that meets the requirements, and that rehearse
 | AI | OpenRouter only (D-19), through `fetch`, with a spend ledger and caps (RUN-04, D-54). Every request carries `"usage": {"include": true}` so the answer reports its cost. Images go as 8-bit sRGB PNG, never the original file (PIP-22) | One key |
 | Admin pages | Server-rendered HTML (a few templates, no client framework), behind one password (RUN-10) | Read-only browsing doesn't need React. The library's React and Vite stay the library's |
 | Tests | `node:test` through `tsx --test`, offline by default (RUN-06); `tsc` for types; esbuild for the build | As the library uses |
-| Deploys | **Northflank**, configured as code: its templates (projects, pipelines, release flows, the preview template, the cron job) live in `northflank/` as JSON (`staging.json`, `preview.json`, `production.json`), applied from the repo one way, so a change made in the dashboard never lands on `main` by itself; they hold no secret values (D-70). Readiness check `GET /api/v1/health`, which proves the database and bucket work; liveness check `GET /api/v1/live` (RUN-12) | The harness's conductor deploys and checks by itself through Northflank's API (HT-03, HT-07, HT-08); `harness.yaml` names the commands and the deploy rules |
+| Deploys | **Northflank**, in the layout the harness needs (harness HD-70, D-72): one build service in staging, building from a `Dockerfile`, whose builds every deployment service uses, staging's and production's alike; a preview blueprint `pr-copy` for pull-request copies. The owner sets it up with the harness chat (O-8), following the layout below; nothing about it is in the repo or `harness.yaml`. Readiness check `GET /api/v1/health`, which proves the database and bucket work; liveness check `GET /api/v1/live` (RUN-12) | The harness's conductor deploys and checks by itself through Northflank's API (HT-03, HT-07, HT-08); `harness.yaml` names the commands and the deploy rules |
 
 **Packages** (installed by F-01, the only card that changes `package.json`; Claude's choice, 2026-10-23):
 - **Runtime:** `express`, `helmet`, `express-rate-limit`, `zod`, `ajv`, `ajv-formats`, `drizzle-orm`, `pg`, `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `sharp`, `@techstark/opencv-js`, `onnxruntime-node` (YuNet's fallback, F-39), `csv-parse` (the authors list) and `@node-rs/argon2` (the slow hash for the admin password and keys, RUN-10; prebuilt, so no compiler is needed).
@@ -41,48 +41,48 @@ The aim is the simplest structure that meets the requirements, and that rehearse
 
 ```
 project nexus-portraits-staging        the harness's everyday token reaches this project only
-  staging        release flow, on each merge to main:
-                   build the commit → migrate job → deploy web and worker
-                 secret group "staging"; jobs only when started (RUN-11); no cron
-  previews       the preview template, one environment per pull request (never production):
-                   its own empty Postgres add-on → build the PR's commit → migrate job → deploy web and worker
-                 secret group "preview": test credentials, no AI key (HT-32); stub mode; no cron;
-                 files under its own prefix in the previews bucket; deleted when the PR closes or merges,
-                 or after 3 days
+  build      build service: builds the app's Dockerfile from GitHub, on each merge to main;
+             "share build access with other projects" on, so production can deploy its builds
+  web        deployment service: deploys build's builds; node dist/web.js; public port;
+             API (OUT-14), ops jobs (RUN-11) + admin pages (OUT-13);
+             readiness /api/v1/health, liveness /api/v1/live (RUN-12)
+  worker     deployment service: the same build; node dist/worker.js; no port;
+             claims jobs from Postgres, one teacher at a time (RUN-02, RUN-03)
+  postgres   add-on: records, queue, rights log, spend ledger
+             secret group "staging"; jobs only when started (RUN-11); no nightly schedule
+  pr-copy    preview blueprint, one copy per pull request (never production): builds the PR's branch,
+             its own empty Postgres add-on, its own web deployment service with a public port
+             (and a worker), the "preview" secret group: test credentials, no AI key (HT-32); stub mode;
+             files under its own prefix in the previews bucket; deleted when the PR closes or merges,
+             or after 6 hours (the harness makes it again on the next push)
 
 project nexus-portraits-production     reached only with the production token, which only the conductor holds
-  production     release flow, given a commit already merged to main, started by the conductor after the
-                 24-hour veto window (D-66) or by the owner in the dashboard (D-35):
-                   build that commit → back up Postgres → migrate job → deploy web, worker and cron
-                 secret group "production"; daily Postgres backups (D-42)
-
-in each environment
-  web       node dist/web.js       API (OUT-14), ops jobs (RUN-11) + admin pages (OUT-13);
-                                   readiness /api/v1/health, liveness /api/v1/live (RUN-12)
-  worker    node dist/worker.js    claims jobs from Postgres, one teacher at a time (RUN-02, RUN-03)
-  migrate   node dist/migrate.js   a job: applies the SQL migrations in order, then exits
-  postgres                         add-on: records, queue, rights log, spend ledger
-production only
-  cron      node dist/cron.js      a cron job, nightly, never two at once: sync, queue teachers, exit (RUN-08)
+  web        deployment service: deploys the staging build service's shared builds; node dist/web.js
+  worker     deployment service: the same build; node dist/worker.js; runs the nightly schedule (RUN-08)
+  postgres   add-on, with Northflank's daily backups (D-42)
+             secret group "production"
 
 Cloudflare R2, outside Northflank (O-14)
   portraits-production · portraits-staging · portraits-previews (pr-<n>/ prefixes, objects deleted after 7 days)
   each with its own token, limited to that bucket                  portraits/<teacher_id>/<portrait_id>/… (OUT-12)
 ```
 
-In an environment, every service and job runs the same image, built once per release from the repo, each with its own start command.
+Every deployment service runs the same image, built once, each with its own start command. There are no Northflank jobs: the nightly schedule is a timer in production's worker, and migrations run at start-up (D-72).
 
-**Production is promoted, never pushed to.** It deploys only through its own release flow, given a commit already merged to `main` and checked on staging: the conductor starts it through Northflank's API after the window, with the production token, which is kept outside the worker box; or the owner starts it from the dashboard. A Northflank pipeline can't reach across projects, so production builds the commit itself rather than reusing staging's image, from the same commit and lockfile (`npm ci`). (Claude's choice, D-70; if a release flow can't take a commit as its argument, the conductor moves a `production` branch that production's build follows instead; HT-33.) **Production is first deployed at the release (F-47)**, and only then. **Until the release, the production project stays empty:** F-36 writes `northflank/production.json` but never runs it. At the release, the conductor runs it once with the production token, which creates production's services, Postgres, cron job and release flow, and then starts the release flow. The release notice names that first run, so the 24-hour veto covers it (HD-65, D-71). Before that, everything live (the smoke test, the survey, the trial and the examples) runs on staging, because no check may touch production (the harness's rule, D-65).
+**Production is promoted, never rebuilt.** The conductor puts the exact build staging tested on production's deployment services, through Northflank's API, after the 24-hour window, with the production token, which is kept outside the worker box (harness HD-70). A Northflank pipeline can't span two projects, so this is how promotion works; there is no release workflow. The owner can do the same by hand in the dashboard (D-35). **Production is first deployed at the release (F-47)**, and only then: its services are set up beforehand (O-8) but run no build until the release notice's window has passed. Before that, everything live (the smoke test, the survey, the trial and the examples) runs on staging, because no check may touch production (the harness's rule, D-65).
+
+**At start-up,** each service applies any new migrations (additive only, RUN-12) under an advisory lock, and, outside production, seeds the test credentials. Nothing else needs to run at a release. Northflank's daily backup of production's database is the safety net; there is no separate backup before each release (D-72).
 
 ## Modules
 
 ```
 src/
-  web.ts · worker.ts · cron.ts · migrate.ts   entry points
+  web.ts · worker.ts                 entry points (the worker runs the nightly schedule in production)
+  cron.ts · migrate.ts                the nightly tick (RUN-08) and the start-up migration (RUN-12), called by the entry points
   cli.ts                              the command frame (RUN-05): loads every file in cli/commands/
   doctor.ts                           what `doctor` checks (F-22)
   cli/commands/<name>.ts              one file per command (doctor, sync, survey, run, trial, keys, password, status), each owned by the card that adds it. For the owner, in a shell on the web service opened from Northflank's dashboard; the harness never runs them (D-65)
-  jobs/<kind>.ts                      one file per job kind (sync, survey, run, request, trial, trial_examples, seed_fixtures, and noop for tests), loaded by the worker; started over the web (RUN-11) or by cron
+  jobs/<kind>.ts                      one file per job kind (sync, survey, run, request, trial, trial_examples, seed_fixtures, and noop for tests), loaded by the worker; started over the web (RUN-11) or by the nightly tick
   api/ops.ts                          POST /api/ops/jobs, GET /api/ops/jobs/{id}, GET /api/ops/spend, behind the ops key (RUN-11)
   api/schemas.ts · api/contract.ts    zod types for the contract; checkAgainstContract (ajv), used by tests (F-03)
   health.ts                           what /api/v1/health checks (RUN-12)
@@ -213,7 +213,7 @@ Each environment has its own secret group: `production` in the production projec
 | `SESSION_SECRET` | Signs the admin session (RUN-10), a different random value in each group (O-8). The admin password's hash is in the database, set by `password set` |
 | `DATABASE_URL` | Linked from the environment's own Postgres add-on (a preview's from its own). Reachable only inside Northflank; nothing connects from outside |
 | `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Cloudflare R2: the account's endpoint, the environment's bucket, and a token limited to that bucket (O-14) |
-| `S3_PREFIX` | Previews only: a prefix unique to the copy (`pr-<n>/`), set by the preview template. Unset elsewhere (an empty value counts as unset) |
+| `S3_PREFIX` | Previews only: a prefix unique to the copy (`pr-<n>/`), set by the `pr-copy` preview blueprint. Unset elsewhere (an empty value counts as unset) |
 | `PORTRAITS_ENV` | Not a secret: `production`, `staging` or `preview`, in each group. Picks the environment's rules (RUN-10); a missing or unknown value stops start-up |
 | `NF_DEPLOYMENT_SHA` | Set by Northflank: the commit running, which health reports (RUN-12). `unknown` in tests |
 | `USER_AGENT_CONTACT` | Not a secret: the contact address in the User-Agent (O-10, SRC-09). Tests use a placeholder |
@@ -226,7 +226,7 @@ Each environment has its own secret group: `production` in the production projec
 
 `PORTRAITS_ENV` picks the rules from settings:
 
-| Environment | Paid calls | Cron | Caps |
+| Environment | Paid calls | Nightly schedule | Caps |
 |---|---|---|---|
 | Pull-request copies (`preview`) | none (stub mode, no key) | none | — |
 | Staging (`staging`) | yes, only in jobs started over the web (RUN-11) | none | $2 a night, $10 a month |
@@ -275,6 +275,6 @@ These differ between the prototype's numpy, scipy and OpenCV calls and OpenCV.js
 - The OpenRouter request shape for image editing, and that answers include the actual cost when `usage.include` is sent (HT-18 checks it first).
 - The Commons API for depicts search (`haswbstatement:P180=<Q-id>` in the file namespace) and `imageinfo` with `extmetadata`; Wikimedia's current standard thumbnail widths (for previews, PIP-21).
 - The loc.gov JSON fields for names, dates, LoC name ids, rights advisory and image links; Wellcome's licence and contributor fields (marked *confirm* in `../topics/T-11-picture-sources.md`).
-- Northflank (HT-07, HT-12, HT-33): that templates can be applied one way, from the repo (if sync can only be two-way, its commits go to a branch other than `main`, which planning merges by hand); that a release flow can be started through the API with a commit as its argument; the preview template's lifetime setting and how it can give each copy a unique bucket prefix; the Postgres add-on's backup schedule and retention, and a backup as a release-flow step; that a cron job can forbid overlapping runs.
+- Northflank (HT-04, HT-12, HT-33): how the `pr-copy` blueprint gives each copy a unique bucket prefix and its own secrets; the Postgres add-on's backup schedule and retention. The harness's `harness hosting connect` and `harness hosting check` check the layout and the tokens.
 - Cloudflare R2 (HT-13): bucket-scoped tokens, presigned GET links through the S3 SDK with region `auto`, and a lifecycle rule deleting the previews bucket's objects after 7 days.
 - Which OpenCV.js build has every function above (the porting spike).

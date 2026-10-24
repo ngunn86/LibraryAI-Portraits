@@ -12,7 +12,6 @@ protected:
   - prototype/                  # the Python reference, its fixtures and parity outputs
   - models/                     # the YuNet face model
   - contracts/                  # the contract's copy at the root (F-03 makes it)
-  - northflank/                 # the Northflank templates: projects, pipelines, release flows, preview template (F-36 makes them)
   - .github/
   - tsconfig.json
   - harness.yaml
@@ -55,13 +54,14 @@ limits:
 
 deploy:
   host: northflank               # D-70 (harness HD-60): two projects, staging-and-previews and production
-  pr_copies: true               # Northflank preview environments in the staging project, never production: own database,
-                                # test secrets, no AI key, stub mode, a short lifetime (RUN-10, HT-32)
-  staging: on-merge             # the staging project's pipeline builds and deploys main on each merge
+  pr_copies: true               # the `pr-copy` preview blueprint in the staging project, never production: own database,
+                                # test secrets, no AI key, stub mode, 6 hours at most (RUN-10, HT-32)
+  staging: on-merge             # staging's build service builds main on each merge; its web and worker deploy that build
+                                # (layout: brain/spec/architecture.md, harness HD-70; set up with `harness hosting connect`, not here)
   starts_at: F-36               # the card that makes the app deployable, with its health endpoint
   health: /api/v1/health        # the readiness check: 200 only when the database, bucket and image libraries work; names its
                                 # environment, database and bucket (RUN-12). Liveness is /api/v1/live
   production: { mode: veto-window, hours: 24 }  # D-66; only after a card whose Side effects say production (F-47, later fixes; HD-65).
-                                                # The conductor runs northflank/production.json once at the release, then the release flow
+                                                # Promotion puts staging's tested build on production's services; nothing is rebuilt (HD-70)
 
 digest: { issue: TODO, time: "07:30" }   # the control issue's number, set when the harness creates it (D-63)

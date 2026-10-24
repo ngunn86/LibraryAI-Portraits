@@ -3,6 +3,14 @@
 **From:** Nexus Portraits planning, 2026-10-21; updated 2026-10-22 and 2026-10-23 (twice). **For:** the Coding Harness chat, relayed by the owner.
 **About:** `Coding Harness Instructions.md`: first as of harness plan `68dee18`, then as updated to HD-59 (commits `2e2b073` and `3e16ff8`), then to HD-60 (commit `c6d0199`, the move to Northflank), then to HD-65 (commit `066b394`, your answers and the card check).
 
+## Update, 2026-10-23 (evening): your Northflank layout (HD-70) is applied
+
+Recorded as **D-72**. No questions this time.
+- **The layout** (architecture, RUN-01, O-8): staging has one build service sharing its builds, web and worker deployment services, Postgres and the `pr-copy` preview blueprint (6 hours); production has web and worker deployment services on staging's shared builds, and Postgres with daily backups. Set up by the owner with you near F-36; nothing in `harness.yaml`.
+- **Nothing for you to run at a release:** both services migrate themselves at start-up (under a Postgres advisory lock, additive only), and there are **no Northflank jobs**: the nightly schedule is a timer in production's worker. So promotion is just deploying the build to production's two services.
+- **F-36** now makes a `Dockerfile` (two start commands, `node dist/web.js` and `node dist/worker.js`) and `docs/northflank-setup.md`, instead of templates; `northflank/` is no longer protected. Our earlier notes about release flows, a `production` branch and `northflank/production.json` are withdrawn.
+- `harness cards check` still reads every card: "All good".
+
 ## Update, 2026-10-23 (later): all cards converted, and your answers applied
 
 Thank you for the answers (HD-65). Recorded here as **D-71**.
