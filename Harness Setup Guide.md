@@ -50,7 +50,7 @@ Proved in the dashboard on 2026-10-24. Names in `code` are what to click or type
 - **Secret group `staging-env`:**
   - **Type and scope:** `Secret values`, scope `Runtime`.
   - **Values:** switch the editor to `Env` and type every variable the app reads, one per line. Fill the non-secret ones (environment name, endpoints, bucket names, caps) and leave the secret ones empty (`NAME=`) for the owner.
-  - **Linked addons:** `Show addons` → `Configure` → tick `POSTGRES_URI` → add the alias `DATABASE_URL`, or whatever name the app reads.
+  - **Linked addons:** `Show addons` → `Configure` → tick `POSTGRES_URI_ADMIN` → add the alias `DATABASE_URL`, or whatever name the app reads. Not `POSTGRES_URI`: Northflank's normal user may not create a schema, and Drizzle's migrator starts with `CREATE SCHEMA IF NOT EXISTS`, so migrations fail with 42501 (H5's T-02; HD-78). The owner chose the admin connection for the app (HD-78). Claude's own safety check stops Claude pressing `Update link` on this change, so the owner clicks it.
   - **Restriction:** Advanced → `Restrict secret group` → apply to the staging services and jobs by name. This keeps it away from copies, whose services have other names.
 - **The `pr-copy` preview blueprint**, if the project uses copies (`Previews` → `Create preview blueprint`):
   - **Name:** `pr-copy`.
@@ -64,7 +64,7 @@ Proved in the dashboard on 2026-10-24. Names in `code` are what to click or type
 - **Node formats** (as Northflank writes them):
   - **Build:** `{"kind":"BuildSource","spec":{"id":"build","type":"service","branch":"${refs.<trigger name>.branch}","sha":"${refs.<trigger name>.sha}", …},"ref":"build-source-1"}`
   - **Database:** `{"kind":"Addon","spec":{"name":"${args.previewId}-db","type":"postgresql","version":"18","billing":{"deploymentPlan":"nf-compute-20","storage":6144,"replicas":1,"storageClass":"nvme"},"tlsEnabled":true,"tags":["${args.previewId}"]},"ref":"argspreviewid-db"}`
-  - **Secret group:** `{"kind":"SecretGroup","spec":{"name":"${args.previewId}-env","type":"secret","secretType":"environment","priority":10,"restrictions":{"restricted":true,"tags":["${args.previewId}"]},"tags":["${args.previewId}"],"secrets":{"variables":{…}},"addonDependencies":[{"addonId":"${refs.argspreviewid-db.id}","keys":[{"keyName":"POSTGRES_URI","aliases":["DATABASE_URL"]}]}]},"ref":"argspreviewid-env"}`
+  - **Secret group:** `{"kind":"SecretGroup","spec":{"name":"${args.previewId}-env","type":"secret","secretType":"environment","priority":10,"restrictions":{"restricted":true,"tags":["${args.previewId}"]},"tags":["${args.previewId}"],"secrets":{"variables":{…}},"addonDependencies":[{"addonId":"${refs.argspreviewid-db.id}","keys":[{"keyName":"POSTGRES_URI_ADMIN","aliases":["DATABASE_URL"]}]}]},"ref":"argspreviewid-env"}`
   - **Service:** `{"kind":"DeploymentService","spec":{"name":"${args.previewId}-web","deployment":{"instances":1,"docker":{"configType":"customCommand","customCommand":"node src/web.ts"},"internal":{"id":"${refs.build-source-1.nfObjectId}","branch":"${refs.build-source-1.branch}","buildId":"${refs.build-source-1.id}"}},"billing":{"deploymentPlan":"nf-compute-20"},"ports":[{"name":"p01","internalPort":8080,"public":true,"protocol":"HTTP"}],"runtimeEnvironment":{"PORT":"8080"},"tags":["${args.previewId}"]},"ref":"argspreviewid-web"}`
 
 ### Production project
