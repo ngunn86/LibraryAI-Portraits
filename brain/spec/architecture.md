@@ -43,7 +43,7 @@ The aim is the simplest structure that meets the requirements, and that rehearse
 project nexus-portraits-staging        the harness's everyday token reaches this project only
   build      build service: builds the app's Dockerfile from GitHub, on each merge to main;
              "share build access with other projects" on, so production can deploy its builds
-  web        deployment service: deploys build's builds; node dist/web.js; public port;
+  web        deployment service, CD off (the harness chooses which build runs); node dist/web.js; public port;
              API (OUT-14), ops jobs (RUN-11) + admin pages (OUT-13);
              readiness /api/v1/health, liveness /api/v1/live (RUN-12)
   worker     deployment service: the same build; node dist/worker.js; no port;
@@ -51,8 +51,9 @@ project nexus-portraits-staging        the harness's everyday token reaches this
   postgres   add-on: records, queue, rights log, spend ledger
              secret group "staging"; jobs only when started (RUN-11); no nightly schedule
   pr-copy    preview blueprint, one copy per pull request (never production): builds the PR's branch,
-             its own empty Postgres add-on, its own web deployment service with a public port
-             (and a worker), the "preview" secret group: test credentials, no AI key (HT-32); stub mode;
+             and makes its own empty Postgres add-on and its own web (public port) and worker services,
+             every one named after the copy (`${args.previewId}-db`, `${args.previewId}-web`, …; HD-71);
+             it links the standing "preview" secret group (made once by the owner, never by a copy): test credentials, no AI key (HT-32); stub mode;
              files under its own prefix in the previews bucket; deleted when the PR closes or merges,
              or after 6 hours (the harness makes it again on the next push)
 
@@ -63,11 +64,11 @@ project nexus-portraits-production     reached only with the production token, w
              secret group "production"
 
 Cloudflare R2, outside Northflank (O-14)
-  portraits-production · portraits-staging · portraits-previews (pr-<n>/ prefixes, objects deleted after 7 days)
+  portraits-production · portraits-staging · portraits-previews (a prefix per copy, `${args.previewId}/`; objects deleted after 7 days)
   each with its own token, limited to that bucket                  portraits/<teacher_id>/<portrait_id>/… (OUT-12)
 ```
 
-Every deployment service runs the same image, built once, each with its own start command. There are no Northflank jobs: the nightly schedule is a timer in production's worker, and migrations run at start-up (D-72).
+Every deployment service runs the same image, built once, each with its own start command. **CD is off** on staging's and production's deployment services: the harness puts a chosen build on them through Northflank's API (after each merge on staging; after the veto window on production) (harness HD-71). **The harness's two API roles** carry project permissions only, each restricted to its own project, with the owner as a confirmed member, and no team permissions (O-8). There are no Northflank jobs: the nightly schedule is a timer in production's worker, and migrations run at start-up (D-72).
 
 **Production is promoted, never rebuilt.** The conductor puts the exact build staging tested on production's deployment services, through Northflank's API, after the 24-hour window, with the production token, which is kept outside the worker box (harness HD-70). A Northflank pipeline can't span two projects, so this is how promotion works; there is no release workflow. The owner can do the same by hand in the dashboard (D-35). **Production is first deployed at the release (F-47)**, and only then: its services are set up beforehand (O-8) but run no build until the release notice's window has passed. Before that, everything live (the smoke test, the survey, the trial and the examples) runs on staging, because no check may touch production (the harness's rule, D-65).
 
@@ -213,7 +214,7 @@ Each environment has its own secret group: `production` in the production projec
 | `SESSION_SECRET` | Signs the admin session (RUN-10), a different random value in each group (O-8). The admin password's hash is in the database, set by `password set` |
 | `DATABASE_URL` | Linked from the environment's own Postgres add-on (a preview's from its own). Reachable only inside Northflank; nothing connects from outside |
 | `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Cloudflare R2: the account's endpoint, the environment's bucket, and a token limited to that bucket (O-14) |
-| `S3_PREFIX` | Previews only: a prefix unique to the copy (`pr-<n>/`), set by the `pr-copy` preview blueprint. Unset elsewhere (an empty value counts as unset) |
+| `S3_PREFIX` | Previews only: a prefix unique to the copy (`${args.previewId}/`), set by the `pr-copy` preview blueprint. Unset elsewhere (an empty value counts as unset) |
 | `PORTRAITS_ENV` | Not a secret: `production`, `staging` or `preview`, in each group. Picks the environment's rules (RUN-10); a missing or unknown value stops start-up |
 | `NF_DEPLOYMENT_SHA` | Set by Northflank: the commit running, which health reports (RUN-12). `unknown` in tests |
 | `USER_AGENT_CONTACT` | Not a secret: the contact address in the User-Agent (O-10, SRC-09). Tests use a placeholder |

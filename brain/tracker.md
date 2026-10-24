@@ -647,3 +647,4 @@ Topics within a stage can move in parallel when they don't depend on each other.
 
   Next: the owner tells the harness chat the cards are ready; T-09 once Rev1 is pushed; then plan v1 is frozen (P0-7).
 - **2026-10-23 21:30.** The harness chat's Northflank layout (HD-70) applied as D-72: shared build service, deployment services, `pr-copy` blueprint; migrations at start-up; the nightly schedule in production's worker; no Northflank jobs or templates. `harness cards check`: All good.
+- **2026-10-24 00:10.** The harness's HD-71 applied as D-73: copies' resources named after the copy, project-only API roles, CD off.

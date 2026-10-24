@@ -692,3 +692,10 @@ Claude's choices that follow (proposed):
 - **F-36 makes a `Dockerfile`** and `docs/northflank-setup.md` (each service's start command, port, health checks and secret group) instead of templates; `northflank/` is no longer a protected path.
 
 → RUN-01, RUN-08, RUN-10, RUN-12, OUT-12, architecture (Northflank layout), `harness.yaml`, F-01, F-25, F-31, F-36, F-47, O-8, the build plan's §4, the release checklist, HT-03..HT-16, HT-33
+
+**D-73 · 2026-10-24 · Three hosting rules from the harness's Northflank test (harness HD-71)** · harness chat (Claude's choices there; the owner can veto) · *adds to D-72*
+- **Every resource a `pr-copy` copy makes is named after the copy** (`${args.previewId}-db`, `${args.previewId}-web`, …). A fixed name let a test copy take over staging's resource of that name; `harness hosting connect` now refuses such a blueprint. Our copies link the standing `preview` secret group (made once by the owner) and use the bucket prefix `${args.previewId}/`.
+- **The harness's two API roles carry project permissions only,** each restricted to its own project, with the owner as a confirmed member; no team permissions (roles, members, tokens, billing).
+- **CD is off** on staging's and production's deployment services: the harness puts the chosen build on them through Northflank's API.
+
+→ architecture (Northflank layout, Secrets), O-8, the build plan's §4, the release checklist, `harness.yaml` comment, HT-04, HT-33

@@ -56,7 +56,7 @@ deploy:
   host: northflank               # D-70 (harness HD-60): two projects, staging-and-previews and production
   pr_copies: true               # the `pr-copy` preview blueprint in the staging project, never production: own database,
                                 # test secrets, no AI key, stub mode, 6 hours at most (RUN-10, HT-32)
-  staging: on-merge             # staging's build service builds main on each merge; its web and worker deploy that build
+  staging: on-merge             # staging's build service builds main on each merge; the harness deploys that build to its web and worker (CD off, HD-71)
                                 # (layout: brain/spec/architecture.md, harness HD-70; set up with `harness hosting connect`, not here)
   starts_at: F-36               # the card that makes the app deployable, with its health endpoint
   health: /api/v1/health        # the readiness check: 200 only when the database, bucket and image libraries work; names its

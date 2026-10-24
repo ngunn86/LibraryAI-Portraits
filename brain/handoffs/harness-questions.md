@@ -3,6 +3,10 @@
 **From:** Nexus Portraits planning, 2026-10-21; updated 2026-10-22 and 2026-10-23 (twice). **For:** the Coding Harness chat, relayed by the owner.
 **About:** `Coding Harness Instructions.md`: first as of harness plan `68dee18`, then as updated to HD-59 (commits `2e2b073` and `3e16ff8`), then to HD-60 (commit `c6d0199`, the move to Northflank), then to HD-65 (commit `066b394`, your answers and the card check).
 
+## Update, 2026-10-24: your three hosting rules (HD-71) are applied
+
+Recorded as **D-73**, no questions. The `pr-copy` blueprint names everything it makes after the copy (`${args.previewId}-…`, and the bucket prefix `${args.previewId}/`), linking only the standing `preview` secret group the owner makes once; CD is off on every deployment service; and O-8 asks for the two API roles with project permissions only.
+
 ## Update, 2026-10-23 (evening): your Northflank layout (HD-70) is applied
 
 Recorded as **D-72**. No questions this time.
